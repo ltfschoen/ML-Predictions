@@ -73,6 +73,49 @@ def clean_price(dataframe):
 
     return dataframe
 
+def get_price_prediction(my_listing_accommodates_first, other_listings_all_accommodates):
+
+    # Compare value of feature "accommodates" in DataFrame Series from other data set with my data set value.
+    # Assign distance values to new "distance" column of Data Frame Series object.
+    other_listings_all["distance"] = compare_observations(my_listing_accommodates_first, other_listings_all_accommodates)
+
+    # Use the Panda Series method value_counts to display unique value counts for each "distance" column.
+    # Ascending order by "distance".
+    # print(other_listings_all["distance"].value_counts()) # .index.tolist()
+
+    # Check the value count for "distance" value of 0. Its value 461 is amount of
+    # other rental listings that also accommodate 3 people.
+    # Avoid bias (toward just the sort order by "distance" column of the data set) when choosing
+    # the five (5) "nearest neighbors" (all will have distance 0 since only want 5 and there
+    # are 461 indexes with that distance).
+
+    # Show all listing indexes in the other data set that have a distance of 0 from my data set
+    # (i.e. also accommodating 3 people) for the feature "accommodates"
+    # print(other_listings_all[other_listings_all["distance"] == 0]["accommodates"])
+
+    # Randomise the ordering of the other data set first, and only then:
+    # Sort the DataFrame by "distance" column
+    # so there will be random order across the first 461 rows (having lowest distance)
+    other_listings_all_randomised = randomise_dataframe_rows(other_listings_all)
+    other_listings_all_sorted = sort_dataframe_by_feature(other_listings_all_randomised, "distance")
+
+    # Show first 10 values in "price" column
+    # print(other_listings_all_sorted.iloc[0:10]["price"])
+
+    # Convert new Series object containing cleaned values to float datatype.
+    # Assign back to "price" column in data set.
+    other_listings_all_cleaned = clean_price(other_listings_all_sorted)
+    # print(other_listings_all_cleaned)
+
+    # Select "nearest neighbors" (first 5 values in "price" column)
+    # Assign to `mean_price` the mean of the `price` column
+    mean_price = other_listings_all_cleaned.iloc[0:5]["price"].mean()
+
+    # Show `mean_price`
+    print(mean_price)
+
+    return mean_price
+
 # Loads other data set as DataFrame with all rows
 other_listings_all = load_dataset(None)
 
@@ -85,41 +128,4 @@ my_listing = pd.DataFrame.from_dict(my_dataset)
 my_listing_accommodates_first = my_listing.iloc[0:1]["accommodates"][0]
 other_listings_all_accommodates = other_listings_all["accommodates"]
 
-# Compare value of feature "accommodates" in DataFrame Series from other data set with my data set value.
-# Assign distance values to new "distance" column of Data Frame Series object.
-other_listings_all["distance"] = compare_observations(my_listing_accommodates_first, other_listings_all_accommodates)
-
-# Use the Panda Series method value_counts to display unique value counts for each "distance" column.
-# Ascending order by "distance".
-# print(other_listings_all["distance"].value_counts()) # .index.tolist()
-
-# Check the value count for "distance" value of 0. Its value 461 is amount of
-# other rental listings that also accommodate 3 people.
-# Avoid bias (toward just the sort order by "distance" column of the data set) when choosing
-# the five (5) "nearest neighbors" (all will have distance 0 since only want 5 and there
-# are 461 indexes with that distance).
-
-# Show all listing indexes in the other data set that have a distance of 0 from my data set
-# (i.e. also accommodating 3 people) for the feature "accommodates"
-# print(other_listings_all[other_listings_all["distance"] == 0]["accommodates"])
-
-# Randomise the ordering of the other data set first, and only then:
-# Sort the DataFrame by "distance" column
-# so there will be random order across the first 461 rows (having lowest distance)
-other_listings_all_randomised = randomise_dataframe_rows(other_listings_all)
-other_listings_all_sorted = sort_dataframe_by_feature(other_listings_all_randomised, "distance")
-
-# Show first 10 values in "price" column
-# print(other_listings_all_sorted.iloc[0:10]["price"])
-
-# Convert new Series object containing cleaned values to float datatype.
-# Assign back to "price" column in data set.
-other_listings_all_cleaned = clean_price(other_listings_all_sorted)
-# print(other_listings_all_cleaned)
-
-# Select "nearest neighbors" (first 5 values in "price" column)
-# Assign to `mean_price` the mean of the `price` column
-mean_price = other_listings_all_cleaned.iloc[0:5]["price"].mean()
-
-# Show `mean_price`
-print(mean_price)
+price_prediction = get_price_prediction(my_listing_accommodates_first, other_listings_all_accommodates)
