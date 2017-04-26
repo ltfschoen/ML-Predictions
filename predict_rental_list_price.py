@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import math
 from pathlib import Path
 import requests
@@ -45,6 +46,24 @@ def compare_observations(obs1, obs2):
     """
     return obs2.apply(lambda x: calc_euclidean_dist(x, obs1))
 
+def randomise_dataset_rows(dataset):
+    """
+    Randomise the ordering of the other data set.
+    Return a NumPy array of shuffled index values using `np.random.permutation`
+    Return a new Dataframe containing the shuffled order using `loc[]`
+
+    Ref: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.loc.html
+    """
+    return dataset.loc[np.random.permutation(len(dataset))]
+
+def sort_dataset_by_feature(dataset, feature):
+    """
+    Sort dataset by feature (default ascending)
+
+    Ref: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.sort_values.html
+    """
+    return dataset.sort_values(feature)
+
 # Loads other data set as DataFrame with all rows
 other_listings_all = load_data_set(None)
 
@@ -61,5 +80,25 @@ other_listings_all_accommodates = other_listings_all["accommodates"]
 # Assign distance values to new "distance" column of Data Frame Series object.
 other_listings_all["distance"] = compare_observations(my_listing_accommodates_first, other_listings_all_accommodates)
 
-# Use the Panda Series method value_counts to display unique value counts for "distance" column
-print(other_listings_all["distance"].value_counts()) # .index.tolist()
+# Use the Panda Series method value_counts to display unique value counts for each "distance" column.
+# Ascending order by "distance".
+# print(other_listings_all["distance"].value_counts()) # .index.tolist()
+
+# Check the value count for "distance" value of 0. Its value 461 is amount of
+# other rental listings that also accommodate 3 people.
+# Avoid bias (toward just the sort order by "distance" column of the data set) when choosing
+# the five (5) "nearest neighbors" (all will have distance 0 since only want 5 and there
+# are 461 indexes with that distance).
+
+# Show all listing indexes in the other data set that have a distance of 0 from my data set
+# (i.e. also accommodating 3 people) for the feature "accommodates"
+print(other_listings_all[other_listings_all["distance"] == 0]["accommodates"])
+
+# Randomise the ordering of the other data set first, and only then:
+# Sort the DataFrame by "distance" column
+# so there will be random order across the first 461 rows (having lowest distance)
+other_listings_all_randomised = randomise_dataset_rows(other_listings_all)
+other_listings_all_sorted = sort_dataset_by_feature(other_listings_all_randomised, "distance")
+
+# Show first 10 values in "price" column
+print(other_listings_all_sorted.iloc[0:10]["price"])
