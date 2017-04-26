@@ -11,32 +11,30 @@ Find the optimum rental listing price using similarity metrics
 """
 
 # Declare local and remote locations of data set.
-data_set_local = "data/listing.csv"
-data_set_remote = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
+dataset_local = "data/listing.csv"
+dataset_remote = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
 
-def load_data_set(num_rows):
+def load_dataset(num_rows):
     """
     Load downloaded copy of dataset (.csv format) into Dataframe (DF)
     `other_listings` of Pandas. Otherwise load remote (slower)
     """
     try:
-        dataset_file = Path(data_set_local)
+        dataset_file = Path(dataset_local)
         if dataset_file.is_file():
-            return pd.read_csv(data_set_local, nrows=num_rows)
+            return pd.read_csv(dataset_local, nrows=num_rows)
         else:
             def exists(path):
                 r = requests.head(path)
                 return r.status_code == requests.codes.ok
-            if exists(data_set_remote):
-                return pd.read_csv(data_set_remote, nrows=num_rows)
+            if exists(dataset_remote):
+                return pd.read_csv(dataset_remote, nrows=num_rows)
         return None
     except Exception as e:
         print(e.errno)
 
 def calc_euclidean_dist(val1, val2):
-    """
-    Euclidean Distance equation to compare values of different data sets
-    """
+    """ Euclidean Distance equation to compare values of different data sets """
     return int(math.sqrt(abs(val1 - val2)**2))
 
 def compare_observations(obs1, obs2):
@@ -46,7 +44,7 @@ def compare_observations(obs1, obs2):
     """
     return obs2.apply(lambda x: calc_euclidean_dist(x, obs1))
 
-def randomise_dataset_rows(dataset):
+def randomise_dataframe_rows(dataframe):
     """
     Randomise the ordering of the other data set.
     Return a NumPy array of shuffled index values using `np.random.permutation`
@@ -54,25 +52,36 @@ def randomise_dataset_rows(dataset):
 
     Ref: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.loc.html
     """
-    return dataset.loc[np.random.permutation(len(dataset))]
+    return dataframe.loc[np.random.permutation(len(dataframe))]
 
-def sort_dataset_by_feature(dataset, feature):
-    """
-    Sort dataset by feature (default ascending)
+def sort_dataframe_by_feature(dataframe, feature):
+    """ Sort dataframe by feature (default ascending) """
+    return dataframe.sort_values(feature)
 
-    Ref: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.sort_values.html
+def clean_price(dataframe):
     """
-    return dataset.sort_values(feature)
+    Clean "price" column to remove `$` and `,` characters and
+    convert column from text to numeric float type.
+    """
+    def replace_bad_chars(row):
+        row = row.replace(",", "")
+        row = row.replace("$", "")
+        row = float(row)
+        return row
+
+    dataframe["price"] = dataframe["price"].apply(lambda row: replace_bad_chars(row))
+
+    return dataframe
 
 # Loads other data set as DataFrame with all rows
-other_listings_all = load_data_set(None)
+other_listings_all = load_dataset(None)
 
 # Convert my data set from dict to DataFrame as emulation
-my_data_set = { "accommodates": [3] }
-my_listing = pd.DataFrame.from_dict(my_data_set)
+my_dataset = { "accommodates": [3] }
+my_listing = pd.DataFrame.from_dict(my_dataset)
 
-# Fetch from my data set value of feature (column) "accommodates" in first row.
-# Fetch from my data set value of feature (column) "accommodates" all rows.
+# Fetch value in first row and feature "accommodates" from my dataset.
+# Fetch all rows of feature "accommodates" from other dataset.
 my_listing_accommodates_first = my_listing.iloc[0:1]["accommodates"][0]
 other_listings_all_accommodates = other_listings_all["accommodates"]
 
@@ -92,13 +101,25 @@ other_listings_all["distance"] = compare_observations(my_listing_accommodates_fi
 
 # Show all listing indexes in the other data set that have a distance of 0 from my data set
 # (i.e. also accommodating 3 people) for the feature "accommodates"
-print(other_listings_all[other_listings_all["distance"] == 0]["accommodates"])
+# print(other_listings_all[other_listings_all["distance"] == 0]["accommodates"])
 
 # Randomise the ordering of the other data set first, and only then:
 # Sort the DataFrame by "distance" column
 # so there will be random order across the first 461 rows (having lowest distance)
-other_listings_all_randomised = randomise_dataset_rows(other_listings_all)
-other_listings_all_sorted = sort_dataset_by_feature(other_listings_all_randomised, "distance")
+other_listings_all_randomised = randomise_dataframe_rows(other_listings_all)
+other_listings_all_sorted = sort_dataframe_by_feature(other_listings_all_randomised, "distance")
 
 # Show first 10 values in "price" column
-print(other_listings_all_sorted.iloc[0:10]["price"])
+# print(other_listings_all_sorted.iloc[0:10]["price"])
+
+# Convert new Series object containing cleaned values to float datatype.
+# Assign back to "price" column in data set.
+other_listings_all_cleaned = clean_price(other_listings_all_sorted)
+# print(other_listings_all_cleaned)
+
+# Select "nearest neighbors" (first 5 values in "price" column)
+# Assign to `mean_price` the mean of the `price` column
+mean_price = other_listings_all_cleaned.iloc[0:5]["price"].mean()
+
+# Show `mean_price`
+print(mean_price)
