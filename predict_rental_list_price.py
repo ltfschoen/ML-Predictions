@@ -3,6 +3,7 @@ import numpy as np
 import math
 from pathlib import Path
 import requests
+import matplotlib.pyplot as plt
 
 """
 Given you have a rental listing that accommodates up to 3 rooms.
@@ -52,6 +53,8 @@ def randomise_dataframe_rows(dataframe):
 
     Ref: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.loc.html
     """
+    # Reproduce random results when share and run same code by others
+    np.random.seed(1)
     return dataframe.loc[np.random.permutation(len(dataframe))]
 
 def sort_dataframe_by_feature(dataframe, feature):
@@ -107,6 +110,9 @@ def get_price_prediction(my_listing_accommodates_first, other_listings_all_accom
     other_listings_all_cleaned = clean_price(other_listings_all_sorted)
     # print(other_listings_all_cleaned)
 
+    other_listings_all_cleaned.pivot_table(index='accommodates', values='price').plot()
+    plt.show()
+
     # Select "nearest neighbors" (first 5 values in "price" column)
     # Assign to `mean_price` the mean of the `price` column
     mean_price = other_listings_all_cleaned.iloc[0:5]["price"].mean()
@@ -128,4 +134,6 @@ my_listing = pd.DataFrame.from_dict(my_dataset)
 my_listing_accommodates_first = my_listing.iloc[0:1]["accommodates"][0]
 other_listings_all_accommodates = other_listings_all["accommodates"]
 
-price_prediction = get_price_prediction(my_listing_accommodates_first, other_listings_all_accommodates)
+# Find recommended price to charge per night for my rental listing based
+# on average price of other listings that accommodate 3 people.
+price_recommended = get_price_prediction(my_listing_accommodates_first, other_listings_all_accommodates)
