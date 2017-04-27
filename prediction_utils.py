@@ -7,12 +7,15 @@ class PredictionUtils(object):
     @staticmethod
     def calc_euclidean_dist(val1, val2):
         """ Euclidean Distance equation to compare values of different data sets """
+        if np.isnan(val1) or np.isnan(val2):
+            return 2**5 # high number so exclude when sort (infinity as integer 2**100000)
         return int(math.sqrt(abs(val1 - val2)**2))
 
     @staticmethod
     def compare_observations(obs1, obs2):
         """ Similarity Metric compares two observations' data set features (columns)
-        and returns distance (difference). Compare value of feature "accommodates" in across DataFrame Series
+        and returns distance (difference). Compare value of feature
+        (i.e. "accommodates" or "bathrooms") in across DataFrame Series
         """
         return obs2.apply(lambda x: PredictionUtils.calc_euclidean_dist(x, obs1))
 
@@ -46,17 +49,20 @@ class PredictionUtils(object):
         return df
 
     @staticmethod
-    def get_nearest_neighbors(df):
+    def get_nearest_neighbors(df, model_feature_name):
         """ Filter range of nearest neighbors to select of recommended prices to charge per night for a rental listing based
-        on average price of other listings that accommodate that same or similar size (i.e. 3 or so people).
+        on average price of other listings based on the model feature being trained
+        (i.e. "accommodates" or "bathrooms").
         """
-        print("Predicted Price (Avg of Nearest): %.2f (with Avg Accommodates: %r) " % (df.iloc[0:5]["price"].mean(), df.iloc[0:5]["accommodates"].mean()) )
+        print("Predicted Price (Avg of Nearest): %.2f (with model feature %r Avg. : %r) " % (df.iloc[0:5]["price"].mean(), model_feature_name, df.iloc[0:5][model_feature_name].mean()) )
         return df.iloc[0:5]["price"].mean()
 
     @staticmethod
-    def calc_mean_absolute_error(df):
-        return df.apply(lambda x: np.absolute(x['price'] - x['predicted_price']), axis=1).mean()
+    def calc_mean_absolute_error(df, model_feature_name):
+        column_name_predicted_price_feature = "predicted_price_" + model_feature_name
+        return df.apply(lambda x: np.absolute(x['price'] - x[column_name_predicted_price_feature]), axis=1).mean()
 
     @staticmethod
-    def calc_mean_squared_error(df):
-        return df.apply(lambda x: (x['price'] - x['predicted_price'])**2, axis=1).mean()
+    def calc_mean_squared_error(df, model_feature_name):
+        column_name_predicted_price_feature = "predicted_price_" + model_feature_name
+        return df.apply(lambda x: (x['price'] - x[column_name_predicted_price_feature])**2, axis=1).mean()

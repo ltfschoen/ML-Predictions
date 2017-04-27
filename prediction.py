@@ -7,35 +7,37 @@ class Prediction:
     def __init__(self, prediction_data):
         self.prediction_data = prediction_data
 
-    def get_price_prediction(self):
+    def get_price_prediction(self, model_feature_name):
         _temp_testing_part = self.prediction_data.testing_part
-        self.prediction_data.testing_part["predicted_price"] = _temp_testing_part['accommodates'].apply(lambda x: self.process_price_prediction(x))
-        print("Predicted Prices: ", self.prediction_data.testing_part["predicted_price"] )
+        column_name_predicted_price_feature = "predicted_price_" + model_feature_name
+        self.prediction_data.testing_part[column_name_predicted_price_feature] = _temp_testing_part[model_feature_name].apply(lambda x: self.process_price_prediction(model_feature_name, x))
+        print("Predicted Prices using Model %r: %r" % (model_feature_name, self.prediction_data.testing_part[column_name_predicted_price_feature]) )
 
-    def process_price_prediction(self, accommodates_qty):
+    def process_price_prediction(self, model_feature_name, model_feature_value):
         """ Compare, Inspect, Randomise, Cleanse, and Filter
 
         Prior to Randomising and then Sorting, we Inspect and check the value count for "distance" value of 0. Its value is amount of
-        other rental listings that also accommodate 3 people, using feature "accommodates". Avoid bias (toward just the sort order by "distance"
+        other rental listings that also accommodate 3 people, using feature (i.e. "accommodates" or "bathrooms"). Avoid bias (toward just the sort order by "distance"
         column of the data set) when choosing the "nearest neighbors" (all may have distance 0 since only want 5 and there
         are may be around 461 indexes with that distance). Show all listing indexes that have a distance of 0 from my data set
-
         During Comparison, assign distance values to new "distance" column of Data Frame Series object.
-
         During Inspection, use the Panda Series method value_counts to display unique value counts for each "distance" column
         """
 
+        column_name_distance_feature = "distance_" + model_feature_name
+
         # Compare
         _temp_training_part = self.prediction_data.training_part
-        _temp_training_part["distance"] = PredictionUtils.compare_observations(accommodates_qty, _temp_training_part["accommodates"])
+        print(_temp_training_part[model_feature_name])
+        _temp_training_part[column_name_distance_feature] = PredictionUtils.compare_observations(model_feature_value, _temp_training_part[model_feature_name])
 
         # Inspect
-        # print(_temp_training_part["distance"].value_counts()) # .index.tolist()
-        # print(_temp_training_part[_temp_training_part["distance"] == 0]["accommodates"])
+        # print(_temp_training_part[column_name_distance_feature].value_counts()) # .index.tolist()
+        # print(_temp_training_part[_temp_training_part[column_name_distance_feature] == 0][model_feature_name])
 
         # Randomise and Sort
         _temp_training_part_randomised = PredictionUtils.randomise_dataframe_rows(_temp_training_part)
-        _temp_training_part_sorted = PredictionUtils.sort_dataframe_by_feature(_temp_training_part_randomised, "distance")
+        _temp_training_part_sorted = PredictionUtils.sort_dataframe_by_feature(_temp_training_part_randomised, column_name_distance_feature)
         # print(_temp_training_part_sorted.iloc[0:10]["price"])
 
         # Cleanse (Training Set)
@@ -43,21 +45,21 @@ class Prediction:
         # print(_temp_training_part_cleaned)
 
         # Filter
-        predicted_price = PredictionUtils.get_nearest_neighbors(_temp_training_part_cleaned)
+        predicted_price = PredictionUtils.get_nearest_neighbors(_temp_training_part_cleaned, model_feature_name)
 
         return predicted_price
 
-    def get_mean_absolute_error(self):
+    def get_mean_absolute_error(self, model_feature_name):
         """ Mean Absolute Error (MAE) calculation """
         _temp_testing_part = self.prediction_data.testing_part
 
         # Cleanse (Test Set)
         _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
         # print(_temp_testing_part_cleaned['predicted_price'])
-        mae = PredictionUtils.calc_mean_absolute_error(_temp_testing_part_cleaned)
-        print("MAE: %r: " % mae )
+        mae = PredictionUtils.calc_mean_absolute_error(_temp_testing_part_cleaned, model_feature_name)
+        print("MAE for Model feature %r: %r: " % (model_feature_name, mae) )
 
-    def get_mean_squared_error(self):
+    def get_mean_squared_error(self, model_feature_name):
         """ Mean Squared Error (MSE) calculation
 
         MSE improved prediction accuracy over MAE since penalises predicted values that are further
@@ -68,21 +70,23 @@ class Prediction:
         # Cleanse (Test Set)
         _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
         # print(_temp_testing_part_cleaned['predicted_price'])
-        mse = PredictionUtils.calc_mean_squared_error(_temp_testing_part_cleaned)
-        print("MSE: %r: " % mse )
+        mse = PredictionUtils.calc_mean_squared_error(_temp_testing_part_cleaned, model_feature_name)
+        print("MSE for Model feature %r: %r: " % (model_feature_name, mse) )
 
-    def plot(self):
+    def plot(self, model_feature_name):
         """ Plot """
         _temp_testing_part_cleaned = PredictionUtils.clean_price(self.prediction_data.testing_part)
-        _temp_testing_part_cleaned.pivot_table(index='accommodates', values='price').plot()
+        _temp_testing_part_cleaned.pivot_table(index=model_feature_name, values='price').plot()
         plt.show()
 
 def run():
     prediction_data = PredictionData()
     prediction = Prediction(prediction_data)
-    prediction.get_price_prediction()
-    prediction.get_mean_absolute_error()
-    prediction.get_mean_squared_error()
-    prediction.plot()
+    models = ["accommodates", "bathrooms"]
+    for index, model_feature_name in enumerate(models):
+        prediction.get_price_prediction(model_feature_name)
+        prediction.get_mean_absolute_error(model_feature_name)
+        prediction.get_mean_squared_error(model_feature_name)
+        prediction.plot(model_feature_name)
 
 run()

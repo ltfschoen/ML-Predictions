@@ -14,9 +14,15 @@ Machine Learning - Predictions
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/screenshot.png)
 
-* Results:
-    * MAE: 58.77 (or ~56.29 without randomising)
-    * MSE: 19458.02 (or ~18646.50 without randomising)
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/screenshot2.png)
+
+* Comparison of Results (of "price" vs "predicted_price"):
+    * Model Trained #1 "accommodates" column:
+        * MAE: 58.77 (or ~56.29 without randomising)
+        * MSE: 19458.02 (or ~18646.50 without randomising) (i.e. $ squared, penalises predictions further from actual)
+    * Model Trained #2 "bathrooms" column:
+        * MAE: 58.77
+        * MSE: 16233.52 (or ~17333.4 without randomising)
 
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
