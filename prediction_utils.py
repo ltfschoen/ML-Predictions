@@ -38,8 +38,8 @@ class PredictionUtils(object):
     def clean_price(df):
         """ Clean "price" column removing `$` and `,` chars. Convert column from text to float. """
         def replace_bad_chars(row):
-            row = row.replace(",", "")
-            row = row.replace("$", "")
+            row = str(row).replace(",", "")
+            row = str(row).replace("$", "")
             row = float(row) # .astype('float')
             return row
         df["price"] = df["price"].apply(lambda row: replace_bad_chars(row))
@@ -52,3 +52,7 @@ class PredictionUtils(object):
         """
         print("Predicted Price (Avg of Nearest): %.2f (with Avg Accommodates: %r) " % (df.iloc[0:5]["price"].mean(), df.iloc[0:5]["accommodates"].mean()) )
         return df.iloc[0:5]["price"].mean()
+
+    @staticmethod
+    def calc_mean_absolute_error(df):
+        return df.apply(lambda x: np.absolute(x['price'] - x['predicted_price']), axis=1).mean()

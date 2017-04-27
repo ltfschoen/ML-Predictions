@@ -12,11 +12,6 @@ class Prediction:
         self.prediction_data.testing_part["predicted_price"] = _temp_testing_part['accommodates'].apply(lambda x: self.process_price_prediction(x))
         print("Predicted Prices: ", self.prediction_data.testing_part["predicted_price"] )
 
-        # Plot
-        _temp_testing_part_cleaned = PredictionUtils.clean_price(self.prediction_data.testing_part)
-        _temp_testing_part_cleaned.pivot_table(index='accommodates', values='price').plot()
-        plt.show()
-
     def process_price_prediction(self, accommodates_qty):
         """ Compare, Inspect, Randomise, Cleanse, and Filter
 
@@ -38,12 +33,12 @@ class Prediction:
         # print(_temp_training_part["distance"].value_counts()) # .index.tolist()
         # print(_temp_training_part[_temp_training_part["distance"] == 0]["accommodates"])
 
-        # Randomise
+        # Randomise and Sort
         _temp_training_part_randomised = PredictionUtils.randomise_dataframe_rows(_temp_training_part)
         _temp_training_part_sorted = PredictionUtils.sort_dataframe_by_feature(_temp_training_part_randomised, "distance")
         # print(_temp_training_part_sorted.iloc[0:10]["price"])
 
-        # Cleanse
+        # Cleanse (Training Set)
         _temp_training_part_cleaned = PredictionUtils.clean_price(_temp_training_part_sorted)
         # print(_temp_training_part_cleaned)
 
@@ -52,9 +47,27 @@ class Prediction:
 
         return predicted_price
 
+    def get_mean_absolute_error(self):
+        """ Mean Absolute Error (MAE) calculation """
+        _temp_testing_part = self.prediction_data.testing_part
+
+        # Cleanse (Test Set)
+        _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
+        print(_temp_testing_part_cleaned['predicted_price'])
+        mae = PredictionUtils.calc_mean_absolute_error(_temp_testing_part_cleaned)
+        print("MAE: %r: " % mae )
+
+    def plot(self):
+        """ Plot """
+        _temp_testing_part_cleaned = PredictionUtils.clean_price(self.prediction_data.testing_part)
+        _temp_testing_part_cleaned.pivot_table(index='accommodates', values='price').plot()
+        plt.show()
+
 def run():
     prediction_data = PredictionData()
     prediction = Prediction(prediction_data)
     prediction.get_price_prediction()
+    prediction.get_mean_absolute_error()
+    prediction.plot()
 
 run()
