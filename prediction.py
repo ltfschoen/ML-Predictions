@@ -53,9 +53,23 @@ class Prediction:
 
         # Cleanse (Test Set)
         _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
-        print(_temp_testing_part_cleaned['predicted_price'])
+        # print(_temp_testing_part_cleaned['predicted_price'])
         mae = PredictionUtils.calc_mean_absolute_error(_temp_testing_part_cleaned)
         print("MAE: %r: " % mae )
+
+    def get_mean_squared_error(self):
+        """ Mean Squared Error (MSE) calculation
+
+        MSE improved prediction accuracy over MAE since penalises predicted values that are further
+        from the actual value more that those that are closer to the actual value
+        """
+        _temp_testing_part = self.prediction_data.testing_part
+
+        # Cleanse (Test Set)
+        _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
+        # print(_temp_testing_part_cleaned['predicted_price'])
+        mse = PredictionUtils.calc_mean_squared_error(_temp_testing_part_cleaned)
+        print("MSE: %r: " % mse )
 
     def plot(self):
         """ Plot """
@@ -68,6 +82,7 @@ def run():
     prediction = Prediction(prediction_data)
     prediction.get_price_prediction()
     prediction.get_mean_absolute_error()
+    prediction.get_mean_squared_error()
     prediction.plot()
 
 run()

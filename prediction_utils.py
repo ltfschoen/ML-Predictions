@@ -56,3 +56,7 @@ class PredictionUtils(object):
     @staticmethod
     def calc_mean_absolute_error(df):
         return df.apply(lambda x: np.absolute(x['price'] - x['predicted_price']), axis=1).mean()
+
+    @staticmethod
+    def calc_mean_squared_error(df):
+        return df.apply(lambda x: (x['price'] - x['predicted_price'])**2, axis=1).mean()

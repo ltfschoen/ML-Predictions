@@ -14,6 +14,10 @@ Machine Learning - Predictions
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/screenshot.png)
 
+* Results:
+    * MAE: 58.77 (or ~56.29 without randomising)
+    * MSE: 19458.02 (or ~18646.50 without randomising)
+
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
 * Install dependencies:
