@@ -59,10 +59,17 @@ class PredictionUtils(object):
 
     @staticmethod
     def calc_mean_absolute_error(df, model_feature_name):
+        """ MAE = ( |(actual1 - predicted1)| + ... + |(actualn - predictedn)| ) / n """
         column_name_predicted_price_feature = "predicted_price_" + model_feature_name
         return df.apply(lambda x: np.absolute(x['price'] - x[column_name_predicted_price_feature]), axis=1).mean()
 
     @staticmethod
     def calc_mean_squared_error(df, model_feature_name):
+        """ MSE = ( (actual1 - predicted1)^2 + ... + (actualn - predictedn)^2 ) / n """
         column_name_predicted_price_feature = "predicted_price_" + model_feature_name
         return df.apply(lambda x: (x['price'] - x[column_name_predicted_price_feature])**2, axis=1).mean()
+
+    @staticmethod
+    def calc_root_mean_squared_error(df, model_feature_name):
+        """ RMSE = sqrt(MSE) """
+        return np.sqrt( PredictionUtils.calc_mean_squared_error(df, model_feature_name) )

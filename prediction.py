@@ -58,6 +58,7 @@ class Prediction:
         # print(_temp_testing_part_cleaned['predicted_price'])
         mae = PredictionUtils.calc_mean_absolute_error(_temp_testing_part_cleaned, model_feature_name)
         print("MAE for Model feature %r: %r: " % (model_feature_name, mae) )
+        return mae
 
     def get_mean_squared_error(self, model_feature_name):
         """ Mean Squared Error (MSE) calculation
@@ -72,6 +73,22 @@ class Prediction:
         # print(_temp_testing_part_cleaned['predicted_price'])
         mse = PredictionUtils.calc_mean_squared_error(_temp_testing_part_cleaned, model_feature_name)
         print("MSE for Model feature %r: %r: " % (model_feature_name, mse) )
+        return mse
+
+    def get_root_mean_squared_error(self, model_feature_name):
+        """ Root Mean Squared Error (RMSE) calculation
+
+        RMSE helps understand performance of prediction accuracy over MSE and MAE since
+        it takes the square root of MSE so the units matching base unit of the target feature
+        """
+        _temp_testing_part = self.prediction_data.testing_part
+
+        # Cleanse (Test Set)
+        _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
+        # print(_temp_testing_part_cleaned['predicted_price'])
+        rmse = PredictionUtils.calc_root_mean_squared_error(_temp_testing_part_cleaned, model_feature_name)
+        print("RMSE for Model feature %r: %r: " % (model_feature_name, rmse) )
+        return rmse
 
     def plot(self, model_feature_name):
         """ Plot """
@@ -85,8 +102,11 @@ def run():
     models = ["accommodates", "bathrooms"]
     for index, model_feature_name in enumerate(models):
         prediction.get_price_prediction(model_feature_name)
-        prediction.get_mean_absolute_error(model_feature_name)
-        prediction.get_mean_squared_error(model_feature_name)
+        mae = prediction.get_mean_absolute_error(model_feature_name)      # MAE
+        mse = prediction.get_mean_squared_error(model_feature_name)       # MSE
+        rmse = prediction.get_root_mean_squared_error(model_feature_name) # RMSE
+        mae_rmse_ratio_prefix = mae / rmse
+        print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
         prediction.plot(model_feature_name)
 
 run()

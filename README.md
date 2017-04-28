@@ -20,9 +20,19 @@ Machine Learning - Predictions
     * Model Trained #1 "accommodates" column:
         * MAE: 58.77 (or ~56.29 without randomising)
         * MSE: 19458.02 (or ~18646.50 without randomising) (i.e. $ squared, penalises predictions further from actual)
+        * RMSE: 139.49
+        * MAE to RMSE Ratio: 0.42:1
     * Model Trained #2 "bathrooms" column:
         * MAE: 58.77
         * MSE: 16233.52 (or ~17333.4 without randomising)
+        * RMSE: 127.37 (or 131.66 without randomising)
+            * Note: Expect model to be off by $127 on average for prediced price values
+        * MAE to RMSE Ratio: 0.46:1
+    * **MAE to RMSE Ratio**
+        * Definition: Comparing MAE to RMSE Ratio helps understand if "outliers" exist that cause large but infrequent errors.
+    * Important Note:
+        * Most rental listings are listed at ~$300 so must reduce RMSE error to improve model usefulness
+
 
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
