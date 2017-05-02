@@ -29,7 +29,12 @@ Machine Learning - Predictions
             * Note: Expect model to be off by $127 on average for prediced price values
         * MAE to RMSE Ratio: 0.46:1
     * **MAE to RMSE Ratio**
-        * Definition: Comparing MAE to RMSE Ratio helps understand if "outliers" exist that cause large but infrequent errors.
+        * Definition: Comparing MAE to RMSE Ratio helps highlight if "outliers" exist that cause large but infrequent errors.
+        Given that we expect MAE > RMSE (since RMSE takes the square root of the squared error MAE)
+        Given that RMSE penalises large errors more than MAE,
+        Given that RMSE is in the denominator of the ratio such that higher RMSE results in smaller ratio
+        Conclude that both models contain large outliers (since MAE < RMSE)
+        Conclude that "bathrooms" model with higher ratio performs better than "accommodates" model
     * Important Note:
         * Most rental listings are listed at ~$300 so must reduce RMSE error to improve model usefulness
 
