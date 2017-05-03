@@ -28,7 +28,7 @@ class Prediction:
 
         # Compare
         _temp_training_part = self.prediction_data.training_part
-        print(_temp_training_part[model_feature_name])
+        # print(_temp_training_part[model_feature_name])
         _temp_training_part[column_name_distance_feature] = PredictionUtils.compare_observations(model_feature_value, _temp_training_part[model_feature_name])
 
         # Inspect

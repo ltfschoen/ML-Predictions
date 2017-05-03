@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from scipy.spatial import distance
 
 class PredictionUtils(object):
     """ Utility functions """
@@ -27,12 +28,19 @@ class PredictionUtils(object):
         return int(math.sqrt(abs(val1 - val2)**2))
 
     @staticmethod
+    def calc_euclidean_dist_using_scipy(val1, val2):
+        """ SciPy distance.euclidean() function used to calculate Euclidean Distance """
+        if np.isnan(val1) or np.isnan(val2):
+            return 2**5 # high number so exclude when sort (infinity as integer 2**100000)
+        return distance.euclidean(val1, val2) # int(math.sqrt(abs(val1 - val2)**2))
+
+    @staticmethod
     def compare_observations(obs1, obs2):
         """ Similarity Metric compares two observations' data set features (columns)
         and returns distance (difference). Compare value of feature
         (i.e. "accommodates" or "bathrooms") in across DataFrame Series
         """
-        return obs2.apply(lambda x: PredictionUtils.calc_euclidean_dist(x, obs1))
+        return obs2.apply(lambda x: PredictionUtils.calc_euclidean_dist_using_scipy(x, obs1))
 
     @staticmethod
     def randomise_dataframe_rows(df):

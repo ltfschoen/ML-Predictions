@@ -62,7 +62,7 @@ class PredictionData:
 
         # Cleanse (whole Set prior to split into Training and Testing parts)
         _temp_df_listings_cleaned = PredictionUtils.clean_price(_temp_df_listings_randomised)
-        print("Length of DataFrame: %r" % (df_size))
+        # print("Length of DataFrame: %r" % (df_size))
         # print("Prediction Data quantity of non-null data per column: %r" % (_temp_df_listings_cleaned.head(n=df_size).info(verbose=True, null_counts=True)))
 
         df_listings_with_any_null_values = _temp_df_listings_cleaned[_temp_df_listings_cleaned.columns[_temp_df_listings_cleaned.isnull().any()].tolist()]
