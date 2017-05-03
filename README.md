@@ -10,13 +10,17 @@ Machine Learning - Predictions
 
 ## Chapter 0 - Results
 
-* Screenshots (before [1] occurred):
+* [1]:
+    * Removal of columns with >20% of its rows being NaN
+    * Columns with <1% of NaNs having the shared row/observation were removed
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/screenshot.png)
+* Screenshots (**BEFORE** [1] occurred):
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/screenshot2.png)
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part1/screenshot_accommodations_feature_univariate.png)
 
-* Comparison of Results (of "price" vs "predicted_price"), before [1] occurred to reduce error:
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part1/screenshot_bedrooms_feature_univariate.png)
+
+* Comparison of Results (of "price" vs "predicted_price"), **BEFORE** [1] occurred to reduce error:
     * Model Trained #1 "accommodates" column:
         * MAE: 58.77 (or ~56.29 without randomising)
         * MSE: 19458.02 (or ~18646.50 without randomising) (i.e. $ squared, penalises predictions further from actual)
@@ -26,7 +30,7 @@ Machine Learning - Predictions
         * MAE: 58.77
         * MSE: 16233.52 (or ~17333.4 without randomising)
         * RMSE: 127.37 (or 131.66 without randomising)
-            * Note: Expect model to be off by $127 on average for prediced price values
+            * Note: Expect model to be off by $127 on average for predicted price values
         * MAE to RMSE Ratio: 0.46:1
     * **MAE to RMSE Ratio**
         * Definition: Comparing MAE to RMSE Ratio helps highlight if "outliers" exist that cause large but infrequent errors.
@@ -38,9 +42,24 @@ Machine Learning - Predictions
     * Important Note:
         * Most rental listings are listed at ~$300 so must reduce RMSE error to improve model usefulness
 
-* Note [1]:
-    * Removal of columns with >20% of its rows being NaN
-    * Columns with <1% of NaNs having the shared row/observation were removed
+* Screenshots (**AFTER** [1] occurred):
+
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part2/screenshot_accommodations_feature_univariate_post_strip_and_normalisation.png)
+
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part2/screenshot_bedrooms_feature_univariate_post_strip_and_normalisation.png)
+
+* Comparison of Results (of "price" vs "predicted_price"), **AFTER** [1] occurred to reduce error:
+    * Model Trained #1 "accommodates" column:
+        * MAE: 53.46
+        * MSE: 16208.90
+        * RMSE: 127.31
+        * MAE to RMSE Ratio: 0.42:1
+    * Model Trained #2 "bathrooms" column:
+        * MAE: 58.85
+        * MSE: 15423.09
+        * RMSE: 124.19
+            * Note: Expect model to be off by $124 on average for predicted price values
+        * MAE to RMSE Ratio: 0.47:1
 
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
