@@ -63,7 +63,20 @@ class PredictionData:
         # Cleanse (whole Set prior to split into Training and Testing parts)
         _temp_df_listings_cleaned = PredictionUtils.clean_price(_temp_df_listings_randomised)
         print("Length of DataFrame: %r" % (df_size))
-        print("Prediction Data quantity of non-null data per column: %r" % (_temp_df_listings_cleaned.head(n=df_size).info(verbose=True, null_counts=True)))
+        # print("Prediction Data quantity of non-null data per column: %r" % (_temp_df_listings_cleaned.head(n=df_size).info(verbose=True, null_counts=True)))
+
+        def get_percentage_missing(series):
+            """ Calculates percentage of NaN values in DataFrame
+            :param series: Pandas DataFrame object
+            :return: float
+            """
+            num = series.isnull().sum()
+            den = len(series)
+            return round(100 * (num/den), 2)
+
+        df_listings_with_any_null_values = _temp_df_listings_cleaned[_temp_df_listings_cleaned.columns[_temp_df_listings_cleaned.isnull().any()].tolist()]
+
+        print("Prediction Data proportion of null data per column for only columns with any null or NaN values: %r" % (get_percentage_missing(df_listings_with_any_null_values)))
 
     def partition_listings(self):
         """ Split DataFrame into 2x partitions for the Train/Test Validation Process """
