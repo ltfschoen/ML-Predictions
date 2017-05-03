@@ -10,13 +10,13 @@ Machine Learning - Predictions
 
 ## Chapter 0 - Results
 
-* Screenshots
+* Screenshots (before [1] occurred):
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/screenshot.png)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/screenshot2.png)
 
-* Comparison of Results (of "price" vs "predicted_price"):
+* Comparison of Results (of "price" vs "predicted_price"), before [1] occurred to reduce error:
     * Model Trained #1 "accommodates" column:
         * MAE: 58.77 (or ~56.29 without randomising)
         * MSE: 19458.02 (or ~18646.50 without randomising) (i.e. $ squared, penalises predictions further from actual)
@@ -38,6 +38,9 @@ Machine Learning - Predictions
     * Important Note:
         * Most rental listings are listed at ~$300 so must reduce RMSE error to improve model usefulness
 
+* Note [1]:
+    * Removal of columns with >20% of its rows being NaN
+    * Columns with <1% of NaNs having the shared row/observation were removed
 
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
