@@ -16,7 +16,7 @@ class PredictionData:
         self.delete_columns_high_incomplete()
         self.retain_columns_low_incomplete_but_strip()
         self.show_columns_incomplete() # Identify quantity of null values per column
-
+        self.normalise_listings()
         self.partition_listings()
 
     def load_dataset(self, num_rows):
@@ -49,15 +49,6 @@ class PredictionData:
                          remove_out_of_scope_columns
         self.df_listings.drop(remove_columns, axis=1, inplace=True)
 
-    def get_percentage_missing(self, series):
-        """ Calculates percentage of NaN values in DataFrame
-        :param series: Pandas DataFrame object
-        :return: float
-        """
-        num = series.isnull().sum()
-        den = len(series)
-        return round(num/den, 2)
-
     def show_columns_incomplete(self):
         """
         Show quantity of non-null values for each column for inspection.
@@ -76,7 +67,7 @@ class PredictionData:
 
         df_listings_with_any_null_values = _temp_df_listings_cleaned[_temp_df_listings_cleaned.columns[_temp_df_listings_cleaned.isnull().any()].tolist()]
 
-        print("Prediction Data proportion of null data per column for only columns with any null or NaN values: %r" % (self.get_percentage_missing(df_listings_with_any_null_values)))
+        print("Prediction Data proportion of null data per column for only columns with any null or NaN values: %r" % (PredictionUtils.get_percentage_missing(df_listings_with_any_null_values)))
 
     def delete_columns_high_incomplete(self):
         """ Delete Columns where percentage of null or NaN values exceeds MAX_INCOMPLETE value
@@ -88,9 +79,10 @@ class PredictionData:
         for name, values in _temp_df_listings.iteritems():
             # print("%r: %r" % (name, values) )
             if name != "id":
-                if self.get_percentage_missing(_temp_df_listings[name]) > self.MAX_INCOMPLETE:
+                if PredictionUtils.get_percentage_missing(_temp_df_listings[name]) > self.MAX_INCOMPLETE:
                     print("Deleting Column containing too many null values: %r" % (name) )
                     _temp_df_listings.drop(name, axis=1, inplace=True)
+        self.df_listings = _temp_df_listings
 
     def retain_columns_low_incomplete_but_strip(self):
         """ Retain Columns where percentage of null or NaN values comprise LESS THAN 1% (0.01) of its rows
@@ -103,9 +95,31 @@ class PredictionData:
 
         # Iterate over columns in DataFrame
         for name, values in _temp_df_listings.iteritems():
-            if self.get_percentage_missing(_temp_df_listings[name]) < 0.01:
+            if PredictionUtils.get_percentage_missing(_temp_df_listings[name]) < 0.01:
                 print("Retained Column: %r, but removed its null and NaN valued rows" % (name) )
                 _temp_df_listings.dropna(axis=0, how="any", subset=[name], inplace=True)
+        self.df_listings = _temp_df_listings
+
+    def normalise_listings(self):
+        """ Normalise column values where the column types are normalisable, being of either type int, float64, or floating
+
+        Apply mass Column transformation to Normalise all the feature columns
+        in the df_listings DataFrame and assign to a new Dataframe containing just the
+        normalised feature columns to normalized_listings.
+
+        Avoid normalizing the "price" column
+        """
+        _temp_df_listings = self.df_listings
+
+        # Select only Columns containing type int, float64, floating. Exclude Columns with types Object (O) that includes strings
+        df_listings_with_float_or_int_values = _temp_df_listings.select_dtypes(include=['int', 'float64', 'floating'], exclude=['O'])
+
+        normalized_listings = PredictionUtils.normalise_dataframe(df_listings_with_float_or_int_values)
+        normalized_listings['price'] = _temp_df_listings['price']
+
+        print("Normalised listings completed: %r" % (normalized_listings.head(3)) )
+
+        self.df_listings = normalized_listings
 
     def partition_listings(self):
         """ Split DataFrame into 2x partitions for the Train/Test Validation Process """

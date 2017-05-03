@@ -5,6 +5,21 @@ class PredictionUtils(object):
     """ Utility functions """
 
     @staticmethod
+    def normalise_dataframe(df):
+        """ Apply mass Column transformation to Normalise all feature columns in a DataFrame """
+        return (df - df.mean()) / (df.std())
+
+    @staticmethod
+    def get_percentage_missing(series):
+        """ Calculates percentage of NaN values in DataFrame
+        :param series: Pandas DataFrame object
+        :return: float
+        """
+        num = series.isnull().sum()
+        den = len(series)
+        return round(num/den, 2)
+
+    @staticmethod
     def calc_euclidean_dist(val1, val2):
         """ Euclidean Distance equation to compare values of different data sets """
         if np.isnan(val1) or np.isnan(val2):
