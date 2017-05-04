@@ -1,18 +1,19 @@
 from prediction_data import PredictionData
 from prediction_utils import PredictionUtils
+from prediction_config import PredictionConfig
 
 class PredictionModelManual:
     """ Manual Machine Learning Model - function that outputs prediction based on input to the model """
     def __init__(self, prediction_data):
         self.prediction_data = prediction_data
 
-    def get_price_prediction(self, model_feature_name):
+    def get_target_column_prediction(self, model_feature_name):
         _temp_testing_part = self.prediction_data.testing_part
-        column_name_predicted_price_feature = "predicted_price_" + model_feature_name
-        self.prediction_data.testing_part[column_name_predicted_price_feature] = _temp_testing_part[model_feature_name].apply(lambda x: self.process_price_prediction(model_feature_name, x))
-        print("Predicted Prices using Model %r: %r" % (model_feature_name, self.prediction_data.testing_part[column_name_predicted_price_feature]) )
+        column_name_predicted_target = "predicted_" + PredictionConfig.TARGET_COLUMN + "_" + model_feature_name
+        self.prediction_data.testing_part[column_name_predicted_target] = _temp_testing_part[model_feature_name].apply(lambda x: self.process_target_prediction(model_feature_name, x))
+        print("Predicted Target Column (i.e. 'price') using Model %r: %r" % (model_feature_name, self.prediction_data.testing_part[column_name_predicted_target]) )
 
-    def process_price_prediction(self, model_feature_name, model_feature_value):
+    def process_target_prediction(self, model_feature_name, model_feature_value):
         """ Compare, Inspect, Randomise, Cleanse, and Filter
 
         Prior to Randomising and then Sorting, we Inspect and check the value count for "distance" value of 0. Its value is amount of
@@ -37,21 +38,16 @@ class PredictionModelManual:
         # Randomise and Sort
         _temp_training_part_randomised = PredictionUtils.randomise_dataframe_rows(_temp_training_part)
         _temp_training_part_sorted = PredictionUtils.sort_dataframe_by_feature(_temp_training_part_randomised, column_name_distance_feature)
-        # print(_temp_training_part_sorted.iloc[0:10]["price"])
+        # print(_temp_training_part_sorted.iloc[0:10][PredictionConfig.TARGET_COLUMN])
 
         # Filter
-        predicted_price = PredictionUtils.get_nearest_neighbors(_temp_training_part_sorted, model_feature_name)
+        predicted_target = PredictionUtils.get_nearest_neighbors(_temp_training_part_sorted, model_feature_name)
 
-        return predicted_price
+        return predicted_target
 
     def get_mean_absolute_error(self, model_feature_name):
         """ Mean Absolute Error (MAE) calculation """
-        _temp_testing_part = self.prediction_data.testing_part
-
-        # Cleanse (Test Set)
-        _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
-        # print(_temp_testing_part_cleaned['predicted_price'])
-        mae = PredictionUtils.calc_mean_absolute_error(_temp_testing_part_cleaned, model_feature_name)
+        mae = PredictionUtils.calc_mean_absolute_error(self.prediction_data.testing_part, model_feature_name)
         print("MAE for Model feature %r: %r: " % (model_feature_name, mae) )
         return mae
 
@@ -61,12 +57,7 @@ class PredictionModelManual:
         MSE improved prediction accuracy over MAE since penalises predicted values that are further
         from the actual value more that those that are closer to the actual value
         """
-        _temp_testing_part = self.prediction_data.testing_part
-
-        # Cleanse (Test Set)
-        _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
-        # print(_temp_testing_part_cleaned['predicted_price'])
-        mse = PredictionUtils.calc_mean_squared_error(_temp_testing_part_cleaned, model_feature_name)
+        mse = PredictionUtils.calc_mean_squared_error(self.prediction_data.testing_part, model_feature_name)
         print("MSE for Model feature %r: %r: " % (model_feature_name, mse) )
         return mse
 
@@ -76,21 +67,15 @@ class PredictionModelManual:
         RMSE helps understand performance of prediction accuracy over MSE and MAE since
         it takes the square root of MSE so the units matching base unit of the target feature
         """
-        _temp_testing_part = self.prediction_data.testing_part
-
-        # Cleanse (Test Set)
-        _temp_testing_part_cleaned = PredictionUtils.clean_price(_temp_testing_part)
-        # print(_temp_testing_part_cleaned['predicted_price'])
-        rmse = PredictionUtils.calc_root_mean_squared_error(_temp_testing_part_cleaned, model_feature_name)
+        rmse = PredictionUtils.calc_root_mean_squared_error(self.prediction_data.testing_part, model_feature_name)
         print("RMSE for Model feature %r: %r: " % (model_feature_name, rmse) )
         return rmse
 
 def run():
     prediction_data = PredictionData()
     prediction_model_manual = PredictionModelManual(prediction_data)
-    training_models = ["accommodates", "bathrooms"]
-    for index, training_model_feature_name in enumerate(training_models):
-        prediction_model_manual.get_price_prediction(training_model_feature_name)
+    for index, training_model_feature_name in enumerate(PredictionConfig.TRAINING_COLUMNS):
+        prediction_model_manual.get_target_column_prediction(training_model_feature_name)
         mae = prediction_model_manual.get_mean_absolute_error(training_model_feature_name)      # MAE
         mse = prediction_model_manual.get_mean_squared_error(training_model_feature_name)       # MSE
         rmse = prediction_model_manual.get_root_mean_squared_error(training_model_feature_name) # RMSE

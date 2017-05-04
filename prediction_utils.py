@@ -2,6 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from scipy.spatial import distance
+from prediction_config import PredictionConfig
 
 class PredictionUtils(object):
     """ Utility functions """
@@ -74,24 +75,24 @@ class PredictionUtils(object):
 
     @staticmethod
     def get_nearest_neighbors(df, model_feature_name):
-        """ Filter range of nearest neighbors to select of recommended prices to charge per night for a rental listing based
+        """ Filter range of nearest neighbors to select of recommended prices (TARGET_COLUMN) to charge per night for a rental listing based
         on average price of other listings based on the model feature being trained
         (i.e. "accommodates" or "bathrooms").
         """
-        print("Predicted Price (Avg of Nearest): %.2f (with model feature %r Avg. : %r) " % (df.iloc[0:5]["price"].mean(), model_feature_name, df.iloc[0:5][model_feature_name].mean()) )
-        return df.iloc[0:5]["price"].mean()
+        print("Predicted Target Column (i.e. 'price') (Avg of Nearest): %.2f (with model feature %r Avg. : %r) " % (df.iloc[0:5][PredictionConfig.TARGET_COLUMN].mean(), model_feature_name, df.iloc[0:5][model_feature_name].mean()) )
+        return df.iloc[0:5][PredictionConfig.TARGET_COLUMN].mean()
 
     @staticmethod
     def calc_mean_absolute_error(df, model_feature_name):
         """ MAE = ( |(actual1 - predicted1)| + ... + |(actualn - predictedn)| ) / n """
-        column_name_predicted_price_feature = "predicted_price_" + model_feature_name
-        return df.apply(lambda x: np.absolute(x['price'] - x[column_name_predicted_price_feature]), axis=1).mean()
+        column_name_predicted_target = "predicted_" + PredictionConfig.TARGET_COLUMN + "_" + model_feature_name
+        return df.apply(lambda x: np.absolute(x[PredictionConfig.TARGET_COLUMN] - x[column_name_predicted_target]), axis=1).mean()
 
     @staticmethod
     def calc_mean_squared_error(df, model_feature_name):
         """ MSE = ( (actual1 - predicted1)^2 + ... + (actualn - predictedn)^2 ) / n """
-        column_name_predicted_price_feature = "predicted_price_" + model_feature_name
-        return df.apply(lambda x: (x['price'] - x[column_name_predicted_price_feature])**2, axis=1).mean()
+        column_name_predicted_target = "predicted_" + PredictionConfig.TARGET_COLUMN + "_" + model_feature_name
+        return df.apply(lambda x: (x[PredictionConfig.TARGET_COLUMN] - x[column_name_predicted_target])**2, axis=1).mean()
 
     @staticmethod
     def calc_root_mean_squared_error(df, model_feature_name):
@@ -101,5 +102,5 @@ class PredictionUtils(object):
     @staticmethod
     def plot(training_model_feature_name, testing_part):
         """ Plot """
-        testing_part.pivot_table(index=training_model_feature_name, values='price').plot()
+        testing_part.pivot_table(index=training_model_feature_name, values=PredictionConfig.TARGET_COLUMN).plot()
         plt.show()

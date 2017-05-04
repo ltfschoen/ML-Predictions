@@ -2,15 +2,11 @@ import pandas as pd
 from pathlib import Path
 import requests
 from prediction_utils import PredictionUtils
+from prediction_config import PredictionConfig
 
 class PredictionData:
     """ Load and Partition DataFrame into Training/Testing for Validation Process """
     def __init__(self):
-        self.MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
-        self.MAX_MINOR_INCOMPLETE = 0.02 # Percentage
-        self.TESTING_PROPORTION = 0.25 # Between 0 and 1. i.e. Testing Set 25% of rows. Training Set remaining 75% of rows
-        self.DATASET_LOCAL = "data/listings.csv"
-        self.DATASET_REMOTE = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
         self.df_listings = self.load_dataset(None) # Load data set DataFrame (i.e. `None` for all 3723 rows)
         self.training_part = None # Training part of df_listings
         self.testing_part = None # Testing part of df_listings
@@ -27,15 +23,15 @@ class PredictionData:
         otherwise load directly from remote endpoint (slower)
         """
         try:
-            dataset_file = Path(self.DATASET_LOCAL)
+            dataset_file = Path(PredictionConfig.DATASET_LOCAL)
             if dataset_file.is_file():
-                return pd.read_csv(self.DATASET_LOCAL, nrows=num_rows)
+                return pd.read_csv(PredictionConfig.DATASET_LOCAL, nrows=num_rows)
             else:
                 def exists(path):
                     r = requests.head(path)
                     return r.status_code == requests.codes.ok
-                if exists(self.DATASET_REMOTE):
-                    return pd.read_csv(self.DATASET_REMOTE, nrows=num_rows)
+                if exists(PredictionConfig.DATASET_REMOTE):
+                    return pd.read_csv(PredictionConfig.DATASET_REMOTE, nrows=num_rows)
             return None
         except Exception as e:
             print(e.errno)
@@ -81,7 +77,7 @@ class PredictionData:
             # print("%r: %r" % (name, values) )
             if name != "id":
                 col_percentage_missing = PredictionUtils.get_percentage_missing(self.df_listings[name])
-                if col_percentage_missing > self.MAX_MAJOR_INCOMPLETE:
+                if col_percentage_missing > PredictionConfig.MAX_MAJOR_INCOMPLETE:
                     print("Deleting Column %r, as contains too many null values: %r" % (name, col_percentage_missing) )
                     self.df_listings.drop(name, axis=1, inplace=True)
 
@@ -96,7 +92,7 @@ class PredictionData:
         # Iterate over columns in DataFrame
         for name, values in self.df_listings.iteritems():
             col_percentage_missing = PredictionUtils.get_percentage_missing(self.df_listings[name])
-            if col_percentage_missing < self.MAX_MINOR_INCOMPLETE:
+            if col_percentage_missing < PredictionConfig.MAX_MINOR_INCOMPLETE:
                 # print("Before null/NaN values?: %r" %(self.df_listings[name].isnull().any(axis=0)))
                 print("Retained Column: %r, but removed null and NaN valued rows comprising approx. percentage: %r" % (name, col_percentage_missing) )
                 self.df_listings.dropna(axis=0, how="any", subset=[name], inplace=True)
@@ -109,14 +105,14 @@ class PredictionData:
         in the df_listings DataFrame and assign to a new Dataframe containing just the
         normalised feature columns to normalized_listings.
 
-        Avoid normalizing the "price" column
+        Avoid normalizing the "price" TARGET_COLUMN
         """
 
         # Select only Columns containing type int, float64, floating. Exclude Columns with types Object (O) that includes strings
         df_listings_with_float_or_int_values = self.df_listings.select_dtypes(include=['int', 'float64', 'floating'], exclude=['O'])
 
         normalized_listings = PredictionUtils.normalise_dataframe(df_listings_with_float_or_int_values)
-        normalized_listings['price'] = self.df_listings['price']
+        normalized_listings[PredictionConfig.TARGET_COLUMN] = self.df_listings[PredictionConfig.TARGET_COLUMN]
 
         print("Normalised listings completed: %r" % (normalized_listings.head(3)) )
 
@@ -137,7 +133,7 @@ class PredictionData:
 
     def get_training_partitions(self, df):
         """ Split full dataset into Training and Testing sets (DataFrame partition size proportions) """
-        testing_proportion = self.TESTING_PROPORTION
+        testing_proportion = PredictionConfig.TESTING_PROPORTION
         training_len = int(len(df) - len(df) * testing_proportion) # 75%
         # Cater for test_proportion of 0 to prevent out of bounds exception when later increment
         if training_len >= len(df):

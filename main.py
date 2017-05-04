@@ -7,14 +7,13 @@ import prediction_model_manual
 import prediction_model_external
 
 def main():
-    prediction_config = PredictionConfig()
     logging_config = LoggingConfig()
     logging.info('Starting Prediction')
 
     try:
-        if prediction_config.ML_MODEL_KNN == "external":
+        if PredictionConfig.ML_MODEL_KNN == "external":
             prediction_model_external.run()
-        elif prediction_config.ML_MODEL_KNN == "manual":
+        elif PredictionConfig.ML_MODEL_KNN == "manual":
             prediction_model_manual.run()
         else:
             raise RuntimeError
