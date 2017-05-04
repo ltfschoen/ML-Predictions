@@ -13,9 +13,9 @@ class PredictionData:
         self.remove_columns_incorrect_format() # Remove columns with inadequate data (i.e. missing values, non-numeric, non-ordinal, unspecific)
         self.delete_columns_high_incomplete()
         self.retain_columns_low_incomplete_but_strip()
+        self.cleanse_columns()
         self.show_columns_incomplete() # Identify quantity of null values per column
         self.normalise_listings()
-        self.cleanse_columns()
         self.partition_listings()
 
     def load_dataset(self, num_rows):
@@ -58,12 +58,10 @@ class PredictionData:
         # Randomise (not Sorted)
         _temp_df_listings_randomised = PredictionUtils.randomise_dataframe_rows(self.df_listings)
 
-        # Cleanse (whole Set prior to split into Training and Testing parts)
-        _temp_df_listings_cleaned = PredictionUtils.clean_price(_temp_df_listings_randomised)
         # print("Length of DataFrame: %r" % (df_size))
-        # print("Prediction Data quantity of non-null data per column: %r" % (_temp_df_listings_cleaned.head(n=df_size).info(verbose=True, null_counts=True)))
+        # print("Prediction Data quantity of non-null data per column: %r" % (_temp_df_listings_randomised.head(n=df_size).info(verbose=True, null_counts=True)))
 
-        df_listings_with_any_null_values = _temp_df_listings_cleaned[_temp_df_listings_cleaned.columns[_temp_df_listings_cleaned.isnull().any()].tolist()]
+        df_listings_with_any_null_values = _temp_df_listings_randomised[_temp_df_listings_randomised.columns[_temp_df_listings_randomised.isnull().any()].tolist()]
 
         print("Prediction Data proportion of null data per column for only columns with any null or NaN values: %r" % (PredictionUtils.get_percentage_missing(df_listings_with_any_null_values)))
 
@@ -119,8 +117,9 @@ class PredictionData:
         self.df_listings = normalized_listings
 
     def cleanse_columns(self):
-        """ Cleanse 'price' column """
-        self.df_listings = PredictionUtils.clean_price(self.df_listings)
+        """ Cleanse all identified price columns """
+        for index, price_column in enumerate(PredictionConfig.CLEANSE_COLUMNS_PRICE):
+            self.df_listings[price_column] = PredictionUtils.clean_price(self.df_listings[price_column])
 
     def partition_listings(self):
         """ Split DataFrame into 2x partitions for the Train/Test Validation Process """

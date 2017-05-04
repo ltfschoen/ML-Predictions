@@ -63,15 +63,14 @@ class PredictionUtils(object):
         return df.sort_values(feature)
 
     @staticmethod
-    def clean_price(df):
+    def clean_price(df_price_column):
         """ Clean "price" column removing `$` and `,` chars. Convert column from text to float. """
         def replace_bad_chars(row):
             row = str(row).replace(",", "")
             row = str(row).replace("$", "")
             row = float(row) # .astype('float')
             return row
-        df["price"] = df["price"].apply(lambda row: replace_bad_chars(row))
-        return df
+        return df_price_column.apply(lambda row: replace_bad_chars(row))
 
     @staticmethod
     def get_nearest_neighbors(df, model_feature_name):
