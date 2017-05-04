@@ -63,7 +63,7 @@ average value in the "price" column is $300)
 
 ### Result Statistics and Screenshots
 
-* **Univariate (one column) using manual KNN model**
+* **Univariate (one column) using manual KNN model, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
         * Model Trained #1 "accommodates" column:
             * MAE: 58.77 (or ~56.29 without randomising)
@@ -82,7 +82,7 @@ average value in the "price" column is $300)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part1/screenshot_bedrooms_feature_univariate.png)
 
-* **Univariate (one column) using manual KNN model with NaNs removed**
+* **Univariate (one column) using manual KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
         * Model Trained #1 "accommodates" column:
             * MAE: 53.46
@@ -105,7 +105,7 @@ average value in the "price" column is $300)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part2/screenshot_bedrooms_feature_univariate_post_strip_and_normalisation.png)
 
-* **Multivariate (two columns) using Scikit-Learn KNN model with NaNs removed**
+* **Multivariate (two columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
         * Model Trained with two features (both "accommodates" and "bedrooms" columns):
             * MAE (Two features): 33.80
@@ -124,7 +124,7 @@ average value in the "price" column is $300)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bedrooms_feature_multivariate_post_strip_and_normalisation_fix.png)
 
-* **Multivariate (four columns) using Scikit-Learn KNN model with NaNs removed**
+* **Multivariate (four columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
         * Model Trained with Four features ("accommodates", "bedrooms", "bathrooms", and "number_of_reviews" columns):
             * MAE (Four features): 30.599999999999994
@@ -139,7 +139,7 @@ average value in the "price" column is $300)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_number_of_reviews_feature_multivariate_post_strip_and_normalisation.png)
 
-* **Multivariate (ALL columns) using Scikit-Learn KNN model with NaNs removed**
+* **Multivariate (ALL columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
         * Model Trained with ALL features (excluding those containing "id", "_id", or "-id":
             * 'host_total_listings_count', 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',

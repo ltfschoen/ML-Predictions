@@ -23,11 +23,14 @@ class PredictionConfig(object):
     #   5) Automatically cleanse the dataset by removing any columns containing
     #      a string or substring indicative of incorrect data (i.e. id or _id) as defined by
     #      EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT and EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT
-    #   6) Automatically splitting the dataset it into two partitions (Training set is
+    #   6) Automatically normalise the columns containing int, float64, and floating type values
+    #      using mass transformation across the DataFrame to avoid experiencing the Outsized Effect
+    #      when applying the Euclidean Distance equation to largely differing values.
+    #   7) Automatically splitting the dataset it into two partitions (Training set is
     #      used to make predictions whilst the Testing set is used to predict values for)
     #      for the Train/Test Validation Process, where the Testing percentage proportion
     #      is set by TESTING_PROPORTION.
-    #   7) Automatically perform prediction and output list of predictions by providing the TRAINING_COLUMNS (all columns
+    #   8) Automatically perform prediction and output list of predictions by providing the TRAINING_COLUMNS (all columns
     #      used if this list is empty) and the TARGET_COLUMN's values to the chosen Machine Learning Model
     #      ML_MODEL_KNN (with a "manual" value to use the model built manually or optionally
     #      with a value "external" to use the much faster Scikit-Learn Machine Learning library).
@@ -36,8 +39,11 @@ class PredictionConfig(object):
     #      The ML Model uses Similarity Metrics (by means of the K-Nearest-Neighbors Machine Learning
     #      algorithm) to iteratively compare columns (features) of two rows (observations) to
     #      calculate (i.e. using Euclidean Distance equation) and return the distance (difference).
-    #   8) Manually use Error Metrics (i.e. Median Average Error, Mean Squared Error, and
-    #      Root Mean Squared Error equations) to check the quality of the predictions
+    #   9) Manually use Error Metrics (i.e. Median Average Error, Mean Squared Error, and
+    #      Root Mean Squared Error equations) to check the quality of the predictions.
+    #      Increasing the quantity of relevant TRAINING_COLUMNS (attributes) improves accuracy and lowers the error of
+    #      the model since it allows the model to better identify observations (rows) from the Training set that are
+    #      most similar to the Test set.
 
     ML_MODEL_KNN = "external" # manual or external
     MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
