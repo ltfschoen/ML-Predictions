@@ -31,10 +31,12 @@ def run():
     #   - y as Target values (i.e. DataFrame's Target Column)
 
     # X for `fit` function is matrix-like object, containing
-    # just 2 columns of interest from Training set (to use to make Predictions).
+    # columns of interest from Training set (to use to make Predictions).
+
+    print("Multiple Training features include: %r" % (prediction_data.get_training_columns() ) )
 
     _temp_training_part = prediction_model_external.prediction_data.training_part
-    X = _temp_training_part[PredictionConfig.TRAINING_COLUMNS]
+    X = _temp_training_part[prediction_data.get_training_columns()]
     print(X)
 
     # y for `fit` function is list-like object, containing
@@ -49,26 +51,26 @@ def run():
     prediction_model_external.knn.fit(X, y)
 
     # Scikit-Learn's `predict` function called to make Predictions on
-    # the 2 Columns of test_df that returns a NumPy array of Predicted "price" TARGET_COLUMN values
+    # Columns of test_df that returns a NumPy array of Predicted "price" TARGET_COLUMN values
     _temp_testing_part = prediction_model_external.prediction_data.training_part
-    predictions = prediction_model_external.knn.predict(_temp_testing_part[PredictionConfig.TRAINING_COLUMNS])
+    predictions = prediction_model_external.knn.predict(_temp_testing_part[prediction_data.get_training_columns()])
 
     print("Predictions using Scikit-Learn: %r" % (predictions) )
 
     # Calculate MAE float values for each individual Target, where least loss "best" values are 0
-    two_features_mae = median_absolute_error(_temp_testing_part[PredictionConfig.TARGET_COLUMN], predictions)
+    multiple_features_mae = median_absolute_error(_temp_testing_part[PredictionConfig.TARGET_COLUMN], predictions)
 
     # Calculate MSE float values for each individual Target, where least loss "best" values are 0
-    two_features_mse = mean_squared_error(_temp_testing_part[PredictionConfig.TARGET_COLUMN], predictions, multioutput='raw_values')
+    multiple_features_mse = mean_squared_error(_temp_testing_part[PredictionConfig.TARGET_COLUMN], predictions, multioutput='raw_values')
 
     # Calculate RMSE
-    two_features_rmse = math.sqrt(two_features_mse)
+    multiple_features_rmse = math.sqrt(multiple_features_mse)
 
-    print("MAE (Two features): %r" % (two_features_mae) )
-    print("MSE (Two features): %r" % (two_features_mse[0]) )
-    print("RMSE (Two features): %r" % (two_features_rmse) )
+    print("MAE (Multiple features): %r" % (multiple_features_mae) )
+    print("MSE (Multiple features): %r" % (multiple_features_mse[0]) )
+    print("RMSE (Multiple features): %r" % (multiple_features_rmse) )
 
-    two_features_mae_rmse_ratio_prefix = two_features_mae / two_features_rmse
-    print("MAE to RMSE Ratio (Two features): %.2f:1" % (two_features_mae_rmse_ratio_prefix) )
-    for index, training_model_feature_name in enumerate(PredictionConfig.TRAINING_COLUMNS):
+    multiple_features_mae_rmse_ratio_prefix = multiple_features_mae / multiple_features_rmse
+    print("MAE to RMSE Ratio (Multiple features): %.2f:1" % (multiple_features_mae_rmse_ratio_prefix) )
+    for index, training_model_feature_name in enumerate(prediction_data.get_training_columns()):
         PredictionUtils.plot(training_model_feature_name, _temp_testing_part)

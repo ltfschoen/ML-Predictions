@@ -74,7 +74,7 @@ class PredictionModelManual:
 def run():
     prediction_data = PredictionData()
     prediction_model_manual = PredictionModelManual(prediction_data)
-    for index, training_model_feature_name in enumerate(PredictionConfig.TRAINING_COLUMNS):
+    for index, training_model_feature_name in enumerate(prediction_data.get_training_columns()):
         prediction_model_manual.get_target_column_prediction(training_model_feature_name)
         mae = prediction_model_manual.get_mean_absolute_error(training_model_feature_name)      # MAE
         mse = prediction_model_manual.get_mean_squared_error(training_model_feature_name)       # MSE

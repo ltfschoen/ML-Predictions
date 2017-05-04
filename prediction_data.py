@@ -138,3 +138,28 @@ class PredictionData:
         if training_len >= len(df):
             training_len -= len(df) - 1
         return training_len
+
+    def get_training_columns(self):
+        """ Return array of Training Columns.
+
+        When TRAINING_COLUMNS array is empty it means return all columns except the TARGET_COLUMN
+        """
+        if not PredictionConfig.TRAINING_COLUMNS:
+            features = self.training_part.columns.tolist()
+
+            # Remove TARGET_COLUMN
+            features.remove(PredictionConfig.TARGET_COLUMN)
+
+            # Remove columns containing Excluded full text
+            for index, column_name in enumerate(PredictionConfig.EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT):
+                features.remove(column_name)
+
+            # Retain columns that do not contain Excluded partial text
+            features_to_retain = []
+            for index, column_partial_name in enumerate(PredictionConfig.EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT):
+                for index, column_name in enumerate(features):
+                    if column_partial_name not in column_name:
+                        features_to_retain.append(column_name)
+            return features_to_retain
+        else:
+            return PredictionConfig.TRAINING_COLUMNS

@@ -90,6 +90,16 @@ Machine Learning - Predictions
         * RMSE (Four features): 104.20772367994712
         * MAE to RMSE Ratio (Four features): 0.29:1
 
+* Comparison of Results (of "price" vs "predicted_price") **AFTER** [1] and [2] occurred to reduce error:
+    * Model Trained with ALL features (excluding those containing "id", "_id", or "-id":
+        * 'host_total_listings_count', 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
+        'minimum_nights', 'maximum_nights', 'availability_30', 'availability_60', 'availability_90',
+        'availability_365', 'number_of_reviews', 'calculated_host_listings_count
+        * MAE (Multiple features): 24.400000000000006
+        * MSE (Multiple features): 8049.1010798816569
+        * RMSE (Multiple features): 89.71678259880733
+        * MAE to RMSE Ratio (Multiple features): 0.27:1
+
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
 * Install dependencies:
