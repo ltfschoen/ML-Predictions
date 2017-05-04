@@ -64,18 +64,31 @@ Machine Learning - Predictions
             * Note: Expect model to be off by $124 on average for predicted price values
         * MAE to RMSE Ratio: 0.47:1
 
-* Screenshots (**AFTER** [1] and [2] occurred):
+* Screenshots Multivariate Two Columns (**AFTER** [1] and [2] occurred):
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_accommodates_feature_multivariate_post_strip_and_normalisation.png)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bedrooms_feature_multivariate_post_strip_and_normalisation_fix.png)
 
 * Comparison of Results (of "price" vs "predicted_price"), **AFTER** [1] and [2] occurred to reduce error:
-    * Model Trained with two features (both "accommodates" and "bathrooms" columns):
+    * Model Trained with two features (both "accommodates" and "bedrooms" columns):
         * MAE (Two features): 33.80
         * MSE (Two features): 12621.33
         * RMSE (Two features): 112.34
         * MAE to RMSE Ratio (Two features): 0.30:1
+
+* Screenshots Multivariate Four Columns (**AFTER** [1] and [2]). Note: First two plots shown above
+
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bathrooms_feature_multivariate_post_strip_and_normalisation.png)
+
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_number_of_reviews_feature_multivariate_post_strip_and_normalisation.png)
+
+* Comparison of Results (of "price" vs "predicted_price"), **AFTER** [1] and [2] occurred to reduce error:
+    * Model Trained with Four features ("accommodates", "bedrooms", "bathrooms", and "number_of_reviews" columns):
+        * MAE (Four features): 30.599999999999994
+        * MSE (Four features): 10859.249674556213
+        * RMSE (Four features): 104.20772367994712
+        * MAE to RMSE Ratio (Four features): 0.29:1
 
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
