@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 from scipy.spatial import distance
 
 class PredictionUtils(object):
@@ -96,3 +97,9 @@ class PredictionUtils(object):
     def calc_root_mean_squared_error(df, model_feature_name):
         """ RMSE = sqrt(MSE) """
         return np.sqrt( PredictionUtils.calc_mean_squared_error(df, model_feature_name) )
+
+    @staticmethod
+    def plot(training_model_feature_name, testing_part):
+        """ Plot """
+        testing_part.pivot_table(index=training_model_feature_name, values='price').plot()
+        plt.show()

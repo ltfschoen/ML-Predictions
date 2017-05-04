@@ -6,7 +6,9 @@ from prediction_utils import PredictionUtils
 class PredictionData:
     """ Load and Partition DataFrame into Training/Testing for Validation Process """
     def __init__(self):
-        self.MAX_INCOMPLETE = 0.2 # Percentage
+        self.MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
+        self.MAX_MINOR_INCOMPLETE = 0.02 # Percentage
+        self.TESTING_PROPORTION = 0.25 # Between 0 and 1. i.e. Testing Set 25% of rows. Training Set remaining 75% of rows
         self.DATASET_LOCAL = "data/listings.csv"
         self.DATASET_REMOTE = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
         self.df_listings = self.load_dataset(None) # Load data set DataFrame (i.e. `None` for all 3723 rows)
@@ -17,6 +19,7 @@ class PredictionData:
         self.retain_columns_low_incomplete_but_strip()
         self.show_columns_incomplete() # Identify quantity of null values per column
         self.normalise_listings()
+        self.cleanse_columns()
         self.partition_listings()
 
     def load_dataset(self, num_rows):
@@ -54,11 +57,10 @@ class PredictionData:
         Show quantity of non-null values for each column for inspection.
         Determine columns to remove from the DataFrame (i.e. few non-null)
         """
-        _temp_df_listings = self.df_listings
-        df_size = len(_temp_df_listings)
+        df_size = len(self.df_listings)
 
         # Randomise (not Sorted)
-        _temp_df_listings_randomised = PredictionUtils.randomise_dataframe_rows(_temp_df_listings)
+        _temp_df_listings_randomised = PredictionUtils.randomise_dataframe_rows(self.df_listings)
 
         # Cleanse (whole Set prior to split into Training and Testing parts)
         _temp_df_listings_cleaned = PredictionUtils.clean_price(_temp_df_listings_randomised)
@@ -70,19 +72,18 @@ class PredictionData:
         print("Prediction Data proportion of null data per column for only columns with any null or NaN values: %r" % (PredictionUtils.get_percentage_missing(df_listings_with_any_null_values)))
 
     def delete_columns_high_incomplete(self):
-        """ Delete Columns where percentage of null or NaN values exceeds MAX_INCOMPLETE value
+        """ Delete Columns where percentage of null or NaN values exceeds MAX_MAJOR_INCOMPLETE value
         These columns may be useless since too many observations missing
         """
-        _temp_df_listings = self.df_listings
 
         # Iterate over columns in DataFrame
-        for name, values in _temp_df_listings.iteritems():
+        for name, values in self.df_listings.iteritems():
             # print("%r: %r" % (name, values) )
             if name != "id":
-                if PredictionUtils.get_percentage_missing(_temp_df_listings[name]) > self.MAX_INCOMPLETE:
-                    print("Deleting Column containing too many null values: %r" % (name) )
-                    _temp_df_listings.drop(name, axis=1, inplace=True)
-        self.df_listings = _temp_df_listings
+                col_percentage_missing = PredictionUtils.get_percentage_missing(self.df_listings[name])
+                if col_percentage_missing > self.MAX_MAJOR_INCOMPLETE:
+                    print("Deleting Column %r, as contains too many null values: %r" % (name, col_percentage_missing) )
+                    self.df_listings.drop(name, axis=1, inplace=True)
 
     def retain_columns_low_incomplete_but_strip(self):
         """ Retain Columns where percentage of null or NaN values comprise LESS THAN 1% (0.01) of its rows
@@ -91,14 +92,15 @@ class PredictionData:
         each rows that is removed from a Column represents an Observation, which is shared across the same
         row of all other Columns in the dataset, so that same row is removed across ALL the Columns
         """
-        _temp_df_listings = self.df_listings
 
         # Iterate over columns in DataFrame
-        for name, values in _temp_df_listings.iteritems():
-            if PredictionUtils.get_percentage_missing(_temp_df_listings[name]) < 0.01:
-                print("Retained Column: %r, but removed its null and NaN valued rows" % (name) )
-                _temp_df_listings.dropna(axis=0, how="any", subset=[name], inplace=True)
-        self.df_listings = _temp_df_listings
+        for name, values in self.df_listings.iteritems():
+            col_percentage_missing = PredictionUtils.get_percentage_missing(self.df_listings[name])
+            if col_percentage_missing < self.MAX_MINOR_INCOMPLETE:
+                # print("Before null/NaN values?: %r" %(self.df_listings[name].isnull().any(axis=0)))
+                print("Retained Column: %r, but removed null and NaN valued rows comprising approx. percentage: %r" % (name, col_percentage_missing) )
+                self.df_listings.dropna(axis=0, how="any", subset=[name], inplace=True)
+                # print("After null/NaN values?: %r" %(self.df_listings[name].isnull().any(axis=0)))
 
     def normalise_listings(self):
         """ Normalise column values where the column types are normalisable, being of either type int, float64, or floating
@@ -109,17 +111,20 @@ class PredictionData:
 
         Avoid normalizing the "price" column
         """
-        _temp_df_listings = self.df_listings
 
         # Select only Columns containing type int, float64, floating. Exclude Columns with types Object (O) that includes strings
-        df_listings_with_float_or_int_values = _temp_df_listings.select_dtypes(include=['int', 'float64', 'floating'], exclude=['O'])
+        df_listings_with_float_or_int_values = self.df_listings.select_dtypes(include=['int', 'float64', 'floating'], exclude=['O'])
 
         normalized_listings = PredictionUtils.normalise_dataframe(df_listings_with_float_or_int_values)
-        normalized_listings['price'] = _temp_df_listings['price']
+        normalized_listings['price'] = self.df_listings['price']
 
         print("Normalised listings completed: %r" % (normalized_listings.head(3)) )
 
         self.df_listings = normalized_listings
+
+    def cleanse_columns(self):
+        """ Cleanse 'price' column """
+        self.df_listings = PredictionUtils.clean_price(self.df_listings)
 
     def partition_listings(self):
         """ Split DataFrame into 2x partitions for the Train/Test Validation Process """
@@ -131,10 +136,8 @@ class PredictionData:
             print(e.errno)
 
     def get_training_partitions(self, df):
-        """ Split DataFrame partition size proportions:
-            - Training Set - 75% of rows
-            - Test - Set 25% of rows"""
-        testing_proportion = 0.25 # Between 0 and 1
+        """ Split full dataset into Training and Testing sets (DataFrame partition size proportions) """
+        testing_proportion = self.TESTING_PROPORTION
         training_len = int(len(df) - len(df) * testing_proportion) # 75%
         # Cater for test_proportion of 0 to prevent out of bounds exception when later increment
         if training_len >= len(df):

@@ -14,9 +14,12 @@ Machine Learning - Predictions
     * Removal of columns with >20% of its rows being NaN
     * Columns with <1% of NaNs having the shared row/observation were removed
 
-* Screenshots (**BEFORE** [1] occurred):
+* [2]:
+    * Train using two features/columns (multivariate) instead of just one (univariate) with Scikit-Learn library instead of manually computation
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part1/screenshot_accommodations_feature_univariate.png)
+* Screenshots (**BEFORE** [1] and [2] occurred):
+
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part1/screenshot_accommodates_feature_univariate.png)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part1/screenshot_bedrooms_feature_univariate.png)
 
@@ -44,7 +47,7 @@ Machine Learning - Predictions
 
 * Screenshots (**AFTER** [1] occurred):
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part2/screenshot_accommodations_feature_univariate_post_strip_and_normalisation.png)
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part2/screenshot_accommodates_feature_univariate_post_strip_and_normalisation.png)
 
 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part2/screenshot_bedrooms_feature_univariate_post_strip_and_normalisation.png)
 
@@ -61,17 +64,45 @@ Machine Learning - Predictions
             * Note: Expect model to be off by $124 on average for predicted price values
         * MAE to RMSE Ratio: 0.47:1
 
+* Screenshots (**AFTER** [1] and [2] occurred):
+
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_accommodates_feature_multivariate_post_strip_and_normalisation.png)
+
+![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bedrooms_feature_multivariate_post_strip_and_normalisation_fix.png)
+
+* Comparison of Results (of "price" vs "predicted_price"), **AFTER** [1] and [2] occurred to reduce error:
+    * Model Trained with two features (both "accommodates" and "bathrooms" columns):
+        * MAE (Two features): 33.80
+        * MSE (Two features): 12621.33
+        * RMSE (Two features): 112.34
+        * MAE to RMSE Ratio (Two features): 0.30:1
+
 ## Chapter 1 - Initial setup <a id="chapter-1"></a>
 
 * Install dependencies:
     ```
-    pip3 install pandas Path matplotlib requests numpy math
+    pip freeze > requirements.txt
+    pip install -r requirements.txt
     ```
 
 * Setup image rendering [backend](http://matplotlib.org/faq/usage_faq.html#what-is-a-backend) of matplotlib on macOS:
     ```
     touch ~/.matplotlib/matplotlibrc; echo 'backend: TkAgg' >> ~/.matplotlib/matplotlibrc`
     ```
+
+* Configure version to run in `main.py`:
+    * Manual Machine Learning algorithm
+    * Scikit-Learn Machine Learning algorithm
+        * Important Note: If NaN values found prevent processing, check the percentage of
+        NaN rows in columns being trained and increase value of MAX_MINOR_INCOMPLETE above that percentage
+
+* Run
+    ```
+    python3 main.py
+    ```
+
+* Note: Change from `np.random.seed(1)` to `np.random.seed(0)` to generate different instead of
+same random permutations each time its run.
 
 ## Chapter 2 - Known Bugs <a id="chapter-2"></a>
 
@@ -88,9 +119,3 @@ Machine Learning - Predictions
 * Given you have a rental listing that accommodates up to 3 rooms.
 And given a data set that contains features (column attributes) of other rental listings.
 Find the optimum rental listing price using similarity metrics
-    ```
-    python3 prediction.py
-    ```
-
-* Note: Change from `np.random.seed(1)` to `np.random.seed(0)` to generate different instead of
-same random permutations each time its run.

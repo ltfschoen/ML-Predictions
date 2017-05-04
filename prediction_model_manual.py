@@ -1,9 +1,8 @@
-import matplotlib.pyplot as plt
 from prediction_data import PredictionData
 from prediction_utils import PredictionUtils
 
-class Prediction:
-    """ Machine Learning Model - function that outputs prediction based on input to the model """
+class PredictionModelManual:
+    """ Manual Machine Learning Model - function that outputs prediction based on input to the model """
     def __init__(self, prediction_data):
         self.prediction_data = prediction_data
 
@@ -40,12 +39,8 @@ class Prediction:
         _temp_training_part_sorted = PredictionUtils.sort_dataframe_by_feature(_temp_training_part_randomised, column_name_distance_feature)
         # print(_temp_training_part_sorted.iloc[0:10]["price"])
 
-        # Cleanse (Training Set)
-        _temp_training_part_cleaned = PredictionUtils.clean_price(_temp_training_part_sorted)
-        # print(_temp_training_part_cleaned)
-
         # Filter
-        predicted_price = PredictionUtils.get_nearest_neighbors(_temp_training_part_cleaned, model_feature_name)
+        predicted_price = PredictionUtils.get_nearest_neighbors(_temp_training_part_sorted, model_feature_name)
 
         return predicted_price
 
@@ -90,23 +85,15 @@ class Prediction:
         print("RMSE for Model feature %r: %r: " % (model_feature_name, rmse) )
         return rmse
 
-    def plot(self, model_feature_name):
-        """ Plot """
-        _temp_testing_part_cleaned = PredictionUtils.clean_price(self.prediction_data.testing_part)
-        _temp_testing_part_cleaned.pivot_table(index=model_feature_name, values='price').plot()
-        plt.show()
-
 def run():
     prediction_data = PredictionData()
-    prediction = Prediction(prediction_data)
-    models = ["accommodates", "bathrooms"]
-    for index, model_feature_name in enumerate(models):
-        prediction.get_price_prediction(model_feature_name)
-        mae = prediction.get_mean_absolute_error(model_feature_name)      # MAE
-        mse = prediction.get_mean_squared_error(model_feature_name)       # MSE
-        rmse = prediction.get_root_mean_squared_error(model_feature_name) # RMSE
+    prediction_model_manual = PredictionModelManual(prediction_data)
+    training_models = ["accommodates", "bathrooms"]
+    for index, training_model_feature_name in enumerate(training_models):
+        prediction_model_manual.get_price_prediction(training_model_feature_name)
+        mae = prediction_model_manual.get_mean_absolute_error(training_model_feature_name)      # MAE
+        mse = prediction_model_manual.get_mean_squared_error(training_model_feature_name)       # MSE
+        rmse = prediction_model_manual.get_root_mean_squared_error(training_model_feature_name) # RMSE
         mae_rmse_ratio_prefix = mae / rmse
         print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
-        prediction.plot(model_feature_name)
-
-run()
+        PredictionUtils.plot(training_model_feature_name, prediction_data.testing_part)
