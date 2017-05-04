@@ -13,6 +13,9 @@ class PredictionConfig(object):
     #      values (observations) that are NaN (null) is > MAX_MAJOR_INCOMPLETE
     #   3) Automatically retain columns whose proportion of values that are NaN
     #      is < MAX_MINOR_INCOMPLETE, but remove all rows with NaN value
+    #      Important Note: If NaN values are found to cause errors and prevent processing,
+    #      check the percentage of NaN rows in the columns chosen to being trained and increase the
+    #      value of MAX_MINOR_INCOMPLETE above that percentage
     #   4) Manually cleanse relevant columns by converting from string to float and removing
     #      bad characters so they may be processed as inputs by the ML Model (i.e. $).
     #      Since there may be a list of columns with the same bad characters (i.e. price)
@@ -24,7 +27,7 @@ class PredictionConfig(object):
     #      used to make predictions whilst the Testing set is used to predict values for)
     #      for the Train/Test Validation Process, where the Testing percentage proportion
     #      is set by TESTING_PROPORTION.
-    #   7) Automatically perform prediction by providing the TRAINING_COLUMNS (all columns
+    #   7) Automatically perform prediction and output list of predictions by providing the TRAINING_COLUMNS (all columns
     #      used if this list is empty) and the TARGET_COLUMN's values to the chosen Machine Learning Model
     #      ML_MODEL_KNN (with a "manual" value to use the model built manually or optionally
     #      with a value "external" to use the much faster Scikit-Learn Machine Learning library).
