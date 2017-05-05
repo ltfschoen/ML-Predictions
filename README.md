@@ -123,13 +123,20 @@ average value in the "price" column is $300)
             * RMSE (Multiple features): 107.84
             * MAE to RMSE Ratio (Multiple features): 0.28:1
 
-* **Hyperparameter `k` Results**
+* **Hyperparameter Optimisation `k` Results**
     * Hyperparameter Range: 1 to 20
-    * Features: ["accommodates", "bedrooms", "bathrooms", and "number_of_reviews"]
+        * Features: ["accommodates", "bedrooms", "bathrooms", and "number_of_reviews"]
 
-    * Screenshots:
+            * Screenshots:
 
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/hyperparameter_1_to_20_four_features.png)
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/hyperparameter_1_to_20_four_features.png)
+
+        * Features: All possible combinations of the features with no repeat combinations were compared and plotted (see below):
+            * Best feature combo is 'bedrooms__bathrooms__number_of_reviews' having lowest MSE of 10606.68 using 'k' nearest neighbors of 6 (optimum)
+
+            * Screenshots:
+
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/hyperparameter_vs_feature_combos.png)
 
 ## Chapter 3 - Known Bugs <a id="chapter-3"></a>
 

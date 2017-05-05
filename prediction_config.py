@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 
 class PredictionConfig(object):
     """ Machine Learning configuration """
@@ -33,7 +33,8 @@ class PredictionConfig(object):
     #      for the Train/Test Validation Process, where the Testing percentage proportion
     #      is set by TESTING_PROPORTION.
     #   8) Manually toggle HYPERPARAMETER_OPTIMISATION to True to try different values of 'k' nearest
-    #      neighbors to find optimum with associated range of 'k' values HYPERPARAMETER_RANGE, or else set to
+    #      neighbors to see comparison plot and find optimum combination of Training set features resulting in lowest MSE
+    #      by setting associated range of 'k' values HYPERPARAMETER_RANGE, or else set to
     #      False to and defined a fixed 'k' value with HYPERPARAMETER_FIXED
     #   9) Automatically perform prediction and output list of predictions by providing the TRAINING_COLUMNS (all columns
     #      used if this list is empty) and the TARGET_COLUMN's values to the chosen Machine Learning Model
@@ -52,7 +53,8 @@ class PredictionConfig(object):
 
     ML_MODEL_KNN = "external" # manual or external
     HYPERPARAMETER_OPTIMISATION = True # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
-    HYPERPARAMETER_RANGE = numpy.arange(1, 21, 1) # 1 to 20
+    HYPERPARAMETER_RANGE = np.arange(1, 21, 1) # 1 to 20
+    MIN_FEATURES_COMBO_LEN = 3
     HYPERPARAMETER_FIXED = 5 # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
     MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
     MAX_MINOR_INCOMPLETE = 0.02 # Percentage

@@ -1,8 +1,9 @@
 import numpy as np
 import math
+import itertools
 import matplotlib.pyplot as plt
-from matplotlib import cm
-from math import sin
+from matplotlib import rc
+rc('mathtext', default='regular')
 from scipy.spatial import distance
 from prediction_config import PredictionConfig
 
@@ -101,6 +102,28 @@ class PredictionUtils(object):
         return np.sqrt( PredictionUtils.calc_mean_squared_error(df, model_feature_name) )
 
     @staticmethod
+    def generate_combinations_of_features(training_column_names):
+        """ Generate all combinations of features without repetition
+
+        Reduce amount of combinations by applying minimum length of MIN_FEATURES_COMBO_LEN
+        """
+        features = training_column_names
+        loop_count = len(features)
+        combos_above_min_len = list()
+
+        def flatten_combo(combos):
+            return sum(combos, [])
+
+        if PredictionConfig.MIN_FEATURES_COMBO_LEN < loop_count:
+            i = PredictionConfig.MIN_FEATURES_COMBO_LEN
+            while i >= 1 and i <= loop_count:
+                combos_above_min_len.append(list(itertools.combinations(features, i)))
+                i += 1
+            return flatten_combo(combos_above_min_len)
+        print("Error: Miniumum length of any features combos cannot exceed length of all features")
+        return []
+
+    @staticmethod
     def plot(training_model_feature_name, testing_part):
         """ Plot """
         testing_part.pivot_table(index=training_model_feature_name, values=PredictionConfig.TARGET_COLUMN).plot()
@@ -130,4 +153,21 @@ class PredictionUtils(object):
         ax.axis("tight")
         fig.colorbar(cs)
 
+        plt.show()
+
+    @staticmethod
+    def plot_hyperparams(feature_combos_lowest_mse_for_hyperparams):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        for feature_key, dict_value in feature_combos_lowest_mse_for_hyperparams.items():
+            k = dict_value["k"]
+            min_mse = dict_value["min_mse"]
+            ax.plot(k, min_mse, '+', label = feature_key, mew=10, ms=15)
+
+        ax.legend(loc=0)
+        ax.grid()
+        ax.set_xlabel("Hyperparam k")
+        ax.set_ylabel(r"MSE of Features Combination")
+        ax.set_ylim(-20, 20000)
         plt.show()

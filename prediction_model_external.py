@@ -67,23 +67,56 @@ class PredictionModelExternal:
 
     def process_hyperparameter_optimisation(self):
         """ Hyperparameter 'k' Optimisation """
+
         hyperparam_range = PredictionConfig.HYPERPARAMETER_RANGE
-        mse_values = []
 
         _temp_training_part = self.prediction_data.training_part
         _temp_testing_part = self.prediction_data.testing_part
 
-        for index, qty_neighbors in enumerate(hyperparam_range):
-            knn = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
-            X = _temp_training_part[self.training_columns]
-            y = _temp_training_part[self.target_column]
-            knn.fit(X, y)
-            predictions = knn.predict(_temp_testing_part[self.training_columns])
+        training_column_names = self.training_columns
+        feature_combos = PredictionUtils.generate_combinations_of_features(training_column_names)
 
-            mse = mean_squared_error(_temp_testing_part[self.target_column], predictions, multioutput='raw_values')
-            mse_values.append(mse)
+        feature_combos_mse_for_hyperparams = dict()
 
-        PredictionUtils.scatter_plot_hyperparams(hyperparam_range, mse_values)
+        for idx1, feature_combo in enumerate(feature_combos):
+            feature_combo_key = '__'.join(feature_combo)
+            feature_combos_mse_for_hyperparams[feature_combo_key] = list()
+            for idx2, qty_neighbors in enumerate(hyperparam_range):
+                knn = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
+                X = _temp_training_part[list(feature_combo)]
+                y = _temp_training_part[self.target_column]
+                knn.fit(X, y)
+                predictions = knn.predict(_temp_testing_part[list(feature_combo)])
+                mse = mean_squared_error(_temp_testing_part[self.target_column], predictions, multioutput='raw_values')
+                feature_combos_mse_for_hyperparams[feature_combo_key].append(mse[0])
+
+        feature_combos_lowest_mse_for_hyperparams = dict()
+
+        for key, value in feature_combos_mse_for_hyperparams.items():
+            # Initiate element with lowest mse as first element unless find a lower element at subsequent index
+            feature_combos_lowest_mse_for_hyperparams[key] = dict()
+            feature_combos_lowest_mse_for_hyperparams[key]["min_mse"] = feature_combos_mse_for_hyperparams[key][0]
+            for k, mse in enumerate(feature_combos_mse_for_hyperparams[key]):
+                if mse < feature_combos_lowest_mse_for_hyperparams[key]["min_mse"]:
+                    feature_combos_lowest_mse_for_hyperparams[key]["min_mse"] = mse
+                    feature_combos_lowest_mse_for_hyperparams[key]["k"] = k + 1
+
+        # Find best combination of hyperparameter k and features
+
+        # Initiate element with lowest mse as first element unless find a lower element at subsequent index
+        name_of_first_key = list(feature_combos_lowest_mse_for_hyperparams.keys())[0]
+        feature_combo_name_with_lowest_mse = name_of_first_key
+        lowest_mse = feature_combos_lowest_mse_for_hyperparams[name_of_first_key]["min_mse"]
+        k_value_of_lowest_mse = feature_combos_lowest_mse_for_hyperparams[name_of_first_key]["k"]
+
+        for feature_key, dict_value in feature_combos_lowest_mse_for_hyperparams.items():
+            if dict_value["min_mse"] < lowest_mse:
+                feature_combo_name_with_lowest_mse = feature_key
+                lowest_mse = dict_value["min_mse"]
+                k_value_of_lowest_mse = dict_value["k"]
+        print("Feature combo %r has lowest MSE of %r with 'k' of %r (optimum)" % (feature_combo_name_with_lowest_mse, lowest_mse, k_value_of_lowest_mse) )
+
+        PredictionUtils.plot_hyperparams(feature_combos_lowest_mse_for_hyperparams)
 
 def run():
     """
