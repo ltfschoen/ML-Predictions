@@ -65,10 +65,25 @@ class PredictionModelExternal:
         for index, training_model_feature_name in enumerate(self.training_columns):
             PredictionUtils.plot(training_model_feature_name, _temp_testing_part)
 
-
     def process_hyperparameter_optimisation(self):
-        hyper_param_range = PredictionConfig.HYPERPARAMETER_RANGE
-        print("Error: Hyperparameter Optimisation not yet implemented")
+        """ Hyperparameter 'k' Optimisation """
+        hyperparam_range = PredictionConfig.HYPERPARAMETER_RANGE
+        mse_values = []
+
+        _temp_training_part = self.prediction_data.training_part
+        _temp_testing_part = self.prediction_data.testing_part
+
+        for index, qty_neighbors in enumerate(hyperparam_range):
+            knn = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
+            X = _temp_training_part[self.training_columns]
+            y = _temp_training_part[self.target_column]
+            knn.fit(X, y)
+            predictions = knn.predict(_temp_testing_part[self.training_columns])
+
+            mse = mean_squared_error(_temp_testing_part[self.target_column], predictions, multioutput='raw_values')
+            mse_values.append(mse)
+
+        PredictionUtils.scatter_plot_hyperparams(hyperparam_range, mse_values)
 
 def run():
     """

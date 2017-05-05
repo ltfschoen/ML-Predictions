@@ -102,15 +102,15 @@ average value in the "price" column is $300)
             * RMSE (Four features): 112.94
             * MAE to RMSE Ratio (Four features): 0.29:1
 
-* Screenshots:
+    * Screenshots:
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_accommodates_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_accommodates_four_feature_post_strip_and_normalisation.png)
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bedrooms_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bedrooms_four_feature_post_strip_and_normalisation.png)
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bathrooms_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bathrooms_four_feature_post_strip_and_normalisation.png)
 
-![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_number_of_reviews_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_number_of_reviews_four_feature_post_strip_and_normalisation.png)
 
 * **Multivariate (ALL columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
@@ -122,6 +122,14 @@ average value in the "price" column is $300)
             * MSE (Multiple features): 11630.41
             * RMSE (Multiple features): 107.84
             * MAE to RMSE Ratio (Multiple features): 0.28:1
+
+* **Hyperparameter `k` Results**
+    * Hyperparameter Range: 1 to 20
+    * Features: ["accommodates", "bedrooms", "bathrooms", and "number_of_reviews"]
+
+    * Screenshots:
+
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/hyperparameter_1_to_20_four_features.png)
 
 ## Chapter 3 - Known Bugs <a id="chapter-3"></a>
 

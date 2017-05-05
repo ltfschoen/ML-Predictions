@@ -32,7 +32,10 @@ class PredictionConfig(object):
     #      used to make predictions whilst the Testing set is used to predict values for)
     #      for the Train/Test Validation Process, where the Testing percentage proportion
     #      is set by TESTING_PROPORTION.
-    #   8) Automatically perform prediction and output list of predictions by providing the TRAINING_COLUMNS (all columns
+    #   8) Manually toggle HYPERPARAMETER_OPTIMISATION to True to try different values of 'k' nearest
+    #      neighbors to find optimum with associated range of 'k' values HYPERPARAMETER_RANGE, or else set to
+    #      False to and defined a fixed 'k' value with HYPERPARAMETER_FIXED
+    #   9) Automatically perform prediction and output list of predictions by providing the TRAINING_COLUMNS (all columns
     #      used if this list is empty) and the TARGET_COLUMN's values to the chosen Machine Learning Model
     #      ML_MODEL_KNN (with a "manual" value to use the model built manually or optionally
     #      with a value "external" to use the much faster Scikit-Learn Machine Learning library).
@@ -41,7 +44,7 @@ class PredictionConfig(object):
     #      The ML Model uses Similarity Metrics (by means of the K-Nearest-Neighbors Machine Learning
     #      algorithm) to iteratively compare columns (features) of two rows (observations) to
     #      calculate (i.e. using Euclidean Distance equation) and return the distance (difference).
-    #   9) Manually use Error Metrics (i.e. Median Average Error, Mean Squared Error, and
+    #   10) Manually use Error Metrics (i.e. Median Average Error, Mean Squared Error, and
     #      Root Mean Squared Error equations) to check the quality of the predictions.
     #      Increasing the quantity of relevant TRAINING_COLUMNS (attributes) improves accuracy and lowers the error of
     #      the model since it allows the model to better identify observations (rows) from the Training set that are
@@ -60,5 +63,5 @@ class PredictionConfig(object):
     EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT = ["id"]
     EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT = ["_id", "-id"]
     # Example: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
-    TRAINING_COLUMNS = [] # Important Note: empty array means use all as Training Columns except the Target Column
+    TRAINING_COLUMNS = ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"] # Important Note: empty array means use all as Training Columns except the Target Column
     TARGET_COLUMN = "price"

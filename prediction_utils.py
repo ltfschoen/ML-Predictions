@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from matplotlib import cm
+from math import sin
 from scipy.spatial import distance
 from prediction_config import PredictionConfig
 
@@ -102,4 +104,30 @@ class PredictionUtils(object):
     def plot(training_model_feature_name, testing_part):
         """ Plot """
         testing_part.pivot_table(index=training_model_feature_name, values=PredictionConfig.TARGET_COLUMN).plot()
+        plt.show()
+
+    @staticmethod
+    def scatter_plot_hyperparams(hyperparam_range, error_values):
+        """ Scatter Plot hyperparameters range of 'k' versus error calculation values """
+
+        # Plot
+        colours = range(20)
+        circle_size = 200
+        cmap = plt.cm.viridis # plt.cm.get_cmap('jet')
+        fig, ax = plt.subplots(figsize=(8, 4))
+        cs = ax.scatter(x=hyperparam_range,
+                    y=error_values,
+                    s=circle_size,
+                    c=colours,
+                    marker='o',
+                    cmap=cmap,
+                    vmin=0.,
+                    vmax=2.)
+        plt.xlabel('Hyperparameter k', fontsize=18)
+        plt.ylabel('MSE', fontsize=16)
+
+        # Prettify
+        ax.axis("tight")
+        fig.colorbar(cs)
+
         plt.show()
