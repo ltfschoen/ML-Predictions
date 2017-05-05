@@ -52,7 +52,7 @@ def run():
 
     # Scikit-Learn's `predict` function called to make Predictions on
     # Columns of test_df that returns a NumPy array of Predicted "price" TARGET_COLUMN values
-    _temp_testing_part = prediction_model_external.prediction_data.training_part
+    _temp_testing_part = prediction_model_external.prediction_data.testing_part
     predictions = prediction_model_external.knn.predict(_temp_testing_part[prediction_data.get_training_columns()])
 
     print("Predictions using Scikit-Learn: %r" % (predictions) )
