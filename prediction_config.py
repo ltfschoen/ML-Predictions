@@ -1,3 +1,5 @@
+import numpy
+
 class PredictionConfig(object):
     """ Machine Learning configuration """
 
@@ -46,6 +48,9 @@ class PredictionConfig(object):
     #      most similar to the Test set.
 
     ML_MODEL_KNN = "external" # manual or external
+    HYPERPARAMETER_OPTIMISATION = True # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
+    HYPERPARAMETER_RANGE = numpy.arange(1, 21, 1) # 1 to 20
+    HYPERPARAMETER_FIXED = 5 # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
     MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
     MAX_MINOR_INCOMPLETE = 0.02 # Percentage
     TESTING_PROPORTION = 0.25 # Between 0 and 1. i.e. Testing Set 25% of rows. Training Set remaining 75% of rows
