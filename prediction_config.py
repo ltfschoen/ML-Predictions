@@ -52,8 +52,8 @@ class PredictionConfig(object):
     CLEANSE_COLUMNS_PRICE = ["price"]
     DATASET_LOCAL = "data/listings.csv"
     DATASET_REMOTE = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
-    # Example: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
     EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT = ["id"]
     EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT = ["_id", "-id"]
+    # Example: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
     TRAINING_COLUMNS = [] # Important Note: empty array means use all as Training Columns except the Target Column
     TARGET_COLUMN = "price"
