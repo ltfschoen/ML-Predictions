@@ -145,18 +145,20 @@ class PredictionUtils():
 
         plt.show()
 
-    def plot_hyperparams(self, feature_combos_lowest_mse_for_hyperparams):
+    def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams):
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
-        for feature_key, dict_value in feature_combos_lowest_mse_for_hyperparams.items():
+        for feature_key, dict_value in feature_combos_lowest_rmse_for_hyperparams.items():
             k = dict_value["k"]
-            min_mse = dict_value["min_mse"]
-            ax.plot(k, min_mse, '+', label = feature_key, mew=10, ms=15)
+            min_rmse = dict_value["min_rmse"]
+            ax.plot(k, min_rmse, '+', label = feature_key, mew=10, ms=15)
 
         ax.legend(loc=0)
         ax.grid()
         ax.set_xlabel("Hyperparam k")
-        ax.set_ylabel(r"MSE of Features Combination")
-        ax.set_ylim(-20, 20000)
+        yLabel = "RMSE of Features Combination using " + str(self.prediction_config.K_FOLDS) + " K-Folds for Cross Validation"
+        ax.set_ylabel(yLabel)
+        ax.set_ylim(-100, 200) # RMSE
+        # ax.set_ylim(-50, 20000) # MSE
         plt.show()

@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import requests
+from lib.build_folds import build_folds
 
 class PredictionData:
     """ Load and Partition DataFrame into Training/Testing for Validation Process """
@@ -16,6 +17,7 @@ class PredictionData:
         self.cleanse_columns()
         self.show_columns_incomplete() # Identify quantity of null values per column
         self.normalise_listings()
+        self.randomise_listings()
         self.partition_listings()
 
     def load_dataset(self, num_rows):
@@ -121,19 +123,43 @@ class PredictionData:
         for index, price_column in enumerate(self.prediction_config.CLEANSE_COLUMNS_PRICE):
             self.df_listings[price_column] = self.prediction_utils.clean_price(self.df_listings[price_column])
 
+    def randomise_listings(self):
+        """ Shuffle the ordering of the rows """
+        # TODO - Check if duplicate effort when implement KFold as it offers randomisation option
+        self.prediction_utils.randomise_dataframe_rows(self.df_listings)
+
     def partition_listings(self):
-        """ Split DataFrame into 2x partitions for the Train/Test Validation Process """
-        training_part_end = self.get_training_partitions(self.df_listings)
-        try:
-            self.training_part = self.df_listings.iloc[0:training_part_end]
-            self.testing_part = self.df_listings.iloc[training_part_end:]
-        except Exception as e:
-            print(e.errno)
+        """ Split into partitions using configured technique """
+
+        # Train/Test Validation Process - Splits DataFrame into 2x partitions
+        if self.prediction_config.K_FOLD_CROSS_VALIDATION == False:
+            training_part_end = self.get_training_partitions(self.df_listings)
+            try:
+                self.training_part = self.df_listings.iloc[0:training_part_end]
+                self.testing_part = self.df_listings.iloc[training_part_end:]
+            except Exception as e:
+                print(e.errno)
+        # K-Fold Cross-Validation Process
+        else:
+            self.generate_k_folds_column()
+            print("DF Listings 'fold' column %r: " % (self.df_listings["fold"]))
+
+    def generate_k_folds_column(self):
+        folds = build_folds(self.df_listings, self.prediction_config.K_FOLDS)
+        for index, fold in enumerate(folds):
+            # fold_index_from = -1 + fold_number]
+            # fold_index_to = fold[0 + fold_number]
+            fold_number = index + 1
+            fold_index_from = folds[index]
+            fold_index_to = folds[fold_number]
+            self.df_listings.set_value(self.df_listings.index[fold_index_from:fold_index_to], "fold", int(fold_number))
+            if fold_number == (len(folds) - 1):
+                break
 
     def get_training_partitions(self, df):
         """ Split full dataset into Training and Testing sets (DataFrame partition size proportions) """
         testing_proportion = self.prediction_config.TESTING_PROPORTION
-        training_len = int(len(df) - len(df) * testing_proportion) # 75%
+        training_len = int(len(df) - len(df) * testing_proportion) # remaining percentage
         # Cater for test_proportion of 0 to prevent out of bounds exception when later increment
         if training_len >= len(df):
             training_len -= len(df) - 1

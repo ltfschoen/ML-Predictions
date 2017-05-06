@@ -1,8 +1,8 @@
-from prediction_data import PredictionData
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import median_absolute_error
 from sklearn.metrics import mean_squared_error
 import math
+import numpy as np
 
 class PredictionModelExternal:
     """ External (Scikit-Learn) Machine Learning Model - function that outputs prediction based on input to the model """
@@ -67,62 +67,93 @@ class PredictionModelExternal:
 
     def process_hyperparameter_optimisation(self):
         """ Hyperparameter 'k' Optimisation """
+        print("Hyperparameter k Optimisation in progress...")
 
         hyperparam_range = self.prediction_config.HYPERPARAMETER_RANGE
-
-        _temp_training_part = self.prediction_data.training_part
-        _temp_testing_part = self.prediction_data.testing_part
 
         training_column_names = self.training_columns
         feature_combos = self.prediction_utils.generate_combinations_of_features(training_column_names)
 
-        feature_combos_mse_for_hyperparams = dict()
+        feature_combos_rmse_for_hyperparams = dict()
 
-        for idx1, feature_combo in enumerate(feature_combos):
-            feature_combo_key = '__'.join(feature_combo)
-            feature_combos_mse_for_hyperparams[feature_combo_key] = list()
-            for idx2, qty_neighbors in enumerate(hyperparam_range):
-                knn = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
-                X = _temp_training_part[list(feature_combo)]
-                y = _temp_training_part[self.target_column]
-                knn.fit(X, y)
-                predictions = knn.predict(_temp_testing_part[list(feature_combo)])
-                mse = mean_squared_error(_temp_testing_part[self.target_column], predictions, multioutput='raw_values')
-                feature_combos_mse_for_hyperparams[feature_combo_key].append(mse[0])
+        if self.prediction_config.K_FOLD_CROSS_VALIDATION == False:
+            _temp_training_part = self.prediction_data.training_part
+            _temp_testing_part = self.prediction_data.testing_part
 
-        feature_combos_lowest_mse_for_hyperparams = dict()
+            for idx1, feature_combo in enumerate(feature_combos):
+                feature_combo_key = '__'.join(feature_combo)
+                feature_combos_rmse_for_hyperparams[feature_combo_key] = list()
+                for idx2, qty_neighbors in enumerate(hyperparam_range):
+                    knn = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
+                    X = _temp_training_part[list(feature_combo)]
+                    y = _temp_training_part[self.target_column]
+                    knn.fit(X, y)
+                    predictions = knn.predict(_temp_testing_part[list(feature_combo)])
+                    mse = mean_squared_error(_temp_testing_part[self.target_column], predictions, multioutput='raw_values')
+                    rmse = math.sqrt(mse[0])
+                    feature_combos_rmse_for_hyperparams[feature_combo_key].append(rmse)
+        # Combining K-Fold Cross Validation with Hyperparameter 'k' Optimisation
+        else:
+            fold_ids = list(range(1, self.prediction_config.K_FOLDS + 1))
+            df = self.prediction_data.df_listings
 
-        for key, value in feature_combos_mse_for_hyperparams.items():
-            # Initiate element with lowest mse as first element unless find a lower element at subsequent index
-            feature_combos_lowest_mse_for_hyperparams[key] = dict()
-            feature_combos_lowest_mse_for_hyperparams[key]["min_mse"] = feature_combos_mse_for_hyperparams[key][0]
-            for k, mse in enumerate(feature_combos_mse_for_hyperparams[key]):
-                if mse < feature_combos_lowest_mse_for_hyperparams[key]["min_mse"]:
-                    feature_combos_lowest_mse_for_hyperparams[key]["min_mse"] = mse
-                    feature_combos_lowest_mse_for_hyperparams[key]["k"] = k + 1
+            for idx1, feature_combo in enumerate(feature_combos):
+                feature_combo_key = '__'.join(feature_combo)
+                feature_combos_rmse_for_hyperparams[feature_combo_key] = list()
+                for idx2, qty_neighbors in enumerate(hyperparam_range):
+
+                    fold_rmses = []
+                    for fold in fold_ids:
+                        # Train
+                        model = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
+                        train_part = df[df["fold"] != fold]
+                        test_part = df[df["fold"] == fold]
+                        X = train_part[list(feature_combo)]
+                        y = train_part[self.target_column]
+                        model.fit(X, y)
+                        # Predict
+                        labels = model.predict(test_part[list(feature_combo)])
+                        test_part["predicted_price"] = labels
+                        mse = mean_squared_error(test_part[self.target_column], test_part["predicted_price"])
+                        rmse = mse**(1/2)
+                        fold_rmses.append(rmse)
+                    # print("Fold RMSEs %r: " % (fold_rmses))
+                    avg_rmse = np.mean(fold_rmses)
+                    # print("Average RMSE: %r" % (avg_rmse))
+                    feature_combos_rmse_for_hyperparams[feature_combo_key].append(avg_rmse)
+
+        feature_combos_lowest_rmse_for_hyperparams = dict()
+
+        for key, value in feature_combos_rmse_for_hyperparams.items():
+            # Initiate element with lowest RMSE as first element unless find a lower element at subsequent index
+            feature_combos_lowest_rmse_for_hyperparams[key] = dict()
+            feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = feature_combos_rmse_for_hyperparams[key][0]
+            for k, rmse in enumerate(feature_combos_rmse_for_hyperparams[key]):
+                if rmse < feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"]:
+                    feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = rmse
+                    feature_combos_lowest_rmse_for_hyperparams[key]["k"] = k + 1
 
         # Find best combination of hyperparameter k and features
 
-        # Initiate element with lowest mse as first element unless find a lower element at subsequent index
-        name_of_first_key = list(feature_combos_lowest_mse_for_hyperparams.keys())[0]
-        feature_combo_name_with_lowest_mse = name_of_first_key
-        lowest_mse = feature_combos_lowest_mse_for_hyperparams[name_of_first_key]["min_mse"]
-        k_value_of_lowest_mse = feature_combos_lowest_mse_for_hyperparams[name_of_first_key]["k"]
+        # Initiate element with lowest RMSE as first element unless find a lower element at subsequent index
+        name_of_first_key = list(feature_combos_lowest_rmse_for_hyperparams.keys())[0]
+        feature_combo_name_with_lowest_rmse = name_of_first_key
+        lowest_rmse = feature_combos_lowest_rmse_for_hyperparams[name_of_first_key]["min_rmse"]
+        k_value_of_lowest_rmse = feature_combos_lowest_rmse_for_hyperparams[name_of_first_key]["k"]
 
-        for feature_key, dict_value in feature_combos_lowest_mse_for_hyperparams.items():
-            if dict_value["min_mse"] < lowest_mse:
-                feature_combo_name_with_lowest_mse = feature_key
-                lowest_mse = dict_value["min_mse"]
-                k_value_of_lowest_mse = dict_value["k"]
-        print("Feature combo %r has lowest MSE of %r with 'k' of %r (optimum)" % (feature_combo_name_with_lowest_mse, lowest_mse, k_value_of_lowest_mse) )
+        for feature_key, dict_value in feature_combos_lowest_rmse_for_hyperparams.items():
+            if dict_value["min_rmse"] < lowest_rmse:
+                feature_combo_name_with_lowest_rmse = feature_key
+                lowest_rmse = dict_value["min_rmse"]
+                k_value_of_lowest_rmse = dict_value["k"]
+        print("Feature combo %r has lowest RMSE of %r with 'k' of %r (optimum) using %r K-Folds for (Cross Validation was %r)" % (feature_combo_name_with_lowest_rmse, lowest_rmse, k_value_of_lowest_rmse, self.prediction_config.K_FOLDS, self.prediction_config.K_FOLD_CROSS_VALIDATION) )
 
-        self.prediction_utils.plot_hyperparams(feature_combos_lowest_mse_for_hyperparams)
+        self.prediction_utils.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams)
 
-def run(prediction_config, prediction_utils):
+def run(prediction_config, prediction_data, prediction_utils):
     """
     Scikit-Learn Workflow depending on config chosen
     """
-    prediction_data = PredictionData(prediction_config, prediction_utils)
     prediction_model_external = PredictionModelExternal(prediction_config, prediction_data, prediction_utils)
 
     if prediction_config.HYPERPARAMETER_OPTIMISATION == True:

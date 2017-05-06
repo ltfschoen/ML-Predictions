@@ -138,6 +138,25 @@ average value in the "price" column is $300)
 
                 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/hyperparameter_vs_feature_combos.png)
 
+* **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
+    * Features:
+    * MSE
+        * Best feature combo 'bedrooms', 'bathrooms', 'number_of_reviews'
+        * Best MSE result **improved robustness of results since takes average MSE over K-Folds**:
+            * 12718.88 with 'k' of 17 (optimum) using 10 K-Folds for Cross Validation
+    * RMSE
+        * Best feature combo 'accommodates', 'bedrooms', 'bathrooms', and 'number_of_reviews'
+        * Best RMSE results (**improved robustness of results since takes average RMSE over K-Folds**):
+            * 113.96 with 'k' of 20 (optimum) using 3 K-Folds for Cross Validation
+            * 109.73 with 'k' of 20 (optimum) using 5 K-Folds for Cross Validation
+            * 109.58 with 'k' of 20 (optimum) using 10 K-Folds for Cross Validation
+
+            * Screenshots:
+
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/mse_cross_validation.png)
+
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rmse_cross_validation.png)
+
 ## Chapter 3 - Known Bugs <a id="chapter-3"></a>
 
 * Warning occurs:

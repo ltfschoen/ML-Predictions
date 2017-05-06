@@ -1,5 +1,3 @@
-from prediction_data import PredictionData
-
 class PredictionModelManual:
     """ Manual Machine Learning Model - function that outputs prediction based on input to the model """
     def __init__(self, prediction_config, prediction_data, prediction_utils):
@@ -71,8 +69,7 @@ class PredictionModelManual:
         print("RMSE for Model feature %r: %r: " % (model_feature_name, rmse) )
         return rmse
 
-def run(prediction_config, prediction_utils):
-    prediction_data = PredictionData(prediction_config, prediction_utils)
+def run(prediction_config, prediction_data, prediction_utils):
     prediction_model_manual = PredictionModelManual(prediction_config, prediction_data, prediction_utils)
     for index, training_model_feature_name in enumerate(prediction_data.get_training_columns()):
         prediction_model_manual.get_target_column_prediction(training_model_feature_name)

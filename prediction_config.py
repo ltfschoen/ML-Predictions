@@ -28,10 +28,16 @@ class PredictionConfig():
     #   6) Automatically normalise the columns containing int, float64, and floating type values
     #      using mass transformation across the DataFrame to avoid experiencing the Outsized Effect
     #      when applying the Euclidean Distance equation to largely differing values.
-    #   7) Automatically splitting the dataset it into two partitions (Training set is
-    #      used to make predictions whilst the Testing set is used to predict values for)
-    #      for the Train/Test Validation Process, where the Testing percentage proportion
-    #      is set by TESTING_PROPORTION.
+    #   7) Manually configure whether to use either the:
+    #        - Train/Test Validation Process that splits the dataset into two partitions
+    #          Train/Test sets with 75%/25% proportion of rows respectively
+    #          by setting K_FOLD_CROSS_VALIDATION to False. The Training set is
+    #          used to make predictions whilst the Testing set is used to predict values for.
+    #          The Testing percentage proportion is set by TESTING_PROPORTION.
+    #        - K-Fold Cross Validation by setting K_FOLD_CROSS_VALIDATION to True
+    #          to take return more robust results by rotating through different subsets of
+    #          the data to avoid issues of Train/Test Validation by
+    #          setting K_FOLDS to a value >= 2
     #   8) Manually toggle HYPERPARAMETER_OPTIMISATION to True to try different values of 'k' nearest
     #      neighbors to see comparison plot and find optimum combination of Training set features resulting in lowest MSE
     #      by setting associated range of 'k' values HYPERPARAMETER_RANGE, or else set to
@@ -59,7 +65,11 @@ class PredictionConfig():
         self.HYPERPARAMETER_FIXED = 5 # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
         self.MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
         self.MAX_MINOR_INCOMPLETE = 0.02 # Percentage
-        self.TESTING_PROPORTION = 0.25 # Between 0 and 1. i.e. Testing Set 25% of rows. Training Set remaining 75% of rows
+        self.K_FOLD_CROSS_VALIDATION = True
+        # K-fold Cross-Validation Technique when K_FOLDS >= 3 OR Holdout Validation when K_FOLDS == 2
+        # Train/Test Validation Process
+        self.K_FOLDS = 10
+        self.TESTING_PROPORTION = self.get_testing_proportion()
         self.CLEANSE_COLUMNS_PRICE = ["price"]
         self.DATASET_LOCAL = "data/listings.csv"
         self.DATASET_REMOTE = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
@@ -68,3 +78,26 @@ class PredictionConfig():
         # Example: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
         self.TRAINING_COLUMNS = ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"] # Important Note: empty array means use all as Training Columns except the Target Column
         self.TARGET_COLUMN = "price"
+        self.validate_config()
+
+    def validate_config(self):
+        """ Override config settings in case user has not configured valid combination """
+
+        # Since "manual" mode needs split into Train/Test sets (i.e. training_part and test_part) rather than just a "fold" column
+        if self.ML_MODEL_KNN == "manual":
+            self.K_FOLD_CROSS_VALIDATION = False
+
+        # Since only implemented K-Fold Cross Validation to work with the Hyperparameter Optimisation process
+        if self.K_FOLD_CROSS_VALIDATION == True:
+            self.HYPERPARAMETER_OPTIMISATION = True
+
+    def get_testing_proportion(self):
+        """ Proportion of rows to split into Training and Test set respectively
+        Returns value between 0 and 1 representing percentage proportion of the Test set. Training set is remainder.
+        Holdout Validation - 50%/50%
+        Train/Test Validation - 75%/25%
+        """
+        if self.K_FOLD_CROSS_VALIDATION:
+            return round((1 / self.K_FOLDS), 2)
+        else:
+            return 0.25
