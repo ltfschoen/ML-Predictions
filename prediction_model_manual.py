@@ -1,15 +1,15 @@
 from prediction_data import PredictionData
-from prediction_utils import PredictionUtils
-from prediction_config import PredictionConfig
 
 class PredictionModelManual:
     """ Manual Machine Learning Model - function that outputs prediction based on input to the model """
-    def __init__(self, prediction_data):
+    def __init__(self, prediction_config, prediction_data, prediction_utils):
+        self.prediction_config = prediction_config
         self.prediction_data = prediction_data
+        self.prediction_utils = prediction_utils
 
     def get_target_column_prediction(self, model_feature_name):
         _temp_testing_part = self.prediction_data.testing_part
-        column_name_predicted_target = "predicted_" + PredictionConfig.TARGET_COLUMN + "_" + model_feature_name
+        column_name_predicted_target = "predicted_" + self.prediction_config.TARGET_COLUMN + "_" + model_feature_name
         self.prediction_data.testing_part[column_name_predicted_target] = _temp_testing_part[model_feature_name].apply(lambda x: self.process_target_prediction(model_feature_name, x))
         print("Predicted Target Column (i.e. 'price') using Model %r: %r" % (model_feature_name, self.prediction_data.testing_part[column_name_predicted_target]) )
 
@@ -29,25 +29,25 @@ class PredictionModelManual:
         # Compare
         _temp_training_part = self.prediction_data.training_part
         # print(_temp_training_part[model_feature_name])
-        _temp_training_part[column_name_distance_feature] = PredictionUtils.compare_observations(model_feature_value, _temp_training_part[model_feature_name])
+        _temp_training_part[column_name_distance_feature] = self.prediction_utils.compare_observations(model_feature_value, _temp_training_part[model_feature_name])
 
         # Inspect
         # print(_temp_training_part[column_name_distance_feature].value_counts()) # .index.tolist()
         # print(_temp_training_part[_temp_training_part[column_name_distance_feature] == 0][model_feature_name])
 
         # Randomise and Sort
-        _temp_training_part_randomised = PredictionUtils.randomise_dataframe_rows(_temp_training_part)
-        _temp_training_part_sorted = PredictionUtils.sort_dataframe_by_feature(_temp_training_part_randomised, column_name_distance_feature)
-        # print(_temp_training_part_sorted.iloc[0:10][PredictionConfig.TARGET_COLUMN])
+        _temp_training_part_randomised = self.prediction_utils.randomise_dataframe_rows(_temp_training_part)
+        _temp_training_part_sorted = self.prediction_utils.sort_dataframe_by_feature(_temp_training_part_randomised, column_name_distance_feature)
+        # print(_temp_training_part_sorted.iloc[0:10][self.prediction_config.TARGET_COLUMN])
 
         # Filter
-        predicted_target = PredictionUtils.get_nearest_neighbors(_temp_training_part_sorted, model_feature_name)
+        predicted_target = self.prediction_utils.get_nearest_neighbors(_temp_training_part_sorted, model_feature_name)
 
         return predicted_target
 
     def get_mean_absolute_error(self, model_feature_name):
         """ Mean Absolute Error (MAE) calculation """
-        mae = PredictionUtils.calc_mean_absolute_error(self.prediction_data.testing_part, model_feature_name)
+        mae = self.prediction_utils.calc_mean_absolute_error(self.prediction_data.testing_part, model_feature_name)
         print("MAE for Model feature %r: %r: " % (model_feature_name, mae) )
         return mae
 
@@ -57,7 +57,7 @@ class PredictionModelManual:
         MSE improved prediction accuracy over MAE since penalises predicted values that are further
         from the actual value more that those that are closer to the actual value
         """
-        mse = PredictionUtils.calc_mean_squared_error(self.prediction_data.testing_part, model_feature_name)
+        mse = self.prediction_utils.calc_mean_squared_error(self.prediction_data.testing_part, model_feature_name)
         print("MSE for Model feature %r: %r: " % (model_feature_name, mse) )
         return mse
 
@@ -67,13 +67,13 @@ class PredictionModelManual:
         RMSE helps understand performance of prediction accuracy over MSE and MAE since
         it takes the square root of MSE so the units matching base unit of the target feature
         """
-        rmse = PredictionUtils.calc_root_mean_squared_error(self.prediction_data.testing_part, model_feature_name)
+        rmse = self.prediction_utils.calc_root_mean_squared_error(self.prediction_data.testing_part, model_feature_name)
         print("RMSE for Model feature %r: %r: " % (model_feature_name, rmse) )
         return rmse
 
-def run():
-    prediction_data = PredictionData()
-    prediction_model_manual = PredictionModelManual(prediction_data)
+def run(prediction_config, prediction_utils):
+    prediction_data = PredictionData(prediction_config, prediction_utils)
+    prediction_model_manual = PredictionModelManual(prediction_config, prediction_data, prediction_utils)
     for index, training_model_feature_name in enumerate(prediction_data.get_training_columns()):
         prediction_model_manual.get_target_column_prediction(training_model_feature_name)
         mae = prediction_model_manual.get_mean_absolute_error(training_model_feature_name)      # MAE
@@ -81,4 +81,4 @@ def run():
         rmse = prediction_model_manual.get_root_mean_squared_error(training_model_feature_name) # RMSE
         mae_rmse_ratio_prefix = mae / rmse
         print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
-        PredictionUtils.plot(training_model_feature_name, prediction_data.testing_part)
+        prediction_utils.plot(training_model_feature_name, prediction_data.testing_part)

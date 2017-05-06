@@ -1,12 +1,12 @@
 import pandas as pd
 from pathlib import Path
 import requests
-from prediction_utils import PredictionUtils
-from prediction_config import PredictionConfig
 
 class PredictionData:
     """ Load and Partition DataFrame into Training/Testing for Validation Process """
-    def __init__(self):
+    def __init__(self, prediction_config, prediction_utils):
+        self.prediction_config = prediction_config
+        self.prediction_utils = prediction_utils
         self.df_listings = self.load_dataset(None) # Load data set DataFrame (i.e. `None` for all 3723 rows)
         self.training_part = None # Training part of df_listings
         self.testing_part = None # Testing part of df_listings
@@ -23,15 +23,15 @@ class PredictionData:
         otherwise load directly from remote endpoint (slower)
         """
         try:
-            dataset_file = Path(PredictionConfig.DATASET_LOCAL)
+            dataset_file = Path(self.prediction_config.DATASET_LOCAL)
             if dataset_file.is_file():
-                return pd.read_csv(PredictionConfig.DATASET_LOCAL, nrows=num_rows)
+                return pd.read_csv(self.prediction_config.DATASET_LOCAL, nrows=num_rows)
             else:
                 def exists(path):
                     r = requests.head(path)
                     return r.status_code == requests.codes.ok
-                if exists(PredictionConfig.DATASET_REMOTE):
-                    return pd.read_csv(PredictionConfig.DATASET_REMOTE, nrows=num_rows)
+                if exists(self.prediction_config.DATASET_REMOTE):
+                    return pd.read_csv(self.prediction_config.DATASET_REMOTE, nrows=num_rows)
             return None
         except Exception as e:
             print(e.errno)
@@ -56,14 +56,14 @@ class PredictionData:
         df_size = len(self.df_listings)
 
         # Randomise (not Sorted)
-        _temp_df_listings_randomised = PredictionUtils.randomise_dataframe_rows(self.df_listings)
+        _temp_df_listings_randomised = self.prediction_utils.randomise_dataframe_rows(self.df_listings)
 
         # print("Length of DataFrame: %r" % (df_size))
         # print("Prediction Data quantity of non-null data per column: %r" % (_temp_df_listings_randomised.head(n=df_size).info(verbose=True, null_counts=True)))
 
         df_listings_with_any_null_values = _temp_df_listings_randomised[_temp_df_listings_randomised.columns[_temp_df_listings_randomised.isnull().any()].tolist()]
 
-        print("Prediction Data proportion of null data per column for only columns with any null or NaN values: %r" % (PredictionUtils.get_percentage_missing(df_listings_with_any_null_values)))
+        print("Prediction Data proportion of null data per column for only columns with any null or NaN values: %r" % (self.prediction_utils.get_percentage_missing(df_listings_with_any_null_values)))
 
     def delete_columns_high_incomplete(self):
         """ Delete Columns where percentage of null or NaN values exceeds MAX_MAJOR_INCOMPLETE value
@@ -74,8 +74,8 @@ class PredictionData:
         for name, values in self.df_listings.iteritems():
             # print("%r: %r" % (name, values) )
             if name != "id":
-                col_percentage_missing = PredictionUtils.get_percentage_missing(self.df_listings[name])
-                if col_percentage_missing > PredictionConfig.MAX_MAJOR_INCOMPLETE:
+                col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings[name])
+                if col_percentage_missing > self.prediction_config.MAX_MAJOR_INCOMPLETE:
                     print("Deleting Column %r, as contains too many null values: %r" % (name, col_percentage_missing) )
                     self.df_listings.drop(name, axis=1, inplace=True)
 
@@ -89,8 +89,8 @@ class PredictionData:
 
         # Iterate over columns in DataFrame
         for name, values in self.df_listings.iteritems():
-            col_percentage_missing = PredictionUtils.get_percentage_missing(self.df_listings[name])
-            if col_percentage_missing < PredictionConfig.MAX_MINOR_INCOMPLETE:
+            col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings[name])
+            if col_percentage_missing < self.prediction_config.MAX_MINOR_INCOMPLETE:
                 # print("Before null/NaN values?: %r" %(self.df_listings[name].isnull().any(axis=0)))
                 print("Retained Column: %r, but removed null and NaN valued rows comprising approx. percentage: %r" % (name, col_percentage_missing) )
                 self.df_listings.dropna(axis=0, how="any", subset=[name], inplace=True)
@@ -109,8 +109,8 @@ class PredictionData:
         # Select only Columns containing type int, float64, floating. Exclude Columns with types Object (O) that includes strings
         df_listings_with_float_or_int_values = self.df_listings.select_dtypes(include=['int', 'float64', 'floating'], exclude=['O'])
 
-        normalized_listings = PredictionUtils.normalise_dataframe(df_listings_with_float_or_int_values)
-        normalized_listings[PredictionConfig.TARGET_COLUMN] = self.df_listings[PredictionConfig.TARGET_COLUMN]
+        normalized_listings = self.prediction_utils.normalise_dataframe(df_listings_with_float_or_int_values)
+        normalized_listings[self.prediction_config.TARGET_COLUMN] = self.df_listings[self.prediction_config.TARGET_COLUMN]
 
         print("Normalised listings completed: %r" % (normalized_listings.head(3)) )
 
@@ -118,8 +118,8 @@ class PredictionData:
 
     def cleanse_columns(self):
         """ Cleanse all identified price columns """
-        for index, price_column in enumerate(PredictionConfig.CLEANSE_COLUMNS_PRICE):
-            self.df_listings[price_column] = PredictionUtils.clean_price(self.df_listings[price_column])
+        for index, price_column in enumerate(self.prediction_config.CLEANSE_COLUMNS_PRICE):
+            self.df_listings[price_column] = self.prediction_utils.clean_price(self.df_listings[price_column])
 
     def partition_listings(self):
         """ Split DataFrame into 2x partitions for the Train/Test Validation Process """
@@ -132,7 +132,7 @@ class PredictionData:
 
     def get_training_partitions(self, df):
         """ Split full dataset into Training and Testing sets (DataFrame partition size proportions) """
-        testing_proportion = PredictionConfig.TESTING_PROPORTION
+        testing_proportion = self.prediction_config.TESTING_PROPORTION
         training_len = int(len(df) - len(df) * testing_proportion) # 75%
         # Cater for test_proportion of 0 to prevent out of bounds exception when later increment
         if training_len >= len(df):
@@ -144,22 +144,22 @@ class PredictionData:
 
         When TRAINING_COLUMNS array is empty it means return all columns except the TARGET_COLUMN
         """
-        if not PredictionConfig.TRAINING_COLUMNS:
+        if not self.prediction_config.TRAINING_COLUMNS:
             features = self.training_part.columns.tolist()
 
             # Remove TARGET_COLUMN
-            features.remove(PredictionConfig.TARGET_COLUMN)
+            features.remove(self.prediction_config.TARGET_COLUMN)
 
             # Remove columns containing Excluded full text
-            for index, column_name in enumerate(PredictionConfig.EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT):
+            for index, column_name in enumerate(self.prediction_config.EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT):
                 features.remove(column_name)
 
             # Retain columns that do not contain Excluded partial text
             features_to_retain = []
-            for index, column_partial_name in enumerate(PredictionConfig.EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT):
+            for index, column_partial_name in enumerate(self.prediction_config.EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT):
                 for index, column_name in enumerate(features):
                     if column_partial_name not in column_name:
                         features_to_retain.append(column_name)
             return features_to_retain
         else:
-            return PredictionConfig.TRAINING_COLUMNS
+            return self.prediction_config.TRAINING_COLUMNS

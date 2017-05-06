@@ -1,6 +1,6 @@
 import numpy as np
 
-class PredictionConfig(object):
+class PredictionConfig():
     """ Machine Learning configuration """
 
     # Implementation Guide:
@@ -51,19 +51,20 @@ class PredictionConfig(object):
     #      the model since it allows the model to better identify observations (rows) from the Training set that are
     #      most similar to the Test set.
 
-    ML_MODEL_KNN = "external" # manual or external
-    HYPERPARAMETER_OPTIMISATION = True # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
-    HYPERPARAMETER_RANGE = np.arange(1, 21, 1) # 1 to 20
-    MIN_FEATURES_COMBO_LEN = 3
-    HYPERPARAMETER_FIXED = 5 # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
-    MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
-    MAX_MINOR_INCOMPLETE = 0.02 # Percentage
-    TESTING_PROPORTION = 0.25 # Between 0 and 1. i.e. Testing Set 25% of rows. Training Set remaining 75% of rows
-    CLEANSE_COLUMNS_PRICE = ["price"]
-    DATASET_LOCAL = "data/listings.csv"
-    DATASET_REMOTE = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
-    EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT = ["id"]
-    EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT = ["_id", "-id"]
-    # Example: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
-    TRAINING_COLUMNS = ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"] # Important Note: empty array means use all as Training Columns except the Target Column
-    TARGET_COLUMN = "price"
+    def __init__(self):
+        self.ML_MODEL_KNN = "external" # manual or external
+        self.HYPERPARAMETER_OPTIMISATION = True # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
+        self.HYPERPARAMETER_RANGE = np.arange(1, 21, 1) # 1 to 20
+        self.MIN_FEATURES_COMBO_LEN = 3
+        self.HYPERPARAMETER_FIXED = 5 # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
+        self.MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
+        self.MAX_MINOR_INCOMPLETE = 0.02 # Percentage
+        self.TESTING_PROPORTION = 0.25 # Between 0 and 1. i.e. Testing Set 25% of rows. Training Set remaining 75% of rows
+        self.CLEANSE_COLUMNS_PRICE = ["price"]
+        self.DATASET_LOCAL = "data/listings.csv"
+        self.DATASET_REMOTE = "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv"
+        self.EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT = ["id"]
+        self.EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT = ["_id", "-id"]
+        # Example: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
+        self.TRAINING_COLUMNS = ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"] # Important Note: empty array means use all as Training Columns except the Target Column
+        self.TARGET_COLUMN = "price"

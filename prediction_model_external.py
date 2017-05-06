@@ -1,6 +1,4 @@
 from prediction_data import PredictionData
-from prediction_utils import PredictionUtils
-from prediction_config import PredictionConfig
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import median_absolute_error
 from sklearn.metrics import mean_squared_error
@@ -8,10 +6,12 @@ import math
 
 class PredictionModelExternal:
     """ External (Scikit-Learn) Machine Learning Model - function that outputs prediction based on input to the model """
-    def __init__(self, prediction_data):
+    def __init__(self, prediction_config, prediction_data, prediction_utils):
+        self.prediction_config = prediction_config
         self.prediction_data = prediction_data
+        self.prediction_utils = prediction_utils
         self.training_columns = prediction_data.get_training_columns()
-        self.target_column = PredictionConfig.TARGET_COLUMN
+        self.target_column = self.prediction_config.TARGET_COLUMN
         self.knn = None
 
     def generate_knn_model(self, qty_neighbors, algorithm, distance_type):
@@ -39,7 +39,7 @@ class PredictionModelExternal:
         """
         print("Training features include: %r" % (self.training_columns) )
 
-        self.generate_knn_model(PredictionConfig.HYPERPARAMETER_FIXED, 'brute', 2)
+        self.generate_knn_model(self.prediction_config.HYPERPARAMETER_FIXED, 'brute', 2)
 
         _temp_training_part = self.prediction_data.training_part
         X = _temp_training_part[self.training_columns]
@@ -63,18 +63,18 @@ class PredictionModelExternal:
         mae_rmse_ratio_prefix = mae / rmse
         print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
         for index, training_model_feature_name in enumerate(self.training_columns):
-            PredictionUtils.plot(training_model_feature_name, _temp_testing_part)
+            self.prediction_utils.plot(training_model_feature_name, _temp_testing_part)
 
     def process_hyperparameter_optimisation(self):
         """ Hyperparameter 'k' Optimisation """
 
-        hyperparam_range = PredictionConfig.HYPERPARAMETER_RANGE
+        hyperparam_range = self.prediction_config.HYPERPARAMETER_RANGE
 
         _temp_training_part = self.prediction_data.training_part
         _temp_testing_part = self.prediction_data.testing_part
 
         training_column_names = self.training_columns
-        feature_combos = PredictionUtils.generate_combinations_of_features(training_column_names)
+        feature_combos = self.prediction_utils.generate_combinations_of_features(training_column_names)
 
         feature_combos_mse_for_hyperparams = dict()
 
@@ -116,16 +116,16 @@ class PredictionModelExternal:
                 k_value_of_lowest_mse = dict_value["k"]
         print("Feature combo %r has lowest MSE of %r with 'k' of %r (optimum)" % (feature_combo_name_with_lowest_mse, lowest_mse, k_value_of_lowest_mse) )
 
-        PredictionUtils.plot_hyperparams(feature_combos_lowest_mse_for_hyperparams)
+        self.prediction_utils.plot_hyperparams(feature_combos_lowest_mse_for_hyperparams)
 
-def run():
+def run(prediction_config, prediction_utils):
     """
     Scikit-Learn Workflow depending on config chosen
     """
-    prediction_data = PredictionData()
-    prediction_model_external = PredictionModelExternal(prediction_data)
+    prediction_data = PredictionData(prediction_config, prediction_utils)
+    prediction_model_external = PredictionModelExternal(prediction_config, prediction_data, prediction_utils)
 
-    if PredictionConfig.HYPERPARAMETER_OPTIMISATION == True:
+    if prediction_config.HYPERPARAMETER_OPTIMISATION == True:
         prediction_model_external.process_hyperparameter_optimisation()
     else:
         prediction_model_external.process_hyperparameter_fixed()
