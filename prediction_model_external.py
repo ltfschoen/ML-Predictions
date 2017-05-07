@@ -1,6 +1,8 @@
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import median_absolute_error
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score
 import math
 import numpy as np
 
@@ -103,23 +105,43 @@ class PredictionModelExternal:
                 for idx2, qty_neighbors in enumerate(hyperparam_range):
 
                     fold_rmses = []
-                    for fold in fold_ids:
-                        # Train
+
+                    def cross_validation_manual():
+                        """ Manual KFold Cross Validation using 'fold' column """
+                        for fold in fold_ids:
+                            # Train
+                            model = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
+                            train_part = df[df["fold"] != fold]
+                            test_part = df[df["fold"] == fold]
+                            X = train_part[list(feature_combo)]
+                            y = train_part[self.target_column]
+                            model.fit(X, y)
+                            # Predict
+                            labels = model.predict(test_part[list(feature_combo)])
+                            test_part["predicted_price"] = labels
+                            mse = mean_squared_error(test_part[self.target_column], test_part["predicted_price"])
+                            rmse = mse**(1/2)
+                            fold_rmses.append(rmse)
+                        return np.mean(fold_rmses)
+
+                    def cross_validation_with_builtin():
+                        """ Scikit-Learn Built-in KFold class to generate KFolds and run Cross Validation
+                        with training using Scikit-Learn Built-in `cross_val_score` function"""
+                        kf = KFold(n_splits=self.prediction_config.K_FOLDS, shuffle=True, random_state=8)
                         model = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
-                        train_part = df[df["fold"] != fold]
-                        test_part = df[df["fold"] == fold]
-                        X = train_part[list(feature_combo)]
-                        y = train_part[self.target_column]
-                        model.fit(X, y)
-                        # Predict
-                        labels = model.predict(test_part[list(feature_combo)])
-                        test_part["predicted_price"] = labels
-                        mse = mean_squared_error(test_part[self.target_column], test_part["predicted_price"])
-                        rmse = mse**(1/2)
-                        fold_rmses.append(rmse)
+
+                        # MSEs for each Fold
+                        mses = cross_val_score(model, df[list(feature_combo)], df[self.target_column], scoring="neg_mean_squared_error", cv=kf, verbose=1)
+                        fold_rmses = [np.sqrt(np.absolute(mse)) for mse in mses]
+                        return np.mean(fold_rmses)
+
+                    if self.prediction_config.K_FOLDS_BUILTIN == False:
+                        avg_rmse = cross_validation_manual()
+                    else:
+                        avg_rmse = cross_validation_with_builtin()
                     # print("Fold RMSEs %r: " % (fold_rmses))
-                    avg_rmse = np.mean(fold_rmses)
                     # print("Average RMSE: %r" % (avg_rmse))
+
                     feature_combos_rmse_for_hyperparams[feature_combo_key].append(avg_rmse)
 
         feature_combos_lowest_rmse_for_hyperparams = dict()

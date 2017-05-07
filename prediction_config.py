@@ -66,9 +66,14 @@ class PredictionConfig():
         self.MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
         self.MAX_MINOR_INCOMPLETE = 0.02 # Percentage
         self.K_FOLD_CROSS_VALIDATION = True
-        # K-fold Cross-Validation Technique when K_FOLDS >= 3 OR Holdout Validation when K_FOLDS == 2
+        # K-Fold Cross-Validation Technique when K_FOLDS >= 3 OR Holdout Validation when K_FOLDS == 2
         # Train/Test Validation Process
         self.K_FOLDS = 10
+        # Toggle whether to use use:
+        #   - True - Scikit-Learn's KFold class to generate K Folds and its cross_val_score function
+        #            for training and Cross Validation (without the need to use the "fold" column manually)
+        #   - False - Manually generate a KFolds 'fold' column and manually perform Cross Validation
+        self.K_FOLDS_BUILTIN = True
         self.TESTING_PROPORTION = self.get_testing_proportion()
         self.CLEANSE_COLUMNS_PRICE = ["price"]
         self.DATASET_LOCAL = "data/listings.csv"
