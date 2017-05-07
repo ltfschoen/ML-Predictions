@@ -16,13 +16,17 @@ class PredictionUtils():
         """ Apply mass Column transformation to Normalise all feature columns in a DataFrame """
         return (df - df.mean()) / (df.std())
 
-    def get_percentage_missing(self, series):
+    def get_percentage_missing(self, df, column):
         """ Calculates percentage of NaN values in DataFrame
         :param series: Pandas DataFrame object
         :return: float
         """
-        num = series.isnull().sum()
-        den = len(series)
+        count_question_marks = 0
+        for i, v in enumerate(df[column]):
+            if df[column][i] == "?":
+                count_question_marks += 1
+        num = df[column].isnull().sum() + count_question_marks
+        den = len(df[column])
         return round(num/den, 2)
 
     def calc_euclidean_dist(self, val1, val2):
@@ -63,10 +67,11 @@ class PredictionUtils():
         """
         return df.sort_values(feature)
 
-    def clean_price(self, df_price_column):
-        """ Clean "price" column removing `$` and `,` chars. Convert column from text to float. """
+    def clean_price_format(self, df_price_column):
+        """ Clean "price" column removing `$` `,` and `?` chars. Convert column from text to float. """
         def replace_bad_chars(row):
             row = str(row).replace(",", "")
+            row = str(row).replace("$", "")
             row = str(row).replace("$", "")
             row = float(row) # .astype('float')
             return row
@@ -106,13 +111,13 @@ class PredictionUtils():
         def flatten_combo(combos):
             return sum(combos, [])
 
-        if self.prediction_config.MIN_FEATURES_COMBO_LEN < loop_count:
+        if self.prediction_config.MIN_FEATURES_COMBO_LEN <= loop_count:
             i = self.prediction_config.MIN_FEATURES_COMBO_LEN
             while i >= 1 and i <= loop_count:
                 combos_above_min_len.append(list(itertools.combinations(features, i)))
                 i += 1
             return flatten_combo(combos_above_min_len)
-        print("Error: Miniumum length of any features combos cannot exceed length of all features")
+        print("Error: Minimum length of any features combos cannot exceed length of all features")
         return []
 
     def plot(self, training_model_feature_name, testing_part):
@@ -154,11 +159,11 @@ class PredictionUtils():
             min_rmse = dict_value["min_rmse"]
             ax.plot(k, min_rmse, '+', label = feature_key, mew=10, ms=15)
 
-        ax.legend(loc=0)
+        ax.legend(loc=0, prop={'size':6})
         ax.grid()
         ax.set_xlabel("Hyperparam k")
         yLabel = "RMSE of Features Combination using " + str(self.prediction_config.K_FOLDS) + " K-Folds for Cross Validation"
         ax.set_ylabel(yLabel)
-        ax.set_ylim(-100, 200) # RMSE
+        ax.set_ylim(-100, 20000) # RMSE
         # ax.set_ylim(-50, 20000) # MSE
         plt.show()

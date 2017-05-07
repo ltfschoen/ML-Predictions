@@ -64,6 +64,8 @@ average value in the "price" column is $300)
 
 ### Result Statistics and Screenshots
 
+#### Example 1: Rental Property Listing Dataset
+
 * **Univariate (one column) using manual KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
         * Model Trained #1 "accommodates" column:
@@ -104,13 +106,13 @@ average value in the "price" column is $300)
 
     * Screenshots:
 
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_accommodates_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_accommodates_four_feature_post_strip_and_normalisation.png)
 
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bedrooms_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_bedrooms_four_feature_post_strip_and_normalisation.png)
 
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_bathrooms_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_bathrooms_four_feature_post_strip_and_normalisation.png)
 
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/part3/screenshot_number_of_reviews_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_number_of_reviews_four_feature_post_strip_and_normalisation.png)
 
 * **Multivariate (ALL columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
@@ -129,14 +131,14 @@ average value in the "price" column is $300)
 
             * Screenshots:
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/hyperparameter_1_to_20_four_features.png)
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/hyperparameter_1_to_20_four_features.png)
 
         * Features: All possible combinations of the features with no repeat combinations were compared and plotted (see below):
             * Best feature combo is 'bedrooms__bathrooms__number_of_reviews' having lowest MSE of 10606.68 using 'k' nearest neighbors of 6 (optimum)
 
             * Screenshots:
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/hyperparameter_vs_feature_combos.png)
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/hyperparameter_vs_feature_combos.png)
 
 * **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
     * Features:
@@ -153,9 +155,23 @@ average value in the "price" column is $300)
 
             * Screenshots:
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/mse_cross_validation.png)
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/mse_cross_validation.png)
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rmse_cross_validation.png)
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/rmse_cross_validation.png)
+
+#### Example 2: Car Listing Dataset
+
+* **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
+    * Training features: "height", "curb-weight", "horsepower", "city-mpg", "highway-mpg"
+    * Target column: "price"
+    * RMSE
+        * Best feature combo "curb-weight", "horsepower", "city-mpg", "highway-mpg"'
+        * Best RMSE results (**improved robustness of results since takes average RMSE over K-Folds**):
+            * 2446.94 with 'k' of 2 (optimum) using 10 K-Folds for Cross Validation
+
+            * Screenshots:
+
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation.png)
 
 ## Chapter 3 - Known Bugs <a id="chapter-3"></a>
 

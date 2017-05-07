@@ -13,7 +13,7 @@ class PredictionModelExternal:
         self.prediction_data = prediction_data
         self.prediction_utils = prediction_utils
         self.training_columns = prediction_data.get_training_columns()
-        self.target_column = self.prediction_config.TARGET_COLUMN
+        self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
         self.knn = None
 
     def generate_knn_model(self, qty_neighbors, algorithm, distance_type):
@@ -131,7 +131,7 @@ class PredictionModelExternal:
                         model = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
 
                         # MSEs for each Fold
-                        mses = cross_val_score(model, df[list(feature_combo)], df[self.target_column], scoring="neg_mean_squared_error", cv=kf, verbose=1)
+                        mses = cross_val_score(model, df[list(feature_combo)], df[self.target_column], scoring="neg_mean_squared_error", cv=kf, verbose=0)
                         fold_rmses = [np.sqrt(np.absolute(mse)) for mse in mses]
                         return np.mean(fold_rmses)
 
@@ -140,16 +140,17 @@ class PredictionModelExternal:
                     else:
                         avg_rmse = cross_validation_with_builtin()
                     # print("Fold RMSEs %r: " % (fold_rmses))
-                    # print("Average RMSE: %r" % (avg_rmse))
+                    print("Average RMSE for Feature Combo %r with Hyperparam k of %r using %r K-Folds: %r" % (feature_combo_key, qty_neighbors, self.prediction_config.K_FOLDS, avg_rmse))
 
                     feature_combos_rmse_for_hyperparams[feature_combo_key].append(avg_rmse)
 
         feature_combos_lowest_rmse_for_hyperparams = dict()
 
         for key, value in feature_combos_rmse_for_hyperparams.items():
-            # Initiate element with lowest RMSE as first element unless find a lower element at subsequent index
+            # Initiate first element to key for lowest RMSE. If find an even lower RMSE at subsequent index it will be replaced
             feature_combos_lowest_rmse_for_hyperparams[key] = dict()
             feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = feature_combos_rmse_for_hyperparams[key][0]
+            feature_combos_lowest_rmse_for_hyperparams[key]["k"] = 1
             for k, rmse in enumerate(feature_combos_rmse_for_hyperparams[key]):
                 if rmse < feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"]:
                     feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = rmse
