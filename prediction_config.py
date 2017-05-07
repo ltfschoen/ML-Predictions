@@ -96,7 +96,8 @@ class PredictionConfig():
                 # 3 columns Minimum
                 "training_columns": ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"],
                 "target_column": "price",
-                "cleanse_columns_price_format": ["price"]
+                "cleanse_columns_price_format": ["price"],
+                "convert_columns_words_to_digits": []
             },
             # Automobile Dataset - https://archive.ics.uci.edu/ml/datasets/Automobile
             "car-listings": {
@@ -105,9 +106,10 @@ class PredictionConfig():
                 "labels": "symboling,normalized-losses,make,fuel-type,aspiration,num-of-doors,body-style,drive-wheels,engine-location,wheel-base,length,width,height,curb-weight,engine-type,num-of-cylinders,engine-size,fuel-system,bore,stroke,compression-ratio,horsepower,peak-rpm,city-mpg,highway-mpg,price",
                 # 3 columns Minimum, Must be Numeric values or converted!
                 # i.e. ["wheel-base", "length", "width", "height", "curb-weight", "engine-size", "bore", "stroke", "compression-ratio", "horsepower", "peak-rpm", "city-mpg", "highway-mpg"],
-                "training_columns": ["height", "curb-weight", "horsepower", "city-mpg", "highway-mpg"],
+                "training_columns": ["num-of-doors", "curb-weight", "horsepower", "city-mpg", "highway-mpg"],
                 "target_column": "price",
-                "cleanse_columns_price_format": ["price"]
+                "cleanse_columns_price_format": ["price"],
+                "convert_columns_words_to_digits": ["num-of-doors", "num-of-cylinders"] # i.e. convert rows from say "four" to 4
             }
         }
         self.EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT = ["id"]

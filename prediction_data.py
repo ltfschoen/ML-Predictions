@@ -172,6 +172,24 @@ class PredictionData:
         training_columns = self.prediction_config.DATASET_LOCATION[dataset_choice]["training_columns"]
         target_column = self.prediction_config.DATASET_LOCATION[dataset_choice]["target_column"]
 
+        def convert_column_words_to_digits():
+            """ Convert rows of specific Columns that have numbers in word string form (i.e. one, three, five, instead of 1, 3, 5) """
+
+            words_for_digits = self.prediction_config.DATASET_LOCATION[dataset_choice]["convert_columns_words_to_digits"]
+            df = self.df_listings
+
+            if words_for_digits:
+                for index, column in enumerate(words_for_digits):
+                    df[column] = df[column].map({
+                        'one': 1,
+                        'two': 2,
+                        'three': 3,
+                        'four': 4,
+                        'five': 5,
+                        'six': 6
+                    })
+            self.df_listings = df
+
         def convert_to_numeric_type_training_and_target_columns():
             df = self.df_listings
             training_and_target_columns_df = df.filter(training_columns, axis=1)
@@ -187,6 +205,7 @@ class PredictionData:
                 # Replace old column with new column containing Numeric type
                 self.df_listings[col] = training_and_target_columns_df[col]
 
+        convert_column_words_to_digits()
         convert_to_numeric_type_training_and_target_columns()
 
     def cleanse_columns(self):
@@ -206,7 +225,7 @@ class PredictionData:
                     # Remove rows where the value is "?"
                     df = new_dc_listings
                     to_drop = ['?']
-                    print(~df[name].isin(to_drop))
+                    # print(~df[name].isin(to_drop))
                     new_dc_listings = df[~df[name].isin(to_drop)]
             # Reindex the DataFrame since some indexes removed (may cause error when iterating later)
             new_dc_listings.reset_index(drop=True, inplace=True)
