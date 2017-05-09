@@ -258,7 +258,7 @@ class PredictionData:
                 print(e.errno)
         # K-Fold Cross-Validation Process
         else:
-            if self.prediction_config.K_FOLDS_BUILTIN == False:
+            if self.prediction_config.K_FOLDS_BUILTIN == "manual":
                 self.generate_k_folds_column()
                 print("DF Listings 'fold' column %r: " % (self.df_listings["fold"]))
 

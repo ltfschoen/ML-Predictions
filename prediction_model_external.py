@@ -41,6 +41,9 @@ class PredictionModelExternal:
         """
         print("Training features include: %r" % (self.training_columns) )
 
+        training_column_names = self.training_columns
+        feature_combo = '__'.join(training_column_names)
+
         self.generate_knn_model(self.prediction_config.HYPERPARAMETER_FIXED, 'brute', 2)
 
         _temp_training_part = self.prediction_data.training_part
@@ -66,6 +69,14 @@ class PredictionModelExternal:
         print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
         for index, training_model_feature_name in enumerate(self.training_columns):
             self.prediction_utils.plot(training_model_feature_name, _temp_testing_part)
+
+        return {
+            "feature_names": feature_combo,
+            "rmse": rmse,
+            "k_neighbors_qty": self.prediction_config.HYPERPARAMETER_FIXED,
+            "k_folds_qty": None,
+            "k_fold_cross_validation_toggle": False
+        }
 
     def process_hyperparameter_optimisation(self):
         """ Hyperparameter 'k' Optimisation """
@@ -135,7 +146,7 @@ class PredictionModelExternal:
                         fold_rmses = [np.sqrt(np.absolute(mse)) for mse in mses]
                         return np.mean(fold_rmses)
 
-                    if self.prediction_config.K_FOLDS_BUILTIN == False:
+                    if self.prediction_config.K_FOLDS_BUILTIN == "manual":
                         avg_rmse = cross_validation_manual()
                     else:
                         avg_rmse = cross_validation_with_builtin()
@@ -173,6 +184,14 @@ class PredictionModelExternal:
 
         self.prediction_utils.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams)
 
+        return {
+            "feature_names": feature_combo_name_with_lowest_rmse,
+            "rmse": lowest_rmse,
+            "k_neighbors_qty": k_value_of_lowest_rmse,
+            "k_folds_qty": self.prediction_config.K_FOLDS,
+            "k_fold_cross_validation_toggle": self.prediction_config.K_FOLD_CROSS_VALIDATION
+        }
+
 def run(prediction_config, prediction_data, prediction_utils):
     """
     Scikit-Learn Workflow depending on config chosen
@@ -180,6 +199,6 @@ def run(prediction_config, prediction_data, prediction_utils):
     prediction_model_external = PredictionModelExternal(prediction_config, prediction_data, prediction_utils)
 
     if prediction_config.HYPERPARAMETER_OPTIMISATION == True:
-        prediction_model_external.process_hyperparameter_optimisation()
+        return prediction_model_external.process_hyperparameter_optimisation()
     else:
-        prediction_model_external.process_hyperparameter_fixed()
+        return prediction_model_external.process_hyperparameter_fixed()

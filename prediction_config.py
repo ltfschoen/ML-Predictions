@@ -1,6 +1,6 @@
 import numpy as np
 
-class PredictionConfig():
+class PredictionConfig(object):
     """ Machine Learning configuration """
 
     # Implementation Guide:
@@ -55,7 +55,7 @@ class PredictionConfig():
     #    - Automatically perform prediction and output list of predictions by providing the TRAINING_COLUMNS (all columns
     #      used if this list is empty) and the TARGET_COLUMN's values to the chosen Machine Learning Model
     #      ML_MODEL_KNN (with a "manual" value to use the model built manually or optionally
-    #      with a value "external" to use the much faster Scikit-Learn Machine Learning library).
+    #      with a value "scikit" to use the much faster Scikit-Learn Machine Learning library).
     #      Note that rows of the TRAINING_COLUMNS are used to predict TARGET_COLUMN's values in the Test set.
     #      Note that if only one TRAINING_COLUMN is used it is known as Univariate, whilst more is Multivariate.
     #      The ML Model uses Similarity Metrics (by means of the K-Nearest-Neighbors Machine Learning
@@ -67,51 +67,38 @@ class PredictionConfig():
     #      the model since it allows the model to better identify observations (rows) from the Training set that are
     #      most similar to the Test set.
 
-    def __init__(self):
-        self.ML_MODEL_KNN = "external" # manual or external
-        self.HYPERPARAMETER_OPTIMISATION = True # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
-        self.HYPERPARAMETER_RANGE = np.arange(1, 21, 1) # 1 to 20
-        self.MIN_FEATURES_COMBO_LEN = 3
-        self.HYPERPARAMETER_FIXED = 5 # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
-        self.MAX_MAJOR_INCOMPLETE = 0.2 # Percentage
-        self.MAX_MINOR_INCOMPLETE = 0.02 # Percentage
-        self.K_FOLD_CROSS_VALIDATION = True
+    def __init__(self, event, context):
+        self.CONTEXT = context
+        self.ML_MODEL_KNN = event["model_workflow_for_knn_algorithm"] # manual or scikit
+        self.HYPERPARAMETER_OPTIMISATION = event["hyperparameter_optimisation_toggle"] # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
+        self.HYPERPARAMETER_RANGE = np.arange(1, int(event["hyperparameter_range"]) + 1, 1) # 1 to 20
+        self.HYPERPARAMETER_FIXED = int(event["hyperparameter_quantity_fixed"]) # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
+        self.MIN_FEATURES_COMBO_LEN = int(event["min_training_features"])
+        self.MAX_MAJOR_INCOMPLETE = float(event["min_percentage_incomplete_observations_to_remove_column"]) # Percentage
+        self.MAX_MINOR_INCOMPLETE = float(event["max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice"]) # Percentage
+        self.K_FOLD_CROSS_VALIDATION = event["k_fold_cross_validation_toggle"]
         # K-Fold Cross-Validation Technique when K_FOLDS >= 3 OR Holdout Validation when K_FOLDS == 2
         # Train/Test Validation Process
-        self.K_FOLDS = 10
+        self.K_FOLDS = int(event["k_folds_quantity"])
         # Toggle whether to use use:
         #   - True - Scikit-Learn's KFold class to generate K Folds and its cross_val_score function
         #            for training and Cross Validation (without the need to use the "fold" column manually)
         #   - False - Manually generate a KFolds 'fold' column and manually perform Cross Validation
-        self.K_FOLDS_BUILTIN = True
+        self.K_FOLDS_BUILTIN = event["k_folds_workflow"] # i.e. manual or scikit
         self.TESTING_PROPORTION = self.get_testing_proportion()
-        self.DATASET_CHOICE = "car-listings" # "rental-property-listings", "car-listings"
-        self.DATASET_LOCATION = {
-            "rental-property-listings": {
-                "local": "data/listings.csv",
-                "remote": "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv",
-                "labels": "", # Empty array means labels already included in dataset
-                # Important Note: empty array means use all as Training Columns except the Target Column
-                # Example: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
-                # 3 columns Minimum
-                "training_columns": ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"],
-                "target_column": "price",
-                "cleanse_columns_price_format": ["price"],
-                "convert_columns_words_to_digits": []
-            },
-            # Automobile Dataset - https://archive.ics.uci.edu/ml/datasets/Automobile
-            "car-listings": {
-                "local": "data/imports-85.data",
-                "remote": "https://archive.ics.uci.edu/ml/machine-learning-databases/autos/imports-85.data",
-                "labels": "symboling,normalized-losses,make,fuel-type,aspiration,num-of-doors,body-style,drive-wheels,engine-location,wheel-base,length,width,height,curb-weight,engine-type,num-of-cylinders,engine-size,fuel-system,bore,stroke,compression-ratio,horsepower,peak-rpm,city-mpg,highway-mpg,price",
-                # 3 columns Minimum, Must be Numeric values or converted!
-                # i.e. ["wheel-base", "length", "width", "height", "curb-weight", "engine-size", "bore", "stroke", "compression-ratio", "horsepower", "peak-rpm", "city-mpg", "highway-mpg"],
-                "training_columns": ["num-of-doors", "curb-weight", "horsepower", "city-mpg", "highway-mpg"],
-                "target_column": "price",
-                "cleanse_columns_price_format": ["price"],
-                "convert_columns_words_to_digits": ["num-of-doors", "num-of-cylinders"] # i.e. convert rows from say "four" to 4
-            }
-        }
+        self.DATASET_CHOICE = event["dataset_selected"] # "rental-property-listings", "car-listings"
+        # Important Notes:
+        # - "labels" - Use empty array when labels already included in dataset
+        # - "training_columns" - Use empty array to use all as Training Columns except the Target Column
+        #   Example for "rental-property-listings" dataset: # ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"]
+        #   Example for "car-listings" dataset: ["wheel-base", "length", "width", "height", "curb-weight", "engine-size", "bore", "stroke", "compression-ratio", "horsepower", "peak-rpm", "city-mpg", "highway-mpg"],
+        #   Minimum amount of elements to add to this list is the value of "min_training_features"
+        #   Each row value associated with element column in dataset must be numeric or converted prior to usage
+        # - "remote" - URL to data associated with dataset. Not the URL to information about the dataset
+        #   (i.e. Automobile Dataset information - https://archive.ics.uci.edu/ml/datasets/Automobile)
+        # - "convert_columns_words_to_digits" - i.e. convert rows from say "four" to 4
+        self.DATASET_LOCATION = event["dataset_config"]
+        # TODO - Move into individual dataset config dicts
         self.EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT = ["id"]
         self.EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT = ["_id", "-id"]
         self.validate_config()

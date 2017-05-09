@@ -4,10 +4,12 @@ class PredictionModelManual:
         self.prediction_config = prediction_config
         self.prediction_data = prediction_data
         self.prediction_utils = prediction_utils
+        self.training_columns = prediction_data.get_training_columns()
+        self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
 
     def get_target_column_prediction(self, model_feature_name):
         _temp_testing_part = self.prediction_data.testing_part
-        column_name_predicted_target = "predicted_" + self.prediction_config.TARGET_COLUMN + "_" + model_feature_name
+        column_name_predicted_target = "predicted_" + self.target_column + "_" + model_feature_name
         self.prediction_data.testing_part[column_name_predicted_target] = _temp_testing_part[model_feature_name].apply(lambda x: self.process_target_prediction(model_feature_name, x))
         print("Predicted Target Column (i.e. 'price') using Model %r: %r" % (model_feature_name, self.prediction_data.testing_part[column_name_predicted_target]) )
 
@@ -79,3 +81,11 @@ def run(prediction_config, prediction_data, prediction_utils):
         mae_rmse_ratio_prefix = mae / rmse
         print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
         prediction_utils.plot(training_model_feature_name, prediction_data.testing_part)
+
+    return {
+        "feature_names": training_model_feature_name,
+        "rmse": rmse,
+        "k_neighbors_qty": prediction_config.HYPERPARAMETER_FIXED,
+        "k_folds_qty": None,
+        "k_fold_cross_validation_toggle": False
+    }

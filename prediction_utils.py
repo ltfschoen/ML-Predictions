@@ -11,6 +11,7 @@ class PredictionUtils():
 
     def __init__(self, prediction_config):
         self.prediction_config = prediction_config
+        self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
 
     def normalise_dataframe(self, df):
         """ Apply mass Column transformation to Normalise all feature columns in a DataFrame """
@@ -82,18 +83,19 @@ class PredictionUtils():
         on average price of other listings based on the model feature being trained
         (i.e. "accommodates" or "bathrooms").
         """
-        print("Predicted Target Column (i.e. 'price') (Avg of Nearest): %.2f (with model feature %r Avg. : %r) " % (df.iloc[0:5][self.prediction_config.TARGET_COLUMN].mean(), model_feature_name, df.iloc[0:5][model_feature_name].mean()) )
-        return df.iloc[0:5][self.prediction_config.TARGET_COLUMN].mean()
+        k_nearest_neighbors = self.prediction_config.HYPERPARAMETER_FIXED
+        print("Predicted Target Column (i.e. 'price') (Avg of Nearest): %.2f (with model feature %r Avg. : %r) " % (df.iloc[0:k_nearest_neighbors][self.target_column].mean(), model_feature_name, df.iloc[0:k_nearest_neighbors][model_feature_name].mean()) )
+        return df.iloc[0:k_nearest_neighbors][self.target_column].mean()
 
     def calc_mean_absolute_error(self, df, model_feature_name):
         """ MAE = ( |(actual1 - predicted1)| + ... + |(actualn - predictedn)| ) / n """
-        column_name_predicted_target = "predicted_" + self.prediction_config.TARGET_COLUMN + "_" + model_feature_name
-        return df.apply(lambda x: np.absolute(x[self.prediction_config.TARGET_COLUMN] - x[column_name_predicted_target]), axis=1).mean()
+        column_name_predicted_target = "predicted_" + self.target_column + "_" + model_feature_name
+        return df.apply(lambda x: np.absolute(x[self.target_column] - x[column_name_predicted_target]), axis=1).mean()
 
     def calc_mean_squared_error(self, df, model_feature_name):
         """ MSE = ( (actual1 - predicted1)^2 + ... + (actualn - predictedn)^2 ) / n """
-        column_name_predicted_target = "predicted_" + self.prediction_config.TARGET_COLUMN + "_" + model_feature_name
-        return df.apply(lambda x: (x[self.prediction_config.TARGET_COLUMN] - x[column_name_predicted_target])**2, axis=1).mean()
+        column_name_predicted_target = "predicted_" + self.target_column + "_" + model_feature_name
+        return df.apply(lambda x: (x[self.target_column] - x[column_name_predicted_target])**2, axis=1).mean()
 
     def calc_root_mean_squared_error(self, df, model_feature_name):
         """ RMSE = sqrt(MSE) """
@@ -122,7 +124,7 @@ class PredictionUtils():
 
     def plot(self, training_model_feature_name, testing_part):
         """ Plot """
-        testing_part.pivot_table(index=training_model_feature_name, values=self.prediction_config.TARGET_COLUMN).plot()
+        testing_part.pivot_table(index=training_model_feature_name, values=self.target_column).plot()
         plt.show()
 
     def scatter_plot_hyperparams(self, hyperparam_range, error_values):

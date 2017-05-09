@@ -33,7 +33,9 @@ in `prediction_config.py` for details.
     touch ~/.matplotlib/matplotlibrc; echo 'backend: TkAgg' >> ~/.matplotlib/matplotlibrc`
     ```
 
-* Read the Implementation Guide in `prediction_config.py` and configure desired values.
+* Read the Implementation Guide in `prediction_config.py`.
+* Configure desired input values into EVENT object within `main.py`
+    * Note: Designed in accordance with [AWS Lambda Function Programming Model](http://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html)
 
 * Run
     ```
