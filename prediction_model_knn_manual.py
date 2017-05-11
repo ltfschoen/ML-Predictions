@@ -1,10 +1,10 @@
-class PredictionModelManual:
+class PredictionModelKNNManual:
     """ Manual Machine Learning Model - function that outputs prediction based on input to the model """
     def __init__(self, prediction_config, prediction_data, prediction_utils):
         self.prediction_config = prediction_config
         self.prediction_data = prediction_data
         self.prediction_utils = prediction_utils
-        self.training_columns = prediction_data.get_training_columns()
+        self.training_columns = self.prediction_data.training_columns
         self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
 
     def get_target_column_prediction(self, model_feature_name):
@@ -72,7 +72,7 @@ class PredictionModelManual:
         return rmse
 
 def run(prediction_config, prediction_data, prediction_utils):
-    prediction_model_manual = PredictionModelManual(prediction_config, prediction_data, prediction_utils)
+    prediction_model_manual = PredictionModelKNNManual(prediction_config, prediction_data, prediction_utils)
     for index, training_model_feature_name in enumerate(prediction_data.get_training_columns()):
         prediction_model_manual.get_target_column_prediction(training_model_feature_name)
         mae = prediction_model_manual.get_mean_absolute_error(training_model_feature_name)      # MAE

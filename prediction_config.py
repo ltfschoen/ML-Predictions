@@ -70,6 +70,7 @@ class PredictionConfig(object):
     def __init__(self, event, context):
         self.CONTEXT = context
         self.ML_MODEL_KNN = event["model_workflow_for_knn_algorithm"] # manual or scikit
+        self.ML_MODEL_LINEAR = event["model_workflow_for_linear_regression_algorithm_toggle"] # scikit True/False
         self.HYPERPARAMETER_OPTIMISATION = event["hyperparameter_optimisation_toggle"] # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
         self.HYPERPARAMETER_RANGE = np.arange(1, int(event["hyperparameter_range"]) + 1, 1) # 1 to 20
         self.HYPERPARAMETER_FIXED = int(event["hyperparameter_quantity_fixed"]) # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False

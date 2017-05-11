@@ -2,6 +2,8 @@ import pandas as pd
 from pathlib import Path
 import requests
 from lib.build_folds import build_folds
+import copy
+from itertools import compress
 
 class PredictionData:
     """ Load and Partition DataFrame into Training/Testing for Validation Process """
@@ -11,6 +13,9 @@ class PredictionData:
         self.df_listings = self.load_dataset(None) # Load data set DataFrame (i.e. `None` for all 3723 rows)
         self.training_part = None # Training part of df_listings
         self.testing_part = None # Testing part of df_listings
+        self.dataset_choice = self.prediction_config.DATASET_CHOICE
+        self.target_column = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["target_column"]
+        self.training_columns = self.setup_training_columns() # If no training columns specified then all are chosen
         self.cleanse_columns() # Data Cleaning, including removal of `?` from Training Features Combination and Target Cols
         self.convert_columns() # Convert to Float64 if String all Training Features Combination and Target Cols
         self.remove_columns_incorrect_format() # Remove columns with inadequate data (i.e. missing values, non-numeric, non-ordinal, unspecific)
@@ -30,15 +35,22 @@ class PredictionData:
             dataset_location_local = self.prediction_config.DATASET_LOCATION[dataset_choice]["local"]
             dataset_location_remote = self.prediction_config.DATASET_LOCATION[dataset_choice]["remote"]
             dataset_file = Path(dataset_location_local)
+            dataset_file_format = self.prediction_config.DATASET_LOCATION[dataset_choice]["format"]
             if dataset_file.is_file():
-                df = pd.read_csv(dataset_location_local, nrows=num_rows)
+                if dataset_file_format == "csv-whitespace-separated":
+                    df = pd.read_table(dataset_location_local, delim_whitespace=True)
+                else:
+                    df = pd.read_csv(dataset_location_local, nrows=num_rows)
                 return self.add_missing_labels(df)
             else:
                 def exists(path):
                     r = requests.head(path)
                     return r.status_code == requests.codes.ok
                 if exists(dataset_location_remote):
-                    df = pd.read_csv(dataset_location_remote, nrows=num_rows)
+                    if dataset_file_format == "csv-whitespace-separated":
+                        df = pd.read_table(dataset_location_local, delim_whitespace=True)
+                    else:
+                        df = pd.read_csv(dataset_location_remote, nrows=num_rows)
                     return self.add_missing_labels(df)
             return None
         except Exception as e:
@@ -53,30 +65,22 @@ class PredictionData:
             df.columns = [str(label) for label in dataset_labels.split(',') if label]
         return df
 
+    def update_training_columns_with_removed(self, column_name):
+        if column_name in self.training_columns:
+            self.training_columns.remove(column_name)
+
     def remove_columns_incorrect_format(self):
         """
         Return new object with labels in requested axis removed
         (i.e. axis=1 asks Pandas to drop across DataFrame columns)
         """
-        dataset_choice = self.prediction_config.DATASET_CHOICE
-
-        if dataset_choice == "rental-property-listings":
-            remove_non_numeric_columns = ["room_type", "city", "state"]
-            remove_non_ordinal_columns = ["latitude", "longitude", "zipcode"]
-            remove_out_of_scope_columns = ["host_response_rate", "host_acceptance_rate", "host_listings_count"]
-            remove_columns = remove_non_numeric_columns + \
-                             remove_non_ordinal_columns + \
-                             remove_out_of_scope_columns
-            self.df_listings.drop(remove_columns, axis=1, inplace=True)
-
-        if dataset_choice == "car-listings":
-            remove_non_numeric_columns = ["make", "fuel-type", "aspiration", "body-style", "drive-wheels", "engine-location", "engine-type", "fuel-system"]
-            remove_non_ordinal_columns = []
-            remove_out_of_scope_columns = ["symboling", "normalized-losses"]
-            remove_columns = remove_non_numeric_columns + \
-                             remove_non_ordinal_columns + \
-                             remove_out_of_scope_columns
-            self.df_listings.drop(remove_columns, axis=1, inplace=True)
+        remove_non_numeric_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["non_numeric"]
+        remove_non_ordinal_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["non_ordinal"]
+        remove_out_of_scope_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["out_of_scope"]
+        remove_columns = remove_non_numeric_columns + remove_non_ordinal_columns + remove_out_of_scope_columns
+        self.df_listings.drop(remove_columns, axis=1, inplace=True)
+        for index, name in enumerate(remove_columns):
+            self.update_training_columns_with_removed(name)
 
     # def show_columns_incomplete(self):
     #     """
@@ -103,11 +107,11 @@ class PredictionData:
         # Iterate over columns in DataFrame
         for name, values in self.df_listings.iteritems():
             # print("%r: %r" % (name, values) )
-            if name != "id":
-                col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
-                if col_percentage_missing > self.prediction_config.MAX_MAJOR_INCOMPLETE:
-                    print("Deleting Column %r, as contains too many null values: %r" % (name, col_percentage_missing) )
-                    self.df_listings.drop(name, axis=1, inplace=True)
+            col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
+            if col_percentage_missing > self.prediction_config.MAX_MAJOR_INCOMPLETE:
+                print("Deleting Column %r, as contains too many null values: %r" % (name, col_percentage_missing) )
+                self.df_listings.drop(name, axis=1, inplace=True)
+                self.update_training_columns_with_removed(name)
 
     def retain_columns_low_incomplete_but_strip(self):
         """ Retain Columns where percentage of null or NaN values comprise LESS THAN 1% (0.01) of its rows
@@ -117,11 +121,6 @@ class PredictionData:
         row of all other Columns in the dataset, so that same row is removed across ALL the Columns
         """
 
-        # For reference only
-        dataset_choice = self.prediction_config.DATASET_CHOICE
-        training_columns = self.prediction_config.DATASET_LOCATION[dataset_choice]["training_columns"]
-        target_column = self.prediction_config.DATASET_LOCATION[dataset_choice]["target_column"]
-
         # Remove NaN/null values from Columns where percentage of missing values is less than MAX_MINOR_INCOMPLETE
         # and from Columns that are one of the Training set columns or the Target Column
         # Iterate over columns in DataFrame
@@ -129,7 +128,7 @@ class PredictionData:
         for name, values in self.df_listings.iteritems():
             col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
 
-            if (col_percentage_missing < self.prediction_config.MAX_MINOR_INCOMPLETE) or (name in training_columns) or (name == target_column):
+            if (col_percentage_missing < self.prediction_config.MAX_MINOR_INCOMPLETE) or (name in self.training_columns) or (name == self.target_column):
                 # print("Before null/NaN values?: %r" %(self.df_listings[name].isnull().any(axis=0)))
                 print("Retained Column: %r, but removed null and NaN valued rows comprising approx. percentage: %r" % (name, col_percentage_missing) )
                 new_dc_listings.dropna(axis=0, how="any", subset=[name], inplace=True)
@@ -152,6 +151,11 @@ class PredictionData:
 
         # Select only Columns containing type int, float64, floating. Exclude Columns with types Object (O) that includes strings
         df_listings_with_float_or_int_values = self.df_listings.select_dtypes(include=['int', 'float64', 'floating'], exclude=['O'])
+        print("Excluding non-numeric columns from Normalisation: ", self.df_listings.select_dtypes(include=['O']).columns.tolist())
+
+        excluding_columns = self.df_listings.select_dtypes(include=['O']).columns.tolist()
+        for index, name in enumerate(excluding_columns):
+            self.update_training_columns_with_removed(name)
 
         normalized_listings = self.prediction_utils.normalise_dataframe(df_listings_with_float_or_int_values)
 
@@ -168,14 +172,10 @@ class PredictionData:
         and so may be processed by Scikit-Learn
         """
 
-        dataset_choice = self.prediction_config.DATASET_CHOICE
-        training_columns = self.prediction_config.DATASET_LOCATION[dataset_choice]["training_columns"]
-        target_column = self.prediction_config.DATASET_LOCATION[dataset_choice]["target_column"]
-
         def convert_column_words_to_digits():
             """ Convert rows of specific Columns that have numbers in word string form (i.e. one, three, five, instead of 1, 3, 5) """
 
-            words_for_digits = self.prediction_config.DATASET_LOCATION[dataset_choice]["convert_columns_words_to_digits"]
+            words_for_digits = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["convert_columns_words_to_digits"]
             df = self.df_listings
 
             if words_for_digits:
@@ -192,18 +192,27 @@ class PredictionData:
 
         def convert_to_numeric_type_training_and_target_columns():
             df = self.df_listings
-            training_and_target_columns_df = df.filter(training_columns, axis=1)
-            for col in training_and_target_columns_df.columns:
-                # print("Before Column %r has dtype: %r" % (col, training_and_target_columns_df[col].dtype) )
+            _training_and_target_columns = copy.deepcopy(self.training_columns)
+            _training_and_target_columns.extend([self.target_column])
+            _training_and_target_columns_df = df.filter(_training_and_target_columns, axis=1)
+            _df_for_new_cols = self.df_listings
+            for index, col in enumerate(_training_and_target_columns_df.columns):
+                print("Before Column %r has dtype: %r" % (col, _training_and_target_columns_df[col].dtype) )
 
                 # Convert multiple columns using `apply` to the
                 # Numeric type. Use `errors` keyword argument to
                 # coerce/force not-numeric values to be NaN
-                training_and_target_columns_df[col] = pd.to_numeric(training_and_target_columns_df[col], errors='coerce')
-                # print("After Column %r has dtype: %r" % (col, training_and_target_columns_df[col].dtype) )
+
+                # Do not convert columns with non-numeric string values
+                if not col in self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["non_numeric"]:
+                    _df_for_new_cols[col] = _training_and_target_columns_df[col]
+                else:
+                    _df_for_new_cols[col] = pd.to_numeric(_training_and_target_columns_df[col], errors='coerce')
+
+                print("After Column %r has dtype: %r" % (col, _df_for_new_cols[col].dtype) )
 
                 # Replace old column with new column containing Numeric type
-                self.df_listings[col] = training_and_target_columns_df[col]
+                self.df_listings[col] = _df_for_new_cols[col]
 
         convert_column_words_to_digits()
         convert_to_numeric_type_training_and_target_columns()
@@ -212,16 +221,12 @@ class PredictionData:
         """ Cleanse all identified price columns.
         Remove ? values from Columns that are one of the Training set columns or the Target Column"""
 
-        dataset_choice = self.prediction_config.DATASET_CHOICE
-        training_columns = self.prediction_config.DATASET_LOCATION[dataset_choice]["training_columns"]
-        target_column = self.prediction_config.DATASET_LOCATION[dataset_choice]["target_column"]
-
         def clean_question_marks_from_training_and_target_columns():
             new_dc_listings = self.df_listings
             # Remove ? values from Columns that are one of the Training set columns or the Target Column
             # Iterate over columns in DataFrame
             for name, values in self.df_listings.iteritems():
-                if (name in training_columns) or (name == target_column):
+                if (name in self.training_columns) or (name == self.target_column):
                     # Remove rows where the value is "?"
                     df = new_dc_listings
                     to_drop = ['?']
@@ -232,7 +237,7 @@ class PredictionData:
             self.df_listings = new_dc_listings
 
         def clean_columns_with_price_format():
-            for index, price_format_column in enumerate(self.prediction_config.DATASET_LOCATION[dataset_choice]["cleanse_columns_price_format"]):
+            for index, price_format_column in enumerate(self.prediction_config.DATASET_LOCATION[self.dataset_choice]["cleanse_columns_price_format"]):
                 if price_format_column in self.df_listings:
                     self.df_listings[price_format_column] = self.prediction_utils.clean_price_format(self.df_listings[price_format_column])
 
@@ -283,19 +288,19 @@ class PredictionData:
             training_len -= len(df) - 1
         return training_len
 
-    def get_training_columns(self):
+    def setup_training_columns(self):
         """ Return array of Training Columns.
 
         When "training_columns" array is empty it means return all columns except the "target_column"
         """
-        dataset_choice = self.prediction_config.DATASET_CHOICE
-        training_columns = self.prediction_config.DATASET_LOCATION[dataset_choice]["training_columns"]
-        target_column = self.prediction_config.DATASET_LOCATION[dataset_choice]["target_column"]
+
+        training_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["training_columns"]
+
         if not training_columns:
             features = self.df_listings.columns.tolist()
 
             # Remove "target_column"
-            features.remove(target_column)
+            features.remove(self.target_column)
 
             # Remove columns containing Excluded full text
             for index, column_name in enumerate(self.prediction_config.EXCLUDE_TRAINING_COLUMNS_WITH_FULL_TEXT):
@@ -303,11 +308,12 @@ class PredictionData:
                     features.remove(column_name)
 
             # Retain columns that do not contain Excluded partial text
-            features_to_retain = []
-            for index, column_partial_name in enumerate(self.prediction_config.EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT):
-                for index, column_name in enumerate(features):
+            is_features_to_retain = [False] * len(features)
+            for idx_outer, column_partial_name in enumerate(self.prediction_config.EXCLUDE_TRAINING_COLUMNS_WITH_PARTIAL_TEXT):
+                for idx_inner, column_name in enumerate(features):
                     if column_partial_name not in column_name:
-                        features_to_retain.append(column_name)
-            return features_to_retain
+                        is_features_to_retain[idx_inner] = True
+            filtered = list(compress(features, is_features_to_retain))
+            return filtered
         else:
             return training_columns

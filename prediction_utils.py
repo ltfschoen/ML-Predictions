@@ -22,13 +22,16 @@ class PredictionUtils():
         :param series: Pandas DataFrame object
         :return: float
         """
-        count_question_marks = 0
-        for i, v in enumerate(df[column]):
-            if df[column][i] == "?":
-                count_question_marks += 1
-        num = df[column].isnull().sum() + count_question_marks
-        den = len(df[column])
-        return round(num/den, 2)
+        try:
+            count_question_marks = 0
+            for i, v in enumerate(df[column]):
+                if df[column][i] == "?":
+                    count_question_marks += 1
+            num = df[column].isnull().sum() + count_question_marks
+            den = len(df[column])
+            return round(num/den, 2)
+        except:
+            print("Check to ensure that all non-numeric columns are tagged for removal")
 
     def calc_euclidean_dist(self, val1, val2):
         """ Euclidean Distance equation to compare values of different data sets """
@@ -119,8 +122,7 @@ class PredictionUtils():
                 combos_above_min_len.append(list(itertools.combinations(features, i)))
                 i += 1
             return flatten_combo(combos_above_min_len)
-        print("Error: Minimum length of any features combos cannot exceed length of all features")
-        return []
+        raise ValueError("Error: Insufficient training feature combinations to satisfy the configured minimum quantity")
 
     def plot(self, training_model_feature_name, testing_part):
         """ Plot """
@@ -152,20 +154,82 @@ class PredictionUtils():
 
         plt.show()
 
-    def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams):
+    def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, lowest_rmse, highest_rmse):
+
+        count_feature_combos = len(feature_combos_lowest_rmse_for_hyperparams.items())
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
+        # Automatically select specified number of colours from existing colourmap
+        number = count_feature_combos + 1
+
+        # Select colourmap
+        cmap = plt.get_cmap('gist_ncar')
+        colors = [cmap(i) for i in np.linspace(0, 1, number)]
+
+        j = 1
         for feature_key, dict_value in feature_combos_lowest_rmse_for_hyperparams.items():
             k = dict_value["k"]
             min_rmse = dict_value["min_rmse"]
-            ax.plot(k, min_rmse, '+', label = feature_key, mew=10, ms=15)
+            ax.plot(k, min_rmse, '+', color=colors[j], label = feature_key, mew=5, ms=10)
+            j += 1
 
-        ax.legend(loc=0, prop={'size':6})
+        ax.legend(prop={'size':4})
         ax.grid()
         ax.set_xlabel("Hyperparam k")
         yLabel = "RMSE of Features Combination using " + str(self.prediction_config.K_FOLDS) + " K-Folds for Cross Validation"
         ax.set_ylabel(yLabel)
-        ax.set_ylim(-100, 20000) # RMSE
-        # ax.set_ylim(-50, 20000) # MSE
+
+        # Optimise plot to dynamically fit all values regardless of range of RMSE results
+        contingency = highest_rmse * 0.1
+        highest_rmse_with_contingency = highest_rmse + contingency
+        lowest_rmse_with_contingency = lowest_rmse - contingency
+        ax.set_ylim(lowest_rmse_with_contingency, highest_rmse_with_contingency) # RMSE
+
+        # Legend squeezed on right side
+        plt.legend(bbox_to_anchor=(1.2,1), loc="upper right", mode="expand", borderaxespad=0, prop={'size':5})
+        # plt.subplots_adjust(top=0.7)
+        plt.tight_layout(rect=[0,0,0.5,1])
+        plt.show()
+
+    def plot_linear_relationship_comparison(self, df, training_columns, predictions):
+        """ Exploratory Data Analysis to interpret model by plotting
+        ACTUAL Training column against the Target column (actual fuel efficiency values) and
+        PREDICTED column (predicted fuel efficiency values trained with known/ACTUAL data)
+        to get visual understanding of model effectiveness
+
+        - Purpose:
+            - Machine Learning Model is "equation" representing input to output mapping by determining relationship
+              between Independent Variables and the Dependent Variable
+            - Linear Machine Learning Models are of the form: y = mx + b
+                - where input x is transformed using m slope and b intercept parameters
+                - where output is y
+                - where m expected to be negative since negative linear relationship
+            - Determine relationship between Target column (Dependent Variable) and Training columns (Independent Variables)
+            - Determine how Training columns affect the Target column
+            - Determine which Training column best correlates to Target column
+        - Process of Finding "equation" (Machine Learning Model) that best "Fits" the data
+            - Interpret Linear Relationship
+                - Strong / Weak and Positive or Negative Linear Relationship / Gradient
+        """
+        training_columns_df = df.filter(training_columns, axis=1)
+        count_subplots = len(training_columns_df.columns)
+        fig = plt.figure(figsize=(count_subplots, 10))
+        count_columns = 2
+        for index, col in enumerate(training_columns_df.columns):
+            """ Subplots i.e. 2 rows x 3 columns grid at 4th subplot """
+            subplot = index + 1
+            ax = fig.add_subplot(count_subplots, count_columns, subplot)
+            x = col
+            y = self.target_column
+            label_actual = col + ' (actual)'
+            label_predicted = y + ' (predicted)'
+            ax.scatter(df[x], df[y], c='red', marker='o', label=label_actual)
+            ax.scatter(df[x], predictions, c='blue', marker='o', label=label_predicted)
+            ax.set_xlabel(x, fontsize=12)
+            ax.set_ylabel(y, fontsize=12)
+            ax.legend(bbox_to_anchor=(-0.9,-0.02), loc="best", prop={'size':5})
+        fig.tight_layout(rect=[0,0,1,1])
+
         plt.show()

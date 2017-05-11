@@ -11,7 +11,20 @@ Machine Learning - Predictions
 
 ## Chapter 0 - About <a id="chapter-0"></a>
 
-* Predict the optimum value for a chosen feature (column) of a given dataset based on
+* Problem for Dataset 1:
+    * Problem (abstract) - What's the optimum nightly price (prediction) to rent a living space using existing data on local listings?
+    * Problem (narrow) - What's the optimum nightly price (prediction) to rent a living space using existing data of on local listings based on their attributes including price, number of bedrooms, room type?
+
+* Problem for Dataset 2:
+    * Problem (abstract) - What's the optimum nightly price (prediction) to rent a living space using existing data of local listings?
+    * Problem (narrow) - What's the optimum price to sell a car (prediction) using existing data of sales prices and their attributes including make, fuel type?
+
+* Problem for Dataset2:
+    * Problem (abstract) - How do the properties of a car impact it's fuel efficiency?
+    * Problem (narrow) - How does the number of cylinders, displacement, horsepower, weight, acceleration, and model year affect a car's fuel efficiency?
+
+* Applies **machine learning** techniques on past data using a **regression** process since
+we want to predict a specific optimum number value for a chosen feature (column) of a given dataset based on
 chosen list of features to train against by using a chosen Train/Test Validation Process with
 the K-Nearest-Neighbors Machine Learning Model such as that provided by the Scikit-Learn library,
 which uses Similarity Metrics such as the Euclidean Distance equation to perform comparisons,
@@ -174,6 +187,30 @@ average value in the "price" column is $300)
             * Screenshots:
 
                 ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation.png)
+
+#### Example 3: Car Listing Fuel Dataset
+
+* **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
+    * Training features: mpg,cylinders,displacement,horsepower,weight,acceleration,model-year,origin,car-name
+    * Target column: mpg
+    * RMSE
+        * Best feature combo: displacement, weight, model-year
+        * Best RMSE Error Metric (Linear Regression) results
+        to gain quantitative understanding of Models error (mismatch between the Model's Predictions and Actual values):
+            * 3.30  (Note: MAE to RMSE Ratio using Linear Regression: 0.61:1)
+        * Best RMSE (KNN Regression) results:
+            * 2.75 with 'k' of 9 (optimum) using 10 K-Folds for Cross Validation
+
+            * Screenshots:
+
+                * Evaluate visually the Predicted Target value from training on known features vs Actual Target value
+                to understand Linear Regression Model performance
+
+                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/evaluation_training_columns.png)
+
+                * Best RMSE from KNN Regression
+
+                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_rmse_cross_validation.png)
 
 ## Chapter 3 - Known Bugs <a id="chapter-3"></a>
 
