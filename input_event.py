@@ -1,6 +1,10 @@
 EVENT = {
     "model_workflow_for_knn_algorithm": "scikit",
     "model_workflow_for_linear_regression_algorithm_toggle": True,
+    # Warning: Only change to True when Target column only contains Categorical int64 values (not float64)
+    # otherwise you will get a 'continous' error since it will perform Logistic Regression.
+    # i.e. For car-listing-fuel Dataset, the Target Column may be "origin", but NOT "mpg"
+    "model_workflow_for_logistic_regression_algorithm_toggle": True,
     "hyperparameter_optimisation_toggle": True,
     "hyperparameter_range": 20,
     "hyperparameter_quantity_fixed": 5,
@@ -10,7 +14,7 @@ EVENT = {
     "k_fold_cross_validation_toggle": True,
     "k_folds_quantity": 10,
     "k_folds_workflow": "scikit",
-    "dataset_selected": "car-listings-fuel",
+    "dataset_selected": "university-admissions", # rental-property-listings, car-listings, car-listings-fuel, university-admissions
     "dataset_config": {
         "rental-property-listings": {
             "local": "data/listings.csv",
@@ -79,7 +83,7 @@ EVENT = {
         },
         "university-admissions": {
             "local": "data/applicants.csv",
-            "remote": "",
+            "remote": "https://dsserver-prod-resources-1.s3.amazonaws.com/20/admissions.csv",
             "format": "csv-comma-separated",
             "labels": "",
             "exclude_columns": {

@@ -10,6 +10,7 @@ from prediction_utils import PredictionUtils
 import prediction_model_knn_manual
 import prediction_model_knn_external
 import prediction_model_linear_external
+import prediction_model_logistic_external
 from input_event import EVENT
 
 def main(event, context):
@@ -24,6 +25,11 @@ def main(event, context):
         if prediction_config.ML_MODEL_LINEAR == True:
             rmse_linear = prediction_model_linear_external.run(prediction_config, prediction_data, prediction_utils)
             print("RMSE Linear: %r" % (rmse_linear["rmse"]))
+
+        # Regression Logistic
+        if prediction_config.ML_MODEL_LOGISTIC == True:
+            rmse_logistic = prediction_model_logistic_external.run(prediction_config, prediction_data, prediction_utils)
+            # print("RMSE Logistic: %r" % (rmse_logistic["rmse"]))
 
         # Regression with KNN
         if prediction_config.ML_MODEL_KNN == "scikit":

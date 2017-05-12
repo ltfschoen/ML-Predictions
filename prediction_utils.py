@@ -277,3 +277,37 @@ class PredictionUtils():
         fig.tight_layout(rect=[0,0,1,1])
 
         plt.show()
+
+    def plot_logistic_relationship_comparison(self, df, training_columns, positive_predictions_probabilities):
+        """"""
+        if isinstance(df, type(None)) or not training_columns or isinstance(positive_predictions_probabilities, type(None)):
+            return
+        training_columns_df = df.filter(training_columns, axis=1)
+        count_subplots = len(training_columns_df.columns)
+        fig = plt.figure(figsize=(10, 10))
+        count_columns = 2
+        for index, col in enumerate(training_columns_df.columns):
+            """ Subplots i.e. 2 rows x 3 columns grid at 4th subplot """
+            subplot = index + 1
+            ax = fig.add_subplot(count_subplots, count_columns, subplot)
+            x = col
+            y = self.target_column
+            label_actual = col + ' (actual)'
+            label_predicted = y + ' (positive predicted probabilities)'
+            ax.scatter(df[x], df[y], c='red', marker='o', label=label_actual)
+            ax.scatter(df[x], positive_predictions_probabilities, c='blue', marker='o', label=label_predicted)
+            ax.set_xlabel(x, fontsize=12)
+            ax.set_ylabel(y, fontsize=12)
+
+            # Optimise X-axis range
+            df_x_max = df[x].max()
+            df_x_min = df[x].min()
+            contingency = df_x_max * 0.1
+            df_x_max_with_contingency = df_x_max + contingency
+            df_x_min_with_contingency = df_x_min - contingency
+            ax.set_xlim(df_x_min_with_contingency, df_x_max_with_contingency)
+
+            ax.legend(bbox_to_anchor=(-0.9,-0.02), loc="best", prop={'size':5})
+        fig.tight_layout(rect=[0,0,1,1])
+
+        plt.show()

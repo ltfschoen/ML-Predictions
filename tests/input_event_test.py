@@ -1,6 +1,7 @@
 EVENT = {
     "model_workflow_for_knn_algorithm": "scikit",
     "model_workflow_for_linear_regression_algorithm_toggle": True,
+    "model_workflow_for_logistic_regression_algorithm_toggle": True,
     "hyperparameter_optimisation_toggle": True,
     "hyperparameter_range": 20,
     "hyperparameter_quantity_fixed": 5,

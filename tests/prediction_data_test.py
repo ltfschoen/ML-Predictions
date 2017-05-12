@@ -42,13 +42,13 @@ class PredictionDataTestCase(unittest.TestCase):
             'col1': ['1.1'] * 3,
             'col2': [np.NaN] * 3,
             'col3': [2.2] * 3,
-            'col4': [np.NaN] * 3,
+            'col4': [2] * 3,
             'col5': [np.NaN] * 3
         })
-        self.prediction_data.target_column = "col3"
+        self.prediction_data.target_column = "col4" # Must be int64 otherwise raises ValueError
         self.prediction_data.training_columns = []
         _all_columns = self.prediction_data.df_listings.columns.tolist()
-        del _all_columns[2]
+        del _all_columns[3]
         _final_training_columns_without_target_column = _all_columns
 
         # Test
@@ -63,6 +63,24 @@ class PredictionDataTestCase(unittest.TestCase):
 
         # Test
         self.assertRaises(ValueError)
+
+    def test_valid_training_columns_raises_error_when_target_column_not_integer_type_when_using_logistic_regression(self):
+        """"""
+
+        # Setup
+        self.prediction_data.prediction_config.ML_MODEL_LOGISTIC = True
+        self.prediction_data.df_listings = pd.DataFrame({
+            'col1': ['1.1'] * 3,
+            'col2': [np.NaN] * 3,
+            'col3': [2.2] * 3,
+            'col4': [2] * 3,
+            'col5': [np.NaN] * 3
+        })
+        self.prediction_data.target_column = "col4" # float64
+        self.prediction_data.training_columns = ["col1", "col2", "col4", "col5"]
+
+        # Test
+        self.assertRaises(ValueError, self.prediction_data.validate_training_columns(), "Target column must be Categorical type i.e. int64 NOT float64 when ML_MODEL_LOGISTIC is True")
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,7 +18,7 @@ class PredictionModelLinearExternal:
 
     def generate_lr_model(self):
         # LinearRegression class from Scikit-Learn
-        self.lr = LinearRegression(fit_intercept=True)
+        self.lr = LinearRegression(fit_intercept=True) # copy_X=True, n_jobs=1, normalize=False
 
     def process_linear_regression(self):
         """ Linear Regression

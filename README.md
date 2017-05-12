@@ -90,130 +90,170 @@ average value in the "price" column is $300)
 
 #### Example 1: Rental Property Listing Dataset
 
-* **Univariate (one column) using manual KNN model with NaNs removed, with k=5 nearby neighbors**
-    * Comparison of Results (of "price" vs "predicted_price"):
-        * Model Trained #1 "accommodates" column:
-            * MAE: 61.42
-            * MSE: 15117.62
-            * RMSE: 122.95
-            * MAE to RMSE Ratio: 0.50:1
-        * Model Trained #2 "bedrooms" column:
-            * MAE: 52.82
-            * MSE: 13663.12
-            * RMSE: 116.89
-                * Note: Expect model to be off by $116 on average for predicted price values
-            * MAE to RMSE Ratio: 0.45:1
-        * Key Changes:
-            * Removal of columns with >20% of its rows being NaN
-            * Columns with <1% of NaNs having the shared row/observation were removed
+* **KNN Regression**
 
-* **Multivariate (two columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
-    * Comparison of Results (of "price" vs "predicted_price"):
-        * Model Trained with two features (both "accommodates" and "bedrooms" columns):
-            * MAE (Two features): 31.20
-            * MSE (Two features): 13315.05
-            * RMSE (Two features): 115.39
-            * MAE to RMSE Ratio (Two features): 0.27:1
-        * Key Changes:
-            * Train using two features/columns (multivariate) instead of just one (univariate)
-            with Scikit-Learn library instead of manually computation
-            * Removal of columns with >20% of its rows being NaN
-            * Columns with <1% of NaNs having the shared row/observation were removed
+    * **Univariate (one column) using manual KNN model with NaNs removed, with k=5 nearby neighbors**
+        * Comparison of Results (of "price" vs "predicted_price"):
+            * Model Trained #1 "accommodates" column:
+                * MAE: 61.42
+                * MSE: 15117.62
+                * RMSE: 122.95
+                * MAE to RMSE Ratio: 0.50:1
+            * Model Trained #2 "bedrooms" column:
+                * MAE: 52.82
+                * MSE: 13663.12
+                * RMSE: 116.89
+                    * Note: Expect model to be off by $116 on average for predicted price values
+                * MAE to RMSE Ratio: 0.45:1
+            * Key Changes:
+                * Removal of columns with >20% of its rows being NaN
+                * Columns with <1% of NaNs having the shared row/observation were removed
 
-* **Multivariate (four columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
-    * Comparison of Results (of "price" vs "predicted_price"):
-        * Model Trained with Four features ("accommodates", "bedrooms", "bathrooms", and "number_of_reviews" columns):
-            * MAE (Four features): 32.90
-            * MSE (Four features): 12754.54
-            * RMSE (Four features): 112.94
-            * MAE to RMSE Ratio (Four features): 0.29:1
+    * **Multivariate (two columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
+        * Comparison of Results (of "price" vs "predicted_price"):
+            * Model Trained with two features (both "accommodates" and "bedrooms" columns):
+                * MAE (Two features): 31.20
+                * MSE (Two features): 13315.05
+                * RMSE (Two features): 115.39
+                * MAE to RMSE Ratio (Two features): 0.27:1
+            * Key Changes:
+                * Train using two features/columns (multivariate) instead of just one (univariate)
+                with Scikit-Learn library instead of manually computation
+                * Removal of columns with >20% of its rows being NaN
+                * Columns with <1% of NaNs having the shared row/observation were removed
 
-    * Screenshots:
+    * **Multivariate (four columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
+        * Comparison of Results (of "price" vs "predicted_price"):
+            * Model Trained with Four features ("accommodates", "bedrooms", "bathrooms", and "number_of_reviews" columns):
+                * MAE (Four features): 32.90
+                * MSE (Four features): 12754.54
+                * RMSE (Four features): 112.94
+                * MAE to RMSE Ratio (Four features): 0.29:1
 
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/evaluation_training_columns.png)
+        * Screenshots:
 
-* **Multivariate (ALL columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
-    * Comparison of Results (of "price" vs "predicted_price"):
-        * Model Trained with ALL features (excluding those containing "id", "_id", or "-id":
-            * 'host_total_listings_count', 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
-            'minimum_nights', 'maximum_nights', 'availability_30', 'availability_60', 'availability_90',
-            'availability_365', 'number_of_reviews', 'calculated_host_listings_count
-            * MAE (Multiple features): 30.10
-            * MSE (Multiple features): 11630.41
-            * RMSE (Multiple features): 107.84
-            * MAE to RMSE Ratio (Multiple features): 0.28:1
+            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/evaluation_training_columns.png)
 
-* **Hyperparameter Optimisation `k` Results**
-    * Hyperparameter Range: 1 to 20
-        * Features: ["accommodates", "bedrooms", "bathrooms", and "number_of_reviews"]
+    * **Multivariate (ALL columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
+        * Comparison of Results (of "price" vs "predicted_price"):
+            * Model Trained with ALL features (excluding those containing "id", "_id", or "-id":
+                * 'host_total_listings_count', 'accommodates', 'bathrooms', 'bedrooms', 'beds', 'guests_included',
+                'minimum_nights', 'maximum_nights', 'availability_30', 'availability_60', 'availability_90',
+                'availability_365', 'number_of_reviews', 'calculated_host_listings_count
+                * MAE (Multiple features): 30.10
+                * MSE (Multiple features): 11630.41
+                * RMSE (Multiple features): 107.84
+                * MAE to RMSE Ratio (Multiple features): 0.28:1
 
-            * Screenshots:
+    * **Hyperparameter Optimisation `k` Results**
+        * Hyperparameter Range: 1 to 20
+            * Features: ["accommodates", "bedrooms", "bathrooms", and "number_of_reviews"]
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/hyperparameter_1_to_20_four_features.png)
+                * Screenshots:
 
-        * Features: All possible combinations of the features with no repeat combinations were compared and plotted (see below):
-            * Best feature combo is 'bedrooms__bathrooms__number_of_reviews' having lowest MSE of 10606.68 using 'k' nearest neighbors of 6 (optimum)
+                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/hyperparameter_1_to_20_four_features.png)
 
-            * Screenshots:
+            * Features: All possible combinations of the features with no repeat combinations were compared and plotted (see below):
+                * Best feature combo is 'bedrooms__bathrooms__number_of_reviews' having lowest MSE of 10606.68 using 'k' nearest neighbors of 6 (optimum)
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/hyperparameter_vs_feature_combos.png)
+                * Screenshots:
 
-* **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
-    * Features:
-    * MSE
-        * Best feature combo 'bedrooms', 'bathrooms', 'number_of_reviews'
-        * Best MSE result **improved robustness of results since takes average MSE over K-Folds**:
-            * 12718.88 with 'k' of 17 (optimum) using 10 K-Folds for Cross Validation
-    * RMSE
-        * Best feature combo 'accommodates', 'bedrooms', 'bathrooms', and 'number_of_reviews'
-        * Best RMSE results (**improved robustness of results since takes average RMSE over K-Folds**):
-            * 113.96 with 'k' of 20 (optimum) using 3 K-Folds for Cross Validation
-            * 109.73 with 'k' of 20 (optimum) using 5 K-Folds for Cross Validation
-            * 108.60 with 'k' of 19 (optimum) using 10 K-Folds for Cross Validation
+                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/hyperparameter_vs_feature_combos.png)
 
-            * Screenshots:
+    * **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
+        * Features:
+        * MSE
+            * Best feature combo 'bedrooms', 'bathrooms', 'number_of_reviews'
+            * Best MSE result **improved robustness of results since takes average MSE over K-Folds**:
+                * 12718.88 with 'k' of 17 (optimum) using 10 K-Folds for Cross Validation
+        * RMSE
+            * Best feature combo 'accommodates', 'bedrooms', 'bathrooms', and 'number_of_reviews'
+            * Best RMSE results (**improved robustness of results since takes average RMSE over K-Folds**):
+                * 113.96 with 'k' of 20 (optimum) using 3 K-Folds for Cross Validation
+                * 109.73 with 'k' of 20 (optimum) using 5 K-Folds for Cross Validation
+                * 108.60 with 'k' of 19 (optimum) using 10 K-Folds for Cross Validation
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/rmse_cross_validation_fixed.png)
+                * Screenshots:
+
+                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/rmse_cross_validation_fixed.png)
 
 #### Example 2: Car Listing Dataset
 
-* **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
+* Summary of results:
     * Training features: "num-of-doors", "curb-weight", "horsepower", "city-mpg", "highway-mpg"
     * Target column: "price"
-    * RMSE
-        * Best feature combo "num-of-doors", "curb-weight", "city-mpg"
-        * Best RMSE results (**improved robustness of results since takes average RMSE over K-Folds**):
+    * RMSE results:
+        * Best feature combo: "num-of-doors", "curb-weight", "city-mpg"
+        * Best RMSE using **KNN Regression** with **K-Fold Cross Validation** and Hyperparam 'k' Optimisation:
             * 3256.67 with 'k' of 3 (optimum) using 10 K-Folds for Cross Validation
 
-            * Screenshots:
+* **Linear Regression**
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/evaluation_training_columns.png)
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/evaluation_training_columns.png)
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation_fixed.png)
+* **KNN Regression**
 
-#### Example 3: Car Listing Fuel Dataset
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation_fixed.png)
 
-* **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
+#### Example 3: Car Listing "Fuel" Dataset
+
+* Summary of results:
     * Training features: mpg,cylinders,displacement,horsepower,weight,acceleration,model-year,origin,car-name
     * Target column: mpg
-    * RMSE
+    * RMSE results:
         * Best feature combo: displacement, weight, model-year
-        * Best RMSE Error Metric (Linear Regression) results
-        to gain quantitative understanding of Models error (mismatch between the Model's Predictions and Actual values):
+        * Best RMSE (Error Metric) using **Linear Regression**
+        (to gain quantitative understanding of Models error (mismatch between the Model's Predictions and Actual values):
             * 3.30  (Note: MAE to RMSE Ratio using Linear Regression: 0.61:1)
-        * Best RMSE (KNN Regression) results:
+        * Best RMSE using **KNN Regression** with **K-Fold Cross Validation** and Hyperparam 'k' Optimisation:
             * 2.75 with 'k' of 9 (optimum) using 10 K-Folds for Cross Validation
 
-            * Screenshots:
+* **Linear Regression**
+    * Evaluate visually the Predicted Target value from training on known features vs Actual Target value
+    to understand Linear Regression Model performance
 
-                * Evaluate visually the Predicted Target value from training on known features vs Actual Target value
-                to understand Linear Regression Model performance
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/evaluation_training_columns.png)
 
-                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/evaluation_training_columns.png)
+* **KNN Regression**
+    * Plotting RMSE for different combindations of feature columns to find lowest using KNN Regression
 
-                * Best RMSE from KNN Regression
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_rmse_cross_validation.png)
 
-                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_rmse_cross_validation.png)
+#### Example 4: University Admissions Dataset
+
+* Summary of results:
+    * Training features: gpa, gre
+    * Target column: admit
+    * Accuracy of Predictions (Predicted Target value when compared against Actual Target value):
+        * Accuracy using **Logistic Regression** with Discrimination Threshold of 0.5:
+            * 0.782 (78.2%)
+    * RMSE results:
+        * Best feature combo: gpa, gre
+        * Best RMSE using **Linear Regression**:
+            * 0.392  (Note: MAE to RMSE Ratio using Linear Regression: 0.80:1)
+        * Best RMSE using **Logistic Regression**:
+            * 0.382  (Note: MAE to RMSE Ratio using Logistic Regression: 0.61:1)
+        * Best RMSE using **KNN Regression** with **K-Fold Cross Validation** and Hyperparam 'k' Optimisation:
+            * 0.377 with 'k' of 20 (optimum) using 10 K-Folds for Cross Validation
+
+MAE: 0.23304931819072985
+MSE: 0.14644020478518427
+RMSE: 0.3826750642322861
+MAE to RMSE Ratio using Logistic Regression: 0.61:1
+
+* **Linear Regression**
+
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/linear_regression.png)
+
+* **Logistic Regression**
+    * Evaluate visually the Predicted Target value from training on known features vs Actual Target value
+    to understand Logistic Regression Model performance
+
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/logistic_regression.png)
+
+* **KNN Regression**
+
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/knn_regression.png)
 
 ## Chapter 4 - Known Bugs <a id="chapter-4"></a>
 
