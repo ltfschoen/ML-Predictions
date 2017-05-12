@@ -13,6 +13,9 @@ class PredictionModelLogisticExternal:
         self.training_columns = self.prediction_data.training_columns
         self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
         self.lr = None
+        self.rmse = None
+        self.sensitivity = None
+        self.specificity = None
 
     def plot_logistic_relationships(self, predictions):
         self.prediction_utils.plot_logistic_relationship_comparison(self.prediction_data.df_listings, self.training_columns, predictions)
@@ -52,30 +55,37 @@ class PredictionModelLogisticExternal:
 
             print("Positive Predictions Probabilities using Scikit-Learn Logistic Regression: %r" % (positive_prediction_proportion) )
 
-            predictions_for_labels = self.lr.predict(inputs)
-            df["predictioned_target_values"] = predictions_for_labels
-            print("Predicted Output for each Observation: %r" % (df["predictioned_target_values"].value_counts()))
+            predictions_for_target = self.lr.predict(inputs)
+            df["predicted_target_values"] = predictions_for_target
+            print("Predicted Output for each Observation: %r" % (df["predicted_target_values"].value_counts()))
             print(df.head(10))
 
             # Matches between Actual Target row values and Predicted Target row values
-            matches = df["predictioned_target_values"] == output
+            matches = df["predicted_target_values"] == output
             correct_predictions = df[matches]
 
             # Accuracy of model predictions for given Discrimination Threshold
-            accuracy = len(correct_predictions) / len(df)
+            self.accuracy = len(correct_predictions) / len(df)
 
-            print("Accuracy of Predictions using Logistic Regression: %.2f" % (accuracy) )
+            print("Accuracy of Predictions using Logistic Regression: %.2f" % (self.accuracy) )
+
+            classification = self.prediction_utils.calc_binary_classification(predictions_for_target, output)
+            self.sensitivity = classification["sensitivity"]
+            self.specificity = classification["specificity"]
+
+            print("Sensitivity of Predictions using Logistic Regression and Binary Classification: %.2f" % (self.sensitivity) )
+            print("Specificity of Predictions using Logistic Regression and Binary Classification: %.2f" % (self.specificity) )
 
             mae = median_absolute_error(df[self.target_column], positive_prediction_proportion)
             mse = mean_squared_error(df[self.target_column], positive_prediction_proportion, multioutput='raw_values')
-            rmse = math.sqrt(mse)
+            self.rmse = math.sqrt(mse)
 
             print("MAE: %r" % (mae) )
             print("MSE: %r" % (mse[0]) )
-            print("RMSE: %r" % (rmse) )
+            print("RMSE: %r" % (self.rmse) )
 
-            if mae and rmse:
-                mae_rmse_ratio_prefix = mae / rmse
+            if mae and self.rmse:
+                mae_rmse_ratio_prefix = mae / self.rmse
                 print("MAE to RMSE Ratio using Logistic Regression: %.2f:1" % (mae_rmse_ratio_prefix) )
 
             for index, training_model_feature_name in enumerate(self.training_columns):
@@ -85,8 +95,10 @@ class PredictionModelLogisticExternal:
             rmse = None
 
         return {
-            "rmse": rmse,
-            "accuracy": accuracy
+            "rmse": self.rmse,
+            "accuracy": self.accuracy,
+            "sensitivity": self.sensitivity,
+            "specificity": self.specificity
         }
 
 def run(prediction_config, prediction_data, prediction_utils):

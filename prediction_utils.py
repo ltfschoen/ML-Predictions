@@ -106,6 +106,38 @@ class PredictionUtils():
         print("Predicted Target Column (i.e. 'price') (Avg of Nearest): %.2f (with model feature %r Avg. : %r) " % (df.iloc[0:k_nearest_neighbors][self.target_column].mean(), model_feature_name, df.iloc[0:k_nearest_neighbors][model_feature_name].mean()) )
         return df.iloc[0:k_nearest_neighbors][self.target_column].mean()
 
+    def calc_sensitivity(self, count_true_positives, count_false_negatives):
+        """ Calculate Sensitivity aka True Positive Rate (TPR) to find out
+        how effective model is at identifying positive outcomes
+        (i.e. of all the Predicted observations that should have been admitted as 1 to matched the
+        Actual observation, what fraction did the Binary Classification Model correctly predict as 1)
+
+        If Sensitivity is 10% then only 1 in 10 observations that should have had a
+        Predicted column row value of 1 (to match the actual Target column row) where actually given a
+        Predicted column row value of 1
+        """
+        return count_true_positives / (count_true_positives + count_false_negatives)
+
+    def calc_specificity(self, count_true_negatives, count_false_positives):
+        """ Calculate Specificity aka True Negative Rate (TNR) to find out
+        how effective model is at identifying negative outcomes
+        """
+        return count_true_negatives / (count_true_negatives + count_false_positives)
+
+    def calc_binary_classification(self, predicted_target_values, actual_target_values):
+        true_positive_filter = (predicted_target_values == 1) & (actual_target_values == 1)
+        count_true_positives = len(true_positive_filter)
+        true_negative_filter = (predicted_target_values == 0) & (actual_target_values == 0)
+        count_true_negatives = len(true_negative_filter)
+        false_positive_filter = (predicted_target_values == 1) & (actual_target_values == 0)
+        count_false_positives = len(false_positive_filter)
+        false_negative_filter = (predicted_target_values == 0) & (actual_target_values == 1)
+        count_false_negatives = len(false_negative_filter)
+        return {
+            "sensitivity": self.calc_sensitivity(count_true_positives, count_false_negatives),
+            "specificity": self.calc_specificity(count_true_negatives, count_false_positives)
+        }
+
     def calc_mean_absolute_error(self, df, model_feature_name):
         """ MAE = ( |(actual1 - predicted1)| + ... + |(actualn - predictedn)| ) / n """
         if isinstance(df, type(None)):

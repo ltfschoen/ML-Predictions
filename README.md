@@ -215,7 +215,7 @@ average value in the "price" column is $300)
     ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/evaluation_training_columns.png)
 
 * **KNN Regression**
-    * Plotting RMSE for different combindations of feature columns to find lowest using KNN Regression
+    * Plotting RMSE for different combinations of feature columns to find lowest using KNN Regression
 
     ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_rmse_cross_validation.png)
 
@@ -224,10 +224,14 @@ average value in the "price" column is $300)
 * Summary of results:
     * Training features: gpa, gre
     * Target column: admit
-    * Accuracy of Predictions (Predicted Target value when compared against Actual Target value):
+    * **Accuracy** of Predictions (Predicted Target value when compared against Actual Target value):
         * Accuracy using **Logistic Regression** with Discrimination Threshold of 0.5:
             * 0.782 (78.2%)
-    * RMSE results:
+    * **Sensitivity** of Predictions (using Binary Classification):
+        * 0.5
+    * **Specificity** of Predictions (using Binary Classification):
+        * 0.5
+    * **Error Metric** (RMSE) results:
         * Best feature combo: gpa, gre
         * Best RMSE using **Linear Regression**:
             * 0.392  (Note: MAE to RMSE Ratio using Linear Regression: 0.80:1)
