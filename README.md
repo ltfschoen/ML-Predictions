@@ -121,13 +121,7 @@ average value in the "price" column is $300)
 
     * Screenshots:
 
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_accommodates_four_feature_post_strip_and_normalisation.png)
-
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_bedrooms_four_feature_post_strip_and_normalisation.png)
-
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_bathrooms_four_feature_post_strip_and_normalisation.png)
-
-        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/screenshot_number_of_reviews_four_feature_post_strip_and_normalisation.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/evaluation_training_columns.png)
 
 * **Multivariate (ALL columns) using Scikit-Learn KNN model with NaNs removed, with k=5 nearby neighbors**
     * Comparison of Results (of "price" vs "predicted_price"):
@@ -166,27 +160,27 @@ average value in the "price" column is $300)
         * Best RMSE results (**improved robustness of results since takes average RMSE over K-Folds**):
             * 113.96 with 'k' of 20 (optimum) using 3 K-Folds for Cross Validation
             * 109.73 with 'k' of 20 (optimum) using 5 K-Folds for Cross Validation
-            * 109.58 with 'k' of 20 (optimum) using 10 K-Folds for Cross Validation
+            * 108.60 with 'k' of 19 (optimum) using 10 K-Folds for Cross Validation
 
             * Screenshots:
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/mse_cross_validation.png)
-
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/rmse_cross_validation.png)
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/rmse_cross_validation_fixed.png)
 
 #### Example 2: Car Listing Dataset
 
 * **K-Fold Cross Validation Results** (with Hyperparam 'k' Optimisation)
-    * Training features: "height", "curb-weight", "horsepower", "city-mpg", "highway-mpg"
+    * Training features: "num-of-doors", "curb-weight", "horsepower", "city-mpg", "highway-mpg"
     * Target column: "price"
     * RMSE
-        * Best feature combo "curb-weight", "horsepower", "city-mpg", "highway-mpg"'
+        * Best feature combo "num-of-doors", "curb-weight", "city-mpg"
         * Best RMSE results (**improved robustness of results since takes average RMSE over K-Folds**):
-            * 2446.94 with 'k' of 2 (optimum) using 10 K-Folds for Cross Validation
+            * 3256.67 with 'k' of 3 (optimum) using 10 K-Folds for Cross Validation
 
             * Screenshots:
 
-                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation.png)
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/evaluation_training_columns.png)
+
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation_fixed.png)
 
 #### Example 3: Car Listing Fuel Dataset
 

@@ -29,9 +29,14 @@ class PredictionUtils():
                     count_question_marks += 1
             num = df[column].isnull().sum() + count_question_marks
             den = len(df[column])
-            return round(num/den, 2)
-        except:
-            print("Check to ensure that all non-numeric columns are tagged for removal")
+            col_percentage_missing = round(num/den, 2)
+            if col_percentage_missing is not None:
+                return float(round(num/den, 2))
+            else:
+                return 0.0
+        except Exception as e:
+            print("Error: Unable to get percentage missing %r: %r" % (column, e))
+            return 0.0
 
     def calc_euclidean_dist(self, val1, val2):
         """ Euclidean Distance equation to compare values of different data sets """
@@ -170,10 +175,11 @@ class PredictionUtils():
 
         j = 1
         for feature_key, dict_value in feature_combos_lowest_rmse_for_hyperparams.items():
-            k = dict_value["k"]
-            min_rmse = dict_value["min_rmse"]
-            ax.plot(k, min_rmse, '+', color=colors[j], label = feature_key, mew=5, ms=10)
-            j += 1
+            if dict_value["k"] and dict_value["min_rmse"]:
+                k = dict_value["k"]
+                min_rmse = dict_value["min_rmse"]
+                ax.plot(k, min_rmse, '+', color=colors[j], label = feature_key, mew=5, ms=10)
+                j += 1
 
         ax.legend(prop={'size':4})
         ax.grid()
@@ -182,10 +188,11 @@ class PredictionUtils():
         ax.set_ylabel(yLabel)
 
         # Optimise plot to dynamically fit all values regardless of range of RMSE results
-        contingency = highest_rmse * 0.1
-        highest_rmse_with_contingency = highest_rmse + contingency
-        lowest_rmse_with_contingency = lowest_rmse - contingency
-        ax.set_ylim(lowest_rmse_with_contingency, highest_rmse_with_contingency) # RMSE
+        if highest_rmse and lowest_rmse:
+            contingency = highest_rmse * 0.1
+            highest_rmse_with_contingency = highest_rmse + contingency
+            lowest_rmse_with_contingency = lowest_rmse - contingency
+            ax.set_ylim(lowest_rmse_with_contingency, highest_rmse_with_contingency) # RMSE
 
         # Legend squeezed on right side
         plt.legend(bbox_to_anchor=(1.2,1), loc="upper right", mode="expand", borderaxespad=0, prop={'size':5})
@@ -215,7 +222,7 @@ class PredictionUtils():
         """
         training_columns_df = df.filter(training_columns, axis=1)
         count_subplots = len(training_columns_df.columns)
-        fig = plt.figure(figsize=(count_subplots, 10))
+        fig = plt.figure(figsize=(10, 10))
         count_columns = 2
         for index, col in enumerate(training_columns_df.columns):
             """ Subplots i.e. 2 rows x 3 columns grid at 4th subplot """
@@ -229,6 +236,15 @@ class PredictionUtils():
             ax.scatter(df[x], predictions, c='blue', marker='o', label=label_predicted)
             ax.set_xlabel(x, fontsize=12)
             ax.set_ylabel(y, fontsize=12)
+
+            # Optimise X-axis range
+            df_x_max = df[x].max()
+            df_x_min = df[x].min()
+            contingency = df_x_max * 0.1
+            df_x_max_with_contingency = df_x_max + contingency
+            df_x_min_with_contingency = df_x_min - contingency
+            ax.set_xlim(df_x_min_with_contingency, df_x_max_with_contingency)
+
             ax.legend(bbox_to_anchor=(-0.9,-0.02), loc="best", prop={'size':5})
         fig.tight_layout(rect=[0,0,1,1])
 

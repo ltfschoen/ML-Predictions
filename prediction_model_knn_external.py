@@ -65,8 +65,10 @@ class PredictionModelKNNExternal:
         print("MSE: %r" % (mse[0]) )
         print("RMSE: %r" % (rmse) )
 
-        mae_rmse_ratio_prefix = mae / rmse
-        print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
+        if mae and rmse:
+            mae_rmse_ratio_prefix = mae / rmse
+            print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
+
         for index, training_model_feature_name in enumerate(self.training_columns):
             self.prediction_utils.plot(training_model_feature_name, _temp_testing_part)
 
@@ -141,10 +143,13 @@ class PredictionModelKNNExternal:
                         kf = KFold(n_splits=self.prediction_config.K_FOLDS, shuffle=True, random_state=8)
                         model = KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm="brute", p=2)
 
-                        # MSEs for each Fold
-                        mses = cross_val_score(model, df[list(feature_combo)], df[self.target_column], scoring="neg_mean_squared_error", cv=kf, verbose=0)
-                        fold_rmses = [np.sqrt(np.absolute(mse)) for mse in mses]
-                        return np.mean(fold_rmses)
+                        if (self.prediction_config.K_FOLDS and len(df)) and self.prediction_config.K_FOLDS <= len(df):
+                            # MSEs for each Fold
+                            mses = cross_val_score(model, df[list(feature_combo)], df[self.target_column], scoring="neg_mean_squared_error", cv=kf, verbose=0)
+                            fold_rmses = [np.sqrt(np.absolute(mse)) for mse in mses]
+                            return np.mean(fold_rmses)
+                        else:
+                            return None
 
                     if self.prediction_config.K_FOLDS_BUILTIN == "manual":
                         avg_rmse = cross_validation_manual()
@@ -163,9 +168,10 @@ class PredictionModelKNNExternal:
             feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = feature_combos_rmse_for_hyperparams[key][0]
             feature_combos_lowest_rmse_for_hyperparams[key]["k"] = 1
             for k, rmse in enumerate(feature_combos_rmse_for_hyperparams[key]):
-                if rmse < feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"]:
-                    feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = rmse
-                    feature_combos_lowest_rmse_for_hyperparams[key]["k"] = k + 1
+                if rmse and feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"]:
+                    if rmse < feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"]:
+                        feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = rmse
+                        feature_combos_lowest_rmse_for_hyperparams[key]["k"] = k + 1
 
         # Find best combination of hyperparameter k and features
 
@@ -177,9 +183,9 @@ class PredictionModelKNNExternal:
         k_value_of_lowest_rmse = feature_combos_lowest_rmse_for_hyperparams[name_of_first_key]["k"]
 
         for feature_key, dict_value in feature_combos_lowest_rmse_for_hyperparams.items():
-            if dict_value["min_rmse"] >= highest_rmse:
+            if highest_rmse and (dict_value["min_rmse"] >= highest_rmse):
                 highest_rmse = dict_value["min_rmse"]
-            if dict_value["min_rmse"] < lowest_rmse:
+            if lowest_rmse and (dict_value["min_rmse"] < lowest_rmse):
                 feature_combo_name_with_lowest_rmse = feature_key
                 lowest_rmse = dict_value["min_rmse"]
                 k_value_of_lowest_rmse = dict_value["k"]

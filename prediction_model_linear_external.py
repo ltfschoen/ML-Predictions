@@ -43,29 +43,35 @@ class PredictionModelLinearExternal:
         self.generate_lr_model()
         df = self.prediction_data.df_listings
         inputs = df[self.training_columns]
-        # Check inputs is Numpy matrix not Numpy array
-        print("Shape of inputs to Scikit-Learn Fit function: ", inputs.values.shape)
-        output = df[self.target_column]
-        self.lr.fit(inputs, output)
-        predictions = self.lr.predict(inputs)
-        df["mpg-predictions"] = predictions
-        self.plot_linear_relationships(predictions)
-        print("Check predictions accuracy against 'known' Model Training Data:\n %r" % (df[["mpg", "mpg-predictions"]]))
+        if len(inputs):
+            # Check inputs is Numpy matrix not Numpy array
+            print("Shape of inputs to Scikit-Learn Fit function: ", inputs.values.shape)
+            output = df[self.target_column]
+            self.lr.fit(inputs, output)
+            predictions = self.lr.predict(inputs)
+            df["predictions"] = predictions
+            self.plot_linear_relationships(predictions)
+            print("Check predictions accuracy against 'known' Model Training Data:\n %r" % (df[[self.target_column, "predictions"]]))
 
-        print("Predictions using Scikit-Learn Linear Regression: %r" % (predictions) )
+            print("Predictions using Scikit-Learn Linear Regression: %r" % (predictions) )
 
-        mae = median_absolute_error(df[self.target_column], predictions)
-        mse = mean_squared_error(df[self.target_column], predictions, multioutput='raw_values')
-        rmse = math.sqrt(mse)
+            mae = median_absolute_error(df[self.target_column], predictions)
+            mse = mean_squared_error(df[self.target_column], predictions, multioutput='raw_values')
+            rmse = math.sqrt(mse)
 
-        print("MAE: %r" % (mae) )
-        print("MSE: %r" % (mse[0]) )
-        print("RMSE: %r" % (rmse) )
+            print("MAE: %r" % (mae) )
+            print("MSE: %r" % (mse[0]) )
+            print("RMSE: %r" % (rmse) )
 
-        mae_rmse_ratio_prefix = mae / rmse
-        print("MAE to RMSE Ratio using Linear Regression: %.2f:1" % (mae_rmse_ratio_prefix) )
-        for index, training_model_feature_name in enumerate(self.training_columns):
-            self.prediction_utils.plot(training_model_feature_name, df)
+            if mae and rmse:
+                mae_rmse_ratio_prefix = mae / rmse
+                print("MAE to RMSE Ratio using Linear Regression: %.2f:1" % (mae_rmse_ratio_prefix) )
+
+            for index, training_model_feature_name in enumerate(self.training_columns):
+                self.prediction_utils.plot(training_model_feature_name, df)
+        else:
+            print("No Training Columns to use for Linear Regression. Perhaps they were all bad and removed.")
+            rmse = None
 
         return {
             "rmse": rmse,

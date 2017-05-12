@@ -78,8 +78,10 @@ def run(prediction_config, prediction_data, prediction_utils):
         mae = prediction_model_manual.get_mean_absolute_error(training_model_feature_name)      # MAE
         mse = prediction_model_manual.get_mean_squared_error(training_model_feature_name)       # MSE
         rmse = prediction_model_manual.get_root_mean_squared_error(training_model_feature_name) # RMSE
-        mae_rmse_ratio_prefix = mae / rmse
-        print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
+        if mae and rmse:
+            mae_rmse_ratio_prefix = mae / rmse
+            print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
+
         prediction_utils.plot(training_model_feature_name, prediction_data.testing_part)
 
     return {

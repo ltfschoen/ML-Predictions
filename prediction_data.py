@@ -4,6 +4,7 @@ import requests
 from lib.build_folds import build_folds
 import copy
 from itertools import compress
+import numpy as np
 
 class PredictionData:
     """ Load and Partition DataFrame into Training/Testing for Validation Process """
@@ -16,6 +17,7 @@ class PredictionData:
         self.dataset_choice = self.prediction_config.DATASET_CHOICE
         self.target_column = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["target_column"]
         self.training_columns = self.setup_training_columns() # If no training columns specified then all are chosen
+        self.validate_config()
         self.cleanse_columns() # Data Cleaning, including removal of `?` from Training Features Combination and Target Cols
         self.convert_columns() # Convert to Float64 if String all Training Features Combination and Target Cols
         self.remove_columns_incorrect_format() # Remove columns with inadequate data (i.e. missing values, non-numeric, non-ordinal, unspecific)
@@ -25,6 +27,7 @@ class PredictionData:
         self.normalise_listings()
         self.randomise_listings()
         self.partition_listings()
+        self.validate_training_columns()
 
     def load_dataset(self, num_rows):
         """ Load downloaded copy of dataset (.csv format) into Pandas Dataframe (DF)
@@ -65,6 +68,15 @@ class PredictionData:
             df.columns = [str(label) for label in dataset_labels.split(',') if label]
         return df
 
+    def validate_config(self):
+        # Ensure that quantity of K-Fold splits is not greater than quantity of samples
+        if self.prediction_config.K_FOLDS > len(self.df_listings):
+            self.prediction_config.K_FOLDS = len(self.df_listings)
+
+        # Ensure that quantity of neighbors range (of hyperparameter k) is not greater than quantity of samples
+        if len(self.prediction_config.HYPERPARAMETER_RANGE) > len(self.df_listings):
+            self.prediction_config.HYPERPARAMETER_RANGE = np.arange(1, int(len(self.df_listings)), 1)
+
     def update_training_columns_with_removed(self, column_name):
         if column_name in self.training_columns:
             self.training_columns.remove(column_name)
@@ -74,13 +86,21 @@ class PredictionData:
         Return new object with labels in requested axis removed
         (i.e. axis=1 asks Pandas to drop across DataFrame columns)
         """
+        _temp_df_listings = copy.deepcopy(self.df_listings)
+
         remove_non_numeric_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["non_numeric"]
         remove_non_ordinal_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["non_ordinal"]
         remove_out_of_scope_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["out_of_scope"]
         remove_columns = remove_non_numeric_columns + remove_non_ordinal_columns + remove_out_of_scope_columns
-        self.df_listings.drop(remove_columns, axis=1, inplace=True)
+
+        existing_columns_to_remove = []
         for index, name in enumerate(remove_columns):
-            self.update_training_columns_with_removed(name)
+            if name in self.df_listings.columns:
+                existing_columns_to_remove.append(name)
+                self.update_training_columns_with_removed(name)
+
+        _temp_df_listings.drop(existing_columns_to_remove, axis=1, inplace=True, errors='raise')
+        self.df_listings = _temp_df_listings
 
     # def show_columns_incomplete(self):
     #     """
@@ -108,6 +128,7 @@ class PredictionData:
         for name, values in self.df_listings.iteritems():
             # print("%r: %r" % (name, values) )
             col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
+
             if col_percentage_missing > self.prediction_config.MAX_MAJOR_INCOMPLETE:
                 print("Deleting Column %r, as contains too many null values: %r" % (name, col_percentage_missing) )
                 self.df_listings.drop(name, axis=1, inplace=True)
@@ -128,7 +149,7 @@ class PredictionData:
         for name, values in self.df_listings.iteritems():
             col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
 
-            if (col_percentage_missing < self.prediction_config.MAX_MINOR_INCOMPLETE) or (name in self.training_columns) or (name == self.target_column):
+            if (col_percentage_missing < self.prediction_config.MAX_MINOR_INCOMPLETE) and ((name in self.training_columns) or (name == self.target_column)):
                 # print("Before null/NaN values?: %r" %(self.df_listings[name].isnull().any(axis=0)))
                 print("Retained Column: %r, but removed null and NaN valued rows comprising approx. percentage: %r" % (name, col_percentage_missing) )
                 new_dc_listings.dropna(axis=0, how="any", subset=[name], inplace=True)
@@ -317,3 +338,13 @@ class PredictionData:
             return filtered
         else:
             return training_columns
+
+    def validate_training_columns(self):
+        """ Check training columns match columns in dataset after finish setting up data when all training columns used """
+
+        training_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["training_columns"]
+        print("Warning: Using all dataset columns as Training Columns may take forever!! Try to limit to 4 maximum")
+        if not training_columns:
+            new_training_columns = self.df_listings.columns.tolist()
+            new_training_columns.remove(self.target_column)
+            self.training_columns = new_training_columns
