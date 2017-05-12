@@ -2,12 +2,14 @@
 Machine Learning - Predictions
 ---
 
+Travic CI Build Status: [![Build Status](https://api.travis-ci.org/ltfschoen/ML-Predictions.svg)](https://travis-ci.org/ltfschoen/ML-Predictions)
+
 # Table of Contents
   * [Chapter 0 - About](#chapter-0)
   * [Chapter 1 - Setup](#chapter-1)
-  * [Chapter 2 - Results](#chapter-2)
-  * [Chapter 3 - Known Bugs](#chapter-3)
-
+  * [Chapter 2 - Tests](#chapter-2)
+  * [Chapter 3 - Results](#chapter-3)
+  * [Chapter 4 - Known Bugs](#chapter-4)
 
 ## Chapter 0 - About <a id="chapter-0"></a>
 
@@ -47,7 +49,7 @@ in `prediction_config.py` for details.
     ```
 
 * Read the Implementation Guide in `prediction_config.py`.
-* Configure desired input values into EVENT object within `main.py`
+* Configure desired input values into EVENT object within `input_event.py`
     * Note: Designed in accordance with [AWS Lambda Function Programming Model](http://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html)
 
 * Run
@@ -58,7 +60,14 @@ in `prediction_config.py` for details.
 * Note: Change from `np.random.seed(1)` to `np.random.seed(0)` to generate different instead of
 same random permutations each time its run.
 
-## Chapter 2 - Results <a id="chapter-2"></a>
+## Chapter 2 - Tests <a id="chapter-2"></a>
+
+* Run all Unittests with:
+    ```
+    python -m unittest discover -s ./tests -p '*_test.py'
+    ```
+
+## Chapter 3 - Results <a id="chapter-3"></a>
 
 ### Summary of Results
 
@@ -206,7 +215,7 @@ average value in the "price" column is $300)
 
                     ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_rmse_cross_validation.png)
 
-## Chapter 3 - Known Bugs <a id="chapter-3"></a>
+## Chapter 4 - Known Bugs <a id="chapter-4"></a>
 
 * Warning occurs:
     ```

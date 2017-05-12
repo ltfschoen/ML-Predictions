@@ -29,23 +29,3 @@ def build_folds(df, k_folds):
             i += 1
         folds.append(len(df))
     return folds
-
-# # Testing only
-# def build_df(df_len):
-#     return pd.DataFrame({ 'A': list(range(1, df_len + 1)) })
-#
-# k_folds = 3
-# df_len = 7
-# df = build_df(df_len)
-# folds = build_folds(df, k_folds)
-# print("Built Folds for DataFrame of length %r given k of %r: %r" % (df_len, k_folds, folds))
-#
-# assert build_folds(build_df(7), 8) == [0, 1, 2, 3, 4, 5, 6, 7], "K-Folds 8 error" # Invalid folds for length
-# assert build_folds(build_df(7), 7) == [0, 1, 2, 3, 4, 5, 6, 7], "K-Folds 7 error"
-# assert build_folds(build_df(7), 6) == [0, 1, 2, 3, 4, 5, 7], "K-Folds 6 error"
-# assert build_folds(build_df(7), 5) == [0, 1, 2, 3, 4, 7], "K-Folds 5 error"
-# assert build_folds(build_df(7), 4) == [0, 2, 4, 6, 7], "K-Folds 4 error"
-# assert build_folds(build_df(7), 3) == [0, 2, 4, 7], "K-Folds 3 error"
-# assert build_folds(build_df(7), 2) == [0, 4, 7], "K-Folds 2 error"
-# assert build_folds(build_df(7), 1) == [0, 7], "K-Folds 1 error"
-# assert build_folds(build_df(7), 0) == [0, 7], "K-Folds 0 error" # Invalid folds for length

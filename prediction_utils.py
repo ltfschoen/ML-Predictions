@@ -15,6 +15,8 @@ class PredictionUtils():
 
     def normalise_dataframe(self, df):
         """ Apply mass Column transformation to Normalise all feature columns in a DataFrame """
+        if isinstance(df, type(None)):
+            return None
         return (df - df.mean()) / (df.std())
 
     def get_percentage_missing(self, df, column):
@@ -22,6 +24,9 @@ class PredictionUtils():
         :param series: Pandas DataFrame object
         :return: float
         """
+        if isinstance(df, type(None)):
+            return None
+
         try:
             count_question_marks = 0
             for i, v in enumerate(df[column]):
@@ -63,6 +68,8 @@ class PredictionUtils():
         Return a new Dataframe containing the shuffled order using `loc[]`
         `seed(1)` reproduces random same results when share and run same code by others
         """
+        if isinstance(df, type(None)):
+            return None
         np.random.seed(1)
         return df.loc[np.random.permutation(len(df))]
         # Alternative Approach:
@@ -74,6 +81,8 @@ class PredictionUtils():
         Sort the DataFrame by "distance" column so there will be random order across the
         rows at the top of the list (having same lowest distance).
         """
+        if isinstance(df, type(None)):
+            return None
         return df.sort_values(feature)
 
     def clean_price_format(self, df_price_column):
@@ -91,22 +100,30 @@ class PredictionUtils():
         on average price of other listings based on the model feature being trained
         (i.e. "accommodates" or "bathrooms").
         """
+        if isinstance(df, type(None)):
+            return None
         k_nearest_neighbors = self.prediction_config.HYPERPARAMETER_FIXED
         print("Predicted Target Column (i.e. 'price') (Avg of Nearest): %.2f (with model feature %r Avg. : %r) " % (df.iloc[0:k_nearest_neighbors][self.target_column].mean(), model_feature_name, df.iloc[0:k_nearest_neighbors][model_feature_name].mean()) )
         return df.iloc[0:k_nearest_neighbors][self.target_column].mean()
 
     def calc_mean_absolute_error(self, df, model_feature_name):
         """ MAE = ( |(actual1 - predicted1)| + ... + |(actualn - predictedn)| ) / n """
+        if isinstance(df, type(None)):
+            return None
         column_name_predicted_target = "predicted_" + self.target_column + "_" + model_feature_name
         return df.apply(lambda x: np.absolute(x[self.target_column] - x[column_name_predicted_target]), axis=1).mean()
 
     def calc_mean_squared_error(self, df, model_feature_name):
         """ MSE = ( (actual1 - predicted1)^2 + ... + (actualn - predictedn)^2 ) / n """
+        if isinstance(df, type(None)):
+            return None
         column_name_predicted_target = "predicted_" + self.target_column + "_" + model_feature_name
         return df.apply(lambda x: (x[self.target_column] - x[column_name_predicted_target])**2, axis=1).mean()
 
     def calc_root_mean_squared_error(self, df, model_feature_name):
         """ RMSE = sqrt(MSE) """
+        if isinstance(df, type(None)):
+            return None
         return np.sqrt( self.calc_mean_squared_error(df, model_feature_name) )
 
     def generate_combinations_of_features(self, training_column_names):
@@ -114,6 +131,9 @@ class PredictionUtils():
 
         Reduce amount of combinations by applying minimum length of MIN_FEATURES_COMBO_LEN
         """
+        if not training_column_names:
+            return []
+
         features = training_column_names
         loop_count = len(features)
         combos_above_min_len = list()
@@ -131,12 +151,15 @@ class PredictionUtils():
 
     def plot(self, training_model_feature_name, testing_part):
         """ Plot """
+        if not training_model_feature_name or isinstance(testing_part, type(None)):
+            return
         testing_part.pivot_table(index=training_model_feature_name, values=self.target_column).plot()
         plt.show()
 
     def scatter_plot_hyperparams(self, hyperparam_range, error_values):
         """ Scatter Plot hyperparameters range of 'k' versus error calculation values """
-
+        if not hyperparam_range or not error_values:
+            return
         # Plot
         colours = range(20)
         circle_size = 200
@@ -160,6 +183,9 @@ class PredictionUtils():
         plt.show()
 
     def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, lowest_rmse, highest_rmse):
+
+        if not feature_combos_lowest_rmse_for_hyperparams or not lowest_rmse or not highest_rmse:
+            return
 
         count_feature_combos = len(feature_combos_lowest_rmse_for_hyperparams.items())
 
@@ -220,6 +246,8 @@ class PredictionUtils():
             - Interpret Linear Relationship
                 - Strong / Weak and Positive or Negative Linear Relationship / Gradient
         """
+        if isinstance(df, type(None)) or not training_columns or isinstance(predictions, type(None)):
+            return
         training_columns_df = df.filter(training_columns, axis=1)
         count_subplots = len(training_columns_df.columns)
         fig = plt.figure(figsize=(10, 10))

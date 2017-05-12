@@ -115,12 +115,6 @@ class PredictionConfig(object):
         if self.K_FOLD_CROSS_VALIDATION == True:
             self.HYPERPARAMETER_OPTIMISATION = True
 
-        # Check that user has assigned the minimum number of features
-        dataset_choice = self.DATASET_CHOICE
-        training_columns = self.DATASET_LOCATION[dataset_choice]["training_columns"]
-        if len(training_columns) < self.MIN_FEATURES_COMBO_LEN:
-            print("Error: Configuration requires minimum amount of features assigned to satisfy MIN_FEATURES_COMBO_LEN")
-
     def get_testing_proportion(self):
         """ Proportion of rows to split into Training and Test set respectively
         Returns value between 0 and 1 representing percentage proportion of the Test set. Training set is remainder.

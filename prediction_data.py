@@ -69,6 +69,9 @@ class PredictionData:
         return df
 
     def validate_config(self):
+        if isinstance(self.df_listings, type(None)):
+            return
+
         # Ensure that quantity of K-Fold splits is not greater than quantity of samples
         if self.prediction_config.K_FOLDS > len(self.df_listings):
             self.prediction_config.K_FOLDS = len(self.df_listings)
@@ -86,6 +89,9 @@ class PredictionData:
         Return new object with labels in requested axis removed
         (i.e. axis=1 asks Pandas to drop across DataFrame columns)
         """
+        if isinstance(self.df_listings, type(None)):
+            return
+
         _temp_df_listings = copy.deepcopy(self.df_listings)
 
         remove_non_numeric_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["non_numeric"]
@@ -125,6 +131,9 @@ class PredictionData:
         """
 
         # Iterate over columns in DataFrame
+        if isinstance(self.df_listings, type(None)):
+            return
+
         for name, values in self.df_listings.iteritems():
             # print("%r: %r" % (name, values) )
             col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
@@ -145,6 +154,9 @@ class PredictionData:
         # Remove NaN/null values from Columns where percentage of missing values is less than MAX_MINOR_INCOMPLETE
         # and from Columns that are one of the Training set columns or the Target Column
         # Iterate over columns in DataFrame
+        if isinstance(self.df_listings, type(None)):
+            return
+
         new_dc_listings = self.df_listings
         for name, values in self.df_listings.iteritems():
             col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
@@ -171,6 +183,9 @@ class PredictionData:
         """
 
         # Select only Columns containing type int, float64, floating. Exclude Columns with types Object (O) that includes strings
+        if isinstance(self.df_listings, type(None)):
+            return
+
         df_listings_with_float_or_int_values = self.df_listings.select_dtypes(include=['int', 'float64', 'floating'], exclude=['O'])
         print("Excluding non-numeric columns from Normalisation: ", self.df_listings.select_dtypes(include=['O']).columns.tolist())
 
@@ -192,6 +207,8 @@ class PredictionData:
         """ Convert all Training and Target columns to Numeric type so not removed during normalisation
         and so may be processed by Scikit-Learn
         """
+        if isinstance(self.df_listings, type(None)):
+            return
 
         def convert_column_words_to_digits():
             """ Convert rows of specific Columns that have numbers in word string form (i.e. one, three, five, instead of 1, 3, 5) """
@@ -212,6 +229,7 @@ class PredictionData:
             self.df_listings = df
 
         def convert_to_numeric_type_training_and_target_columns():
+
             df = self.df_listings
             _training_and_target_columns = copy.deepcopy(self.training_columns)
             _training_and_target_columns.extend([self.target_column])
@@ -242,6 +260,9 @@ class PredictionData:
         """ Cleanse all identified price columns.
         Remove ? values from Columns that are one of the Training set columns or the Target Column"""
 
+        if isinstance(self.df_listings, type(None)):
+            return
+
         def clean_question_marks_from_training_and_target_columns():
             new_dc_listings = self.df_listings
             # Remove ? values from Columns that are one of the Training set columns or the Target Column
@@ -264,7 +285,6 @@ class PredictionData:
 
         clean_question_marks_from_training_and_target_columns()
         clean_columns_with_price_format()
-
 
     def randomise_listings(self):
         """ Shuffle the ordering of the rows """
@@ -317,7 +337,7 @@ class PredictionData:
 
         training_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["training_columns"]
 
-        if not training_columns:
+        if not training_columns and not isinstance(self.df_listings, type(None)):
             features = self.df_listings.columns.tolist()
 
             # Remove "target_column"
@@ -342,9 +362,16 @@ class PredictionData:
     def validate_training_columns(self):
         """ Check training columns match columns in dataset after finish setting up data when all training columns used """
 
+        if isinstance(self.df_listings, type(None)):
+            return
+
         training_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["training_columns"]
         print("Warning: Using all dataset columns as Training Columns may take forever!! Try to limit to 4 maximum")
         if not training_columns:
             new_training_columns = self.df_listings.columns.tolist()
             new_training_columns.remove(self.target_column)
             self.training_columns = new_training_columns
+
+        # Check that user has assigned the minimum number of features
+        if len(self.training_columns) < self.prediction_config.MIN_FEATURES_COMBO_LEN:
+            raise ValueError("MIN_FEATURES_COMBO_LEN not satisfied")
