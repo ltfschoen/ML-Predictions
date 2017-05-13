@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 from matplotlib import rc
 rc('mathtext', default='regular')
 from scipy.spatial import distance
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score
 
 class PredictionUtils():
     """ Utility functions """
@@ -12,6 +16,103 @@ class PredictionUtils():
     def __init__(self, prediction_config):
         self.prediction_config = prediction_config
         self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
+
+    def generate_model(self, regressor, qty_neighbors, algorithm, distance_type):
+        """ Regressor Model Generation"""
+        if regressor == "knn":
+            return KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm=algorithm, p=distance_type)
+
+    def k_fold_cross_validation(self, regressor, df, feature_combos):
+        """ K-Fold Cross Validation for any given Regressor """
+        feature_combos_rmse_for_hyperparams = dict()
+        fold_ids = list(range(1, self.prediction_config.K_FOLDS + 1))
+
+        for idx1, feature_combo in enumerate(feature_combos):
+            feature_combo_key = '__'.join(feature_combo)
+            feature_combos_rmse_for_hyperparams[feature_combo_key] = list()
+            for idx2, qty_neighbors in enumerate(self.prediction_config.HYPERPARAMETER_RANGE):
+                fold_rmses = []
+
+                def cross_validation_manual():
+                    """ Manual KFold Cross Validation using 'fold' column """
+                    for fold in fold_ids:
+                        # Train
+                        model = self.generate_model(regressor, qty_neighbors, 'brute', 2)
+                        train_part = df[df["fold"] != fold]
+                        test_part = df[df["fold"] == fold]
+                        X = train_part[list(feature_combo)]
+                        y = train_part[self.target_column]
+                        model.fit(X, y)
+                        # Predict
+                        predictions = model.predict(test_part[list(feature_combo)])
+                        # test_part["predicted_price"] = predictions
+                        mse = mean_squared_error(test_part[self.target_column], predictions)
+                        rmse = mse**(1/2)
+                        fold_rmses.append(rmse)
+                    return np.mean(fold_rmses)
+
+                def cross_validation_with_builtin():
+                    """ Scikit-Learn Built-in KFold class to generate KFolds and run Cross Validation
+                    with training using Scikit-Learn Built-in `cross_val_score` function"""
+                    kf = KFold(n_splits=self.prediction_config.K_FOLDS, shuffle=True, random_state=8)
+                    model = self.generate_model(regressor, qty_neighbors, 'brute', 2)
+
+                    if (self.prediction_config.K_FOLDS and len(df)) and self.prediction_config.K_FOLDS <= len(df):
+                        # MSEs for each Fold
+                        mses = cross_val_score(model, df[list(feature_combo)], df[self.target_column], scoring="neg_mean_squared_error", cv=kf, verbose=0)
+                        fold_rmses = [np.sqrt(np.absolute(mse)) for mse in mses]
+                        return np.mean(fold_rmses)
+                    else:
+                        return None
+
+                if self.prediction_config.K_FOLDS_BUILTIN == "manual":
+                    avg_rmse = cross_validation_manual()
+                else:
+                    avg_rmse = cross_validation_with_builtin()
+                # print("Fold RMSEs %r: " % (fold_rmses))
+                print("K-Fold Cross Validation found Average RMSE using Regressor %r for Feature Combo %r with Hyperparam k of %r using %r K-Folds: %r" % (regressor, feature_combo_key, qty_neighbors, self.prediction_config.K_FOLDS, avg_rmse))
+                feature_combos_rmse_for_hyperparams[feature_combo_key].append(avg_rmse)
+        return feature_combos_rmse_for_hyperparams
+
+    def hyperparameter_k_optimisation(self, feature_combos_rmse_for_hyperparams):
+        """ Hyperparameter k Optimisation """
+        feature_combos_lowest_rmse_for_hyperparams = dict()
+
+        for key, value in feature_combos_rmse_for_hyperparams.items():
+            # Initiate first element to key for lowest RMSE. If find an even lower RMSE at subsequent index it will be replaced
+            feature_combos_lowest_rmse_for_hyperparams[key] = dict()
+            feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = feature_combos_rmse_for_hyperparams[key][0]
+            feature_combos_lowest_rmse_for_hyperparams[key]["k"] = 1
+            for k, rmse in enumerate(feature_combos_rmse_for_hyperparams[key]):
+                if rmse and feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"]:
+                    if rmse < feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"]:
+                        feature_combos_lowest_rmse_for_hyperparams[key]["min_rmse"] = rmse
+                        feature_combos_lowest_rmse_for_hyperparams[key]["k"] = k + 1
+
+        # Find best combination of hyperparameter k and features
+
+        # Initiate element with lowest RMSE as first element unless find a lower element at subsequent index
+        name_of_first_key = list(feature_combos_lowest_rmse_for_hyperparams.keys())[0]
+        feature_combo_name_with_lowest_rmse = name_of_first_key
+        lowest_rmse = feature_combos_lowest_rmse_for_hyperparams[name_of_first_key]["min_rmse"]
+        highest_rmse = feature_combos_lowest_rmse_for_hyperparams[name_of_first_key]["min_rmse"]
+        k_value_of_lowest_rmse = feature_combos_lowest_rmse_for_hyperparams[name_of_first_key]["k"]
+
+        for feature_key, dict_value in feature_combos_lowest_rmse_for_hyperparams.items():
+            if highest_rmse and (dict_value["min_rmse"] >= highest_rmse):
+                highest_rmse = dict_value["min_rmse"]
+            if lowest_rmse and (dict_value["min_rmse"] < lowest_rmse):
+                feature_combo_name_with_lowest_rmse = feature_key
+                lowest_rmse = dict_value["min_rmse"]
+                k_value_of_lowest_rmse = dict_value["k"]
+        print("Feature combo %r has lowest RMSE of %r with 'k' of %r (optimum) using %r K-Folds for (Cross Validation was %r)" % (feature_combo_name_with_lowest_rmse, lowest_rmse, k_value_of_lowest_rmse, self.prediction_config.K_FOLDS, self.prediction_config.K_FOLD_CROSS_VALIDATION) )
+
+        self.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams, lowest_rmse, highest_rmse)
+        return {
+            "feature_combo_name_with_lowest_rmse": feature_combo_name_with_lowest_rmse,
+            "lowest_rmse": lowest_rmse,
+            "k_value_of_lowest_rmse": k_value_of_lowest_rmse
+        }
 
     def normalise_dataframe(self, df):
         """ Apply mass Column transformation to Normalise all feature columns in a DataFrame """
