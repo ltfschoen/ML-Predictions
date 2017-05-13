@@ -1,6 +1,8 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import median_absolute_error
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
 import math
 import numpy as np
 
@@ -19,6 +21,9 @@ class PredictionModelLogisticExternal:
 
     def plot_logistic_relationships(self, predictions):
         self.prediction_utils.plot_logistic_relationship_comparison(self.prediction_data.df_listings, self.training_columns, predictions)
+
+    def plot_roc(self, fpr, tpr, auc_score):
+        self.prediction_utils.plot_receiver_operator_characteristic(fpr, tpr, auc_score)
 
     def generate_lr_model(self):
         # LogisticRegression class from Scikit-Learn
@@ -51,6 +56,15 @@ class PredictionModelLogisticExternal:
                 positive_prediction_proportion = predictions_probabilities[:,1]
             df["predictions_probabilities_positive"] = positive_prediction_proportion
             self.plot_logistic_relationships(positive_prediction_proportion)
+
+            # Area Under Curve (AUC) Score
+            self.auc_score = roc_auc_score(output, positive_prediction_proportion)
+            print("AUC Score: %.2f" % (self.auc_score) )
+
+            # Receiver Operator Characteristic (ROC) Curve
+            fpr, tpr, thresholds = roc_curve(output, positive_prediction_proportion)
+            self.plot_roc(fpr, tpr, self.auc_score)
+
             print("Check positive predictions probability accuracy against 'known' Model Training Data:\n %r" % (df[[self.target_column, "predictions_probabilities_positive"]]))
 
             print("Positive Predictions Probabilities using Scikit-Learn Logistic Regression: %r" % (positive_prediction_proportion) )
@@ -98,7 +112,8 @@ class PredictionModelLogisticExternal:
             "rmse": self.rmse,
             "accuracy": self.accuracy,
             "sensitivity": self.sensitivity,
-            "specificity": self.specificity
+            "specificity": self.specificity,
+            "auc_score": self.auc_score
         }
 
 def run(prediction_config, prediction_data, prediction_utils):

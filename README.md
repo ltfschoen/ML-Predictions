@@ -9,7 +9,6 @@ Travic CI Build Status: [![Build Status](https://api.travis-ci.org/ltfschoen/ML-
   * [Chapter 1 - Setup](#chapter-1)
   * [Chapter 2 - Tests](#chapter-2)
   * [Chapter 3 - Results](#chapter-3)
-  * [Chapter 4 - Known Bugs](#chapter-4)
 
 ## Chapter 0 - About <a id="chapter-0"></a>
 
@@ -227,6 +226,11 @@ average value in the "price" column is $300)
     * **Accuracy** of Predictions (Predicted Target value when compared against Actual Target value):
         * Accuracy using **Logistic Regression** with Discrimination Threshold of 0.5:
             * 0.782 (78.2%)
+    * **AUC (Area Under Curve) Score** that predicts the probability that the Classifier
+    will rank a random positive observation higher than a random negative observation.
+    If it's higher than 50% (corresponding to simply randomly guessing) then its a good result
+    but may indicate training more features to predict may be necessary.
+        * 0.857 (85.7%)
     * **Sensitivity** of Predictions (using Binary Classification):
         * 0.5
     * **Specificity** of Predictions (using Binary Classification):
@@ -250,21 +254,16 @@ MAE to RMSE Ratio using Logistic Regression: 0.61:1
     ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/linear_regression.png)
 
 * **Logistic Regression**
+
+    * Receiver Operator Characteristic (ROC) Curve with AUC Score
+
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/logistic_regression_roc_curve_auc_score.png)
+
     * Evaluate visually the Predicted Target value from training on known features vs Actual Target value
     to understand Logistic Regression Model performance
 
-    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/logistic_regression.png)
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/logistic_regression.png)
 
 * **KNN Regression**
 
     ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/knn_regression.png)
-
-## Chapter 4 - Known Bugs <a id="chapter-4"></a>
-
-* Warning occurs:
-    ```
-    SettingWithCopyWarning:
-    A value is trying to be set on a copy of a slice from a DataFrame.
-    Try using .loc[row_indexer,col_indexer] = value instead
-    See the caveats in the documentation: http://pandas.pydata.org/pandas-docs/stable/indexing.html#indexing-view-versus-copy
-    ```

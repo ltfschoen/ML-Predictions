@@ -377,5 +377,5 @@ class PredictionData:
             raise ValueError("MIN_FEATURES_COMBO_LEN not satisfied")
 
         # Check that if Logistic Regression is enabled that the Target column is Categorical (i.e. int64, not float64)
-        if self.df_listings[self.target_column].dtype != "int64":
+        if self.df_listings[self.target_column].dtype != "int64" and self.prediction_config.ML_MODEL_LOGISTIC == True:
             raise ValueError("Target column must be Categorical type i.e. int64 NOT float64 when ML_MODEL_LOGISTIC is True")

@@ -343,3 +343,15 @@ class PredictionUtils():
         fig.tight_layout(rect=[0,0,1,1])
 
         plt.show()
+
+    def plot_receiver_operator_characteristic(self, fpr, tpr, auc_score):
+        fig = plt.figure()
+        fig.suptitle('ROC Curve', fontsize=14, fontweight='bold')
+        ax = fig.add_subplot(111)
+        # ax.set_title('ax title')
+        ax.set_xlabel('Fall-Out aka False Positive Rate (FPR)', fontsize=12)
+        ax.set_ylabel('Sensitivity aka True Positive Rate (TPR)', fontsize=12)
+        auc_score_text = "AUC Score: " + str(auc_score)
+        ax.text(fpr.mean(), tpr.mean(), auc_score_text, style='italic',
+                bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+        plt.plot(fpr, tpr)
