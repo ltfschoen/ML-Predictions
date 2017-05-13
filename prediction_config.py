@@ -69,24 +69,24 @@ class PredictionConfig(object):
 
     def __init__(self, event, context):
         self.CONTEXT = context
-        self.ML_MODEL_KNN = event["model_workflow_for_knn_algorithm"] # manual or scikit
-        self.ML_MODEL_LINEAR = event["model_workflow_for_linear_regression_algorithm_toggle"] # scikit True/False
-        self.ML_MODEL_LOGISTIC = event["model_workflow_for_logistic_regression_algorithm_toggle"]
-        self.HYPERPARAMETER_OPTIMISATION = event["hyperparameter_optimisation_toggle"] # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
-        self.HYPERPARAMETER_RANGE = np.arange(1, int(event["hyperparameter_range"]) + 1, 1) # 1 to 20
-        self.HYPERPARAMETER_FIXED = int(event["hyperparameter_quantity_fixed"]) # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
-        self.MIN_FEATURES_COMBO_LEN = int(event["min_training_features"])
-        self.MAX_MAJOR_INCOMPLETE = float(event["min_percentage_incomplete_observations_to_remove_column"]) # Percentage
-        self.MAX_MINOR_INCOMPLETE = float(event["max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice"]) # Percentage
-        self.K_FOLD_CROSS_VALIDATION = event["k_fold_cross_validation_toggle"]
+        self.ML_MODEL_KNN = event["model_workflow_config"]["model_workflow_for_knn_algorithm"] # manual or scikit
+        self.ML_MODEL_LINEAR = event["model_workflow_config"]["model_workflow_for_linear_regression_algorithm_toggle"] # scikit True/False
+        self.ML_MODEL_LOGISTIC = event["model_workflow_config"]["model_workflow_for_logistic_regression_algorithm_toggle"]
+        self.HYPERPARAMETER_OPTIMISATION = event["hyperparameter_optimisation_config"]["hyperparameter_optimisation_toggle"] # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
+        self.HYPERPARAMETER_RANGE = np.arange(1, int(event["hyperparameter_optimisation_config"]["hyperparameter_range"]) + 1, 1) # 1 to 20
+        self.HYPERPARAMETER_FIXED = int(event["hyperparameter_optimisation_config"]["hyperparameter_quantity_fixed"]) # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False
+        self.MIN_FEATURES_COMBO_LEN = int(event["training_config"]["min_training_features"])
+        self.MAX_MAJOR_INCOMPLETE = float(event["cleansing_config"]["min_percentage_incomplete_observations_to_remove_column"]) # Percentage
+        self.MAX_MINOR_INCOMPLETE = float(event["cleansing_config"]["max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice"]) # Percentage
+        self.K_FOLD_CROSS_VALIDATION = event["k_fold_cross_validation_config"]["k_fold_cross_validation_toggle"]
         # K-Fold Cross-Validation Technique when K_FOLDS >= 3 OR Holdout Validation when K_FOLDS == 2
         # Train/Test Validation Process
-        self.K_FOLDS = int(event["k_folds_quantity"])
+        self.K_FOLDS = int(event["k_fold_cross_validation_config"]["k_folds_quantity"])
         # Toggle whether to use use:
         #   - True - Scikit-Learn's KFold class to generate K Folds and its cross_val_score function
         #            for training and Cross Validation (without the need to use the "fold" column manually)
         #   - False - Manually generate a KFolds 'fold' column and manually perform Cross Validation
-        self.K_FOLDS_BUILTIN = event["k_folds_workflow"] # i.e. manual or scikit
+        self.K_FOLDS_BUILTIN = event["k_fold_cross_validation_config"]["k_folds_workflow"] # i.e. manual or scikit
         self.TESTING_PROPORTION = self.get_testing_proportion()
         self.DATASET_CHOICE = event["dataset_selected"] # "rental-property-listings", "car-listings"
         # Important Notes:

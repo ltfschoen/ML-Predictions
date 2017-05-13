@@ -1,19 +1,29 @@
 EVENT = {
-    "model_workflow_for_knn_algorithm": "scikit",
-    "model_workflow_for_linear_regression_algorithm_toggle": True,
-    # Warning: Only change to True when Target column only contains Categorical int64 values (not float64)
-    # otherwise you will get a 'continous' error since it will perform Logistic Regression.
-    # i.e. For car-listing-fuel Dataset, the Target Column may be "origin", but NOT "mpg"
-    "model_workflow_for_logistic_regression_algorithm_toggle": True,
-    "hyperparameter_optimisation_toggle": True,
-    "hyperparameter_range": 20,
-    "hyperparameter_quantity_fixed": 5,
-    "min_training_features": 2,
-    "min_percentage_incomplete_observations_to_remove_column": 0.2,
-    "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
-    "k_fold_cross_validation_toggle": True,
-    "k_folds_quantity": 10,
-    "k_folds_workflow": "scikit",
+    "model_workflow_config": {
+        "model_workflow_for_knn_algorithm": "scikit",
+        "model_workflow_for_linear_regression_algorithm_toggle": True,
+        # Warning: Only change to True when Target column only contains Categorical int64 values (not float64)
+        # otherwise you will get a 'continous' error since it will perform Logistic Regression.
+        # i.e. For car-listing-fuel Dataset, the Target Column may be "origin", but NOT "mpg"
+        "model_workflow_for_logistic_regression_algorithm_toggle": False,
+    },
+    "training_config": {
+        "min_training_features": 2
+    },
+    "cleansing_config": {
+        "min_percentage_incomplete_observations_to_remove_column": 0.2,
+        "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02
+    },
+    "hyperparameter_optimisation_config": {
+        "hyperparameter_optimisation_toggle": True,
+        "hyperparameter_range": 20,
+        "hyperparameter_quantity_fixed": 5
+    },
+    "k_fold_cross_validation_config": {
+        "k_fold_cross_validation_toggle": True,
+        "k_folds_quantity": 10,
+        "k_folds_workflow": "scikit"
+    },
     "dataset_selected": "university-admissions", # rental-property-listings, car-listings, car-listings-fuel, university-admissions
     "dataset_config": {
         "rental-property-listings": {
