@@ -50,7 +50,8 @@ class PredictionModelLinearExternal:
             self.lr.fit(inputs, output)
             predictions = self.lr.predict(inputs)
             df["predictions"] = predictions
-            self.plot_linear_relationships(predictions)
+            if self.prediction_config.PLOT_LINEAR_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET == True:
+                self.plot_linear_relationships(predictions)
             print("Check predictions accuracy against 'known' Model Training Data:\n %r" % (df[[self.target_column, "predictions"]]))
 
             print("Predictions using Scikit-Learn Linear Regression: %r" % (predictions) )
@@ -67,8 +68,9 @@ class PredictionModelLinearExternal:
                 mae_rmse_ratio_prefix = mae / rmse
                 print("MAE to RMSE Ratio using Linear Regression: %.2f:1" % (mae_rmse_ratio_prefix) )
 
-            for index, training_model_feature_name in enumerate(self.training_columns):
-                self.prediction_utils.plot(training_model_feature_name, df)
+            if self.prediction_config.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET == True:
+                for index, training_model_feature_name in enumerate(self.training_columns):
+                    self.prediction_utils.plot(training_model_feature_name, df)
         else:
             print("No Training Columns to use for Linear Regression. Perhaps they were all bad and removed.")
             rmse = None

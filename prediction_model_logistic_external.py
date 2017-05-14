@@ -55,7 +55,8 @@ class PredictionModelLogisticExternal:
                 #  - Non-Prediction 0 Proportion predictions_probabilities[:,0]
                 positive_prediction_proportion = predictions_probabilities[:,1]
             df["predictions_probabilities_positive"] = positive_prediction_proportion
-            self.plot_logistic_relationships(positive_prediction_proportion)
+            if self.prediction_config.PLOT_LOGISTIC_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET == True:
+                self.plot_logistic_relationships(positive_prediction_proportion)
 
             # Area Under Curve (AUC) Score
             self.auc_score = roc_auc_score(output, positive_prediction_proportion)
@@ -63,7 +64,8 @@ class PredictionModelLogisticExternal:
 
             # Receiver Operator Characteristic (ROC) Curve
             fpr, tpr, thresholds = roc_curve(output, positive_prediction_proportion)
-            self.plot_roc(fpr, tpr, self.auc_score)
+            if self.prediction_config.PLOT_LOGISTIC_ROC == True:
+                self.plot_roc(fpr, tpr, self.auc_score)
 
             print("Check positive predictions probability accuracy against 'known' Model Training Data:\n %r" % (df[[self.target_column, "predictions_probabilities_positive"]]))
 
@@ -102,8 +104,9 @@ class PredictionModelLogisticExternal:
                 mae_rmse_ratio_prefix = mae / self.rmse
                 print("MAE to RMSE Ratio using Logistic Regression: %.2f:1" % (mae_rmse_ratio_prefix) )
 
-            for index, training_model_feature_name in enumerate(self.training_columns):
-                self.prediction_utils.plot(training_model_feature_name, df)
+            if self.prediction_config.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET == True:
+                for index, training_model_feature_name in enumerate(self.training_columns):
+                    self.prediction_utils.plot(training_model_feature_name, df)
         else:
             print("No Training Columns to use for Logistic Regression. Perhaps they were all bad and removed.")
             rmse = None

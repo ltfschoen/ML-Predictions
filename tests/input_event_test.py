@@ -24,6 +24,13 @@ EVENT = {
         "k_folds_quantity": 10,
         "k_folds_workflow": "scikit"
     },
+    "plot_config": {
+        "plot_individual_train_features_vs_target_toggle": False,
+        "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
+        "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
+        "plot_logistic_roc": True,
+        "plot_hyperparameter_optimisation": True
+    },
     "dataset_selected": "university-admissions",
     "dataset_config": {
         "rental-property-listings": {

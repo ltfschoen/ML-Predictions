@@ -107,7 +107,8 @@ class PredictionUtils():
                 k_value_of_lowest_rmse = dict_value["k"]
         print("Feature combo %r has lowest RMSE of %r with 'k' of %r (optimum) using %r K-Folds for (Cross Validation was %r)" % (feature_combo_name_with_lowest_rmse, lowest_rmse, k_value_of_lowest_rmse, self.prediction_config.K_FOLDS, self.prediction_config.K_FOLD_CROSS_VALIDATION) )
 
-        self.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams, lowest_rmse, highest_rmse)
+        if self.prediction_config.PLOT_HYPERPARAMETER_OPTIMISATION == True:
+            self.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse)
         return {
             "feature_combo_name_with_lowest_rmse": feature_combo_name_with_lowest_rmse,
             "lowest_rmse": lowest_rmse,
@@ -315,14 +316,15 @@ class PredictionUtils():
 
         plt.show()
 
-    def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, lowest_rmse, highest_rmse):
+    def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse):
 
-        if not feature_combos_lowest_rmse_for_hyperparams or not lowest_rmse or not highest_rmse:
+        if not feature_combos_lowest_rmse_for_hyperparams or not feature_combo_name_with_lowest_rmse or not lowest_rmse or not highest_rmse:
             return
 
         count_feature_combos = len(feature_combos_lowest_rmse_for_hyperparams.items())
 
         fig = plt.figure()
+        fig.suptitle('Hyperparameter k Optimisation Results', fontsize=14, fontweight='bold')
         ax = fig.add_subplot(111)
 
         # Automatically select specified number of colours from existing colourmap
@@ -342,9 +344,26 @@ class PredictionUtils():
 
         ax.legend(prop={'size':4})
         ax.grid()
-        ax.set_xlabel("Hyperparam k")
-        yLabel = "RMSE of Features Combination using " + str(self.prediction_config.K_FOLDS) + " K-Folds for Cross Validation"
-        ax.set_ylabel(yLabel)
+        ax.set_xlabel("Hyperparam k", fontsize=12)
+        yLabel = "RMSE of Features Combinations"
+        ax.set_ylabel(yLabel, fontsize=12)
+
+        lowest_rmse_text = "Lowest RMSE: " + str(round(lowest_rmse, 2))
+        lowest_rmse_feature_combination = "Best Feature Combo: " + feature_combo_name_with_lowest_rmse
+        lowest_rmse_hyperparameter_k = "Hyperparameter k of best result: " + str(k_value_of_lowest_rmse)
+        k_folds_text = "K-Folds: " + str(self.prediction_config.K_FOLDS)
+        k_nearest_neighbors_range_text = "Hyperparameter k Range: 0 to " + str(self.prediction_config.HYPERPARAMETER_RANGE[-1])
+        results_text = lowest_rmse_text + "\n" + \
+                       lowest_rmse_feature_combination + "\n" + \
+                       lowest_rmse_hyperparameter_k + "\n" + \
+                       k_folds_text + "\n" + \
+                       k_nearest_neighbors_range_text
+        ax.text(0.5, 1.2, results_text, style='italic',
+                bbox={'facecolor':'red', 'alpha':0.2, 'pad':5},
+                ha='center',
+                va='center',
+                transform=ax.transAxes,
+                fontsize=7)
 
         # Optimise plot to dynamically fit all values regardless of range of RMSE results
         if highest_rmse and lowest_rmse:
@@ -357,6 +376,7 @@ class PredictionUtils():
         plt.legend(bbox_to_anchor=(1.2,1), loc="upper right", mode="expand", borderaxespad=0, prop={'size':5})
         # plt.subplots_adjust(top=0.7)
         plt.tight_layout(rect=[0,0,0.5,1])
+        fig.subplots_adjust(top=0.7)  # subplots_adjust must be after call to tight_layout
         plt.show()
 
     def plot_linear_relationship_comparison(self, df, training_columns, predictions):
@@ -384,11 +404,13 @@ class PredictionUtils():
         training_columns_df = df.filter(training_columns, axis=1)
         count_subplots = len(training_columns_df.columns)
         fig = plt.figure(figsize=(10, 10))
+        fig.suptitle('Evaluate Linear Relationships Results', fontsize=14, fontweight='bold')
         count_columns = 2
         for index, col in enumerate(training_columns_df.columns):
             """ Subplots i.e. 2 rows x 3 columns grid at 4th subplot """
             subplot = index + 1
             ax = fig.add_subplot(count_subplots, count_columns, subplot)
+            # plt.title("Training Column vs Target Column", fontsize=10)
             x = col
             y = self.target_column
             label_actual = col + ' (actual)'
@@ -408,7 +430,7 @@ class PredictionUtils():
 
             ax.legend(bbox_to_anchor=(-0.9,-0.02), loc="best", prop={'size':5})
         fig.tight_layout(rect=[0,0,1,1])
-
+        fig.subplots_adjust(top=0.85)
         plt.show()
 
     def plot_logistic_relationship_comparison(self, df, training_columns, positive_predictions_probabilities):
@@ -418,6 +440,7 @@ class PredictionUtils():
         training_columns_df = df.filter(training_columns, axis=1)
         count_subplots = len(training_columns_df.columns)
         fig = plt.figure(figsize=(10, 10))
+        fig.suptitle('Evaluate Logistic Relationships Results', fontsize=14, fontweight='bold')
         count_columns = 2
         for index, col in enumerate(training_columns_df.columns):
             """ Subplots i.e. 2 rows x 3 columns grid at 4th subplot """
@@ -442,7 +465,7 @@ class PredictionUtils():
 
             ax.legend(bbox_to_anchor=(-0.9,-0.02), loc="best", prop={'size':5})
         fig.tight_layout(rect=[0,0,1,1])
-
+        fig.subplots_adjust(top=0.85)
         plt.show()
 
     def plot_receiver_operator_characteristic(self, fpr, tpr, auc_score):

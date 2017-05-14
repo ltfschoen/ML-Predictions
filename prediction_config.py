@@ -72,6 +72,11 @@ class PredictionConfig(object):
         self.ML_MODEL_KNN = event["model_workflow_config"]["model_workflow_for_knn_algorithm"] # manual or scikit
         self.ML_MODEL_LINEAR = event["model_workflow_config"]["model_workflow_for_linear_regression_algorithm_toggle"] # scikit True/False
         self.ML_MODEL_LOGISTIC = event["model_workflow_config"]["model_workflow_for_logistic_regression_algorithm_toggle"]
+        self.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_individual_train_features_vs_target_toggle"]
+        self.PLOT_LINEAR_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle"]
+        self.PLOT_LOGISTIC_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle"]
+        self.PLOT_LOGISTIC_ROC = event["plot_config"]["plot_logistic_roc"]
+        self.PLOT_HYPERPARAMETER_OPTIMISATION = event["plot_config"]["plot_hyperparameter_optimisation"]
         self.HYPERPARAMETER_OPTIMISATION = event["hyperparameter_optimisation_config"]["hyperparameter_optimisation_toggle"] # Toggle to iterate through defined HYPERPARAMETER_RANGE of k values
         self.HYPERPARAMETER_RANGE = np.arange(1, int(event["hyperparameter_optimisation_config"]["hyperparameter_range"]) + 1, 1) # 1 to 20
         self.HYPERPARAMETER_FIXED = int(event["hyperparameter_optimisation_config"]["hyperparameter_quantity_fixed"]) # Fixed value of hyperparameter k when HYPERPARAMETER_OPTIMISATION is False

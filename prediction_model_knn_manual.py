@@ -82,7 +82,8 @@ def run(prediction_config, prediction_data, prediction_utils):
             mae_rmse_ratio_prefix = mae / rmse
             print("MAE to RMSE Ratio: %.2f:1" % (mae_rmse_ratio_prefix) )
 
-        prediction_utils.plot(training_model_feature_name, prediction_data.testing_part)
+        if prediction_config.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET == True:
+            prediction_utils.plot(training_model_feature_name, prediction_data.testing_part)
 
     return {
         "feature_names": training_model_feature_name,

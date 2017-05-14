@@ -174,7 +174,7 @@ average value in the "price" column is $300)
 
                 * Screenshots:
 
-                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/rmse_cross_validation_fixed.png)
+                    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/rmse_cross_validation_fixed2.png)
 
 #### Example 2: Car Listing Dataset
 
@@ -192,7 +192,7 @@ average value in the "price" column is $300)
 
 * **KNN Regression**
 
-    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation_fixed.png)
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/rmse_cross_validation_fixed2.png)
 
 #### Example 3: Car Listing "Fuel" Dataset
 
@@ -216,7 +216,7 @@ average value in the "price" column is $300)
 * **KNN Regression**
     * Plotting RMSE for different combinations of feature columns to find lowest using KNN Regression
 
-    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_rmse_cross_validation.png)
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_rmse_cross_validation_fixed.png)
 
 #### Example 4: University Admissions Dataset
 
@@ -266,4 +266,4 @@ MAE to RMSE Ratio using Logistic Regression: 0.61:1
 
 * **KNN Regression**
 
-    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/knn_regression.png)
+    ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/knn_regression_fixed.png)
