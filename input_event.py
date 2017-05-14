@@ -5,7 +5,7 @@ EVENT = {
         # Warning: Only change to True when Target column only contains Categorical int64 values (not float64)
         # otherwise you will get a 'continous' error since it will perform Logistic Regression.
         # i.e. For car-listing-fuel Dataset, the Target Column may be "origin", but NOT "mpg"
-        "model_workflow_for_logistic_regression_algorithm_toggle": True,
+        "model_workflow_for_logistic_regression_algorithm_toggle": False,
     },
     "training_config": {
         "min_training_features": 2
@@ -31,7 +31,7 @@ EVENT = {
         "plot_logistic_roc": True,
         "plot_hyperparameter_optimisation": True
     },
-    "dataset_selected": "university-admissions", # rental-property-listings, car-listings, car-listings-fuel, university-admissions
+    "dataset_selected": "rental-property-listings", # rental-property-listings, car-listings, car-listings-fuel, university-admissions
     "dataset_config": {
         "rental-property-listings": {
             "local": "data/listings.csv",

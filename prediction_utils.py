@@ -6,6 +6,8 @@ from matplotlib import rc
 rc('mathtext', default='regular')
 from scipy.spatial import distance
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
@@ -21,6 +23,10 @@ class PredictionUtils():
         """ Regressor Model Generation"""
         if regressor == "knn":
             return KNeighborsRegressor(n_neighbors=qty_neighbors, algorithm=algorithm, p=distance_type)
+        elif regressor == "linear":
+            return LinearRegression(fit_intercept=True) # copy_X=True, n_jobs=1, normalize=False
+        elif regressor == "logistic":
+            return LogisticRegression(class_weight='balanced')
 
     def k_fold_cross_validation(self, regressor, df, feature_combos):
         """ K-Fold Cross Validation for any given Regressor """
@@ -74,7 +80,7 @@ class PredictionUtils():
                 feature_combos_rmse_for_hyperparams[feature_combo_key].append(avg_rmse)
         return feature_combos_rmse_for_hyperparams
 
-    def hyperparameter_k_optimisation(self, feature_combos_rmse_for_hyperparams):
+    def hyperparameter_k_optimisation(self, feature_combos_rmse_for_hyperparams, model_type, pre_optimisation_results):
         """ Hyperparameter k Optimisation """
         feature_combos_lowest_rmse_for_hyperparams = dict()
 
@@ -108,7 +114,7 @@ class PredictionUtils():
         print("Feature combo %r has lowest RMSE of %r with 'k' of %r (optimum) using %r K-Folds for (Cross Validation was %r)" % (feature_combo_name_with_lowest_rmse, lowest_rmse, k_value_of_lowest_rmse, self.prediction_config.K_FOLDS, self.prediction_config.K_FOLD_CROSS_VALIDATION) )
 
         if self.prediction_config.PLOT_HYPERPARAMETER_OPTIMISATION == True:
-            self.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse)
+            self.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse, model_type, pre_optimisation_results)
         return {
             "feature_combo_name_with_lowest_rmse": feature_combo_name_with_lowest_rmse,
             "lowest_rmse": lowest_rmse,
@@ -316,7 +322,7 @@ class PredictionUtils():
 
         plt.show()
 
-    def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse):
+    def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse, model_type, pre_optimisation_results):
 
         if not feature_combos_lowest_rmse_for_hyperparams or not feature_combo_name_with_lowest_rmse or not lowest_rmse or not highest_rmse:
             return
@@ -324,7 +330,8 @@ class PredictionUtils():
         count_feature_combos = len(feature_combos_lowest_rmse_for_hyperparams.items())
 
         fig = plt.figure()
-        fig.suptitle('Hyperparameter k Optimisation Results', fontsize=14, fontweight='bold')
+        title = 'Hyperparameter k Optimisation Results for regression: ' + str(model_type)
+        fig.suptitle(title, fontsize=14, fontweight='bold')
         ax = fig.add_subplot(111)
 
         # Automatically select specified number of colours from existing colourmap
@@ -353,11 +360,48 @@ class PredictionUtils():
         lowest_rmse_hyperparameter_k = "Hyperparameter k of best result: " + str(k_value_of_lowest_rmse)
         k_folds_text = "K-Folds: " + str(self.prediction_config.K_FOLDS)
         k_nearest_neighbors_range_text = "Hyperparameter k Range: 0 to " + str(self.prediction_config.HYPERPARAMETER_RANGE[-1])
+
+        pre_optimisation_results_summary = ""
+
+        if pre_optimisation_results:
+            _model_type = ""
+            _rmse = ""
+            _accuracy = "N/A" # Default is N/A
+            _sensitivity = "N/A" # Default is N/A
+            _specificity = "N/A" # Default is N/A
+            _auc_score = "N/A" # Default is N/A
+            if "model_type" in pre_optimisation_results:
+                _model_type = str(pre_optimisation_results["model_type"])
+
+            if "rmse" in pre_optimisation_results:
+                _rmse = str(pre_optimisation_results["rmse"])
+
+            if "accuracy" in pre_optimisation_results:
+                _accuracy = str(pre_optimisation_results["accuracy"])
+
+            if "sensitivity" in pre_optimisation_results:
+                _sensitivity = str(pre_optimisation_results["sensitivity"])
+
+            if "specificity" in pre_optimisation_results:
+                _specificity = str(pre_optimisation_results["specificity"])
+
+            if "auc_score" in pre_optimisation_results:
+                _auc_score = str(pre_optimisation_results["auc_score"])
+
+            pre_optimisation_results_summary = "Pre-Optimisation - " + \
+                                               "Model Type: " + _model_type + "; " + \
+                                               "RMSE: " + _rmse + "; " + \
+                                               "\nAccuracy: " + _accuracy + "; " + \
+                                               "Sensitivity: " + _sensitivity + "; " + \
+                                               "Specificity: " + _specificity + "; " + \
+                                               "\nAUC Score: " + _auc_score
+
         results_text = lowest_rmse_text + "\n" + \
                        lowest_rmse_feature_combination + "\n" + \
                        lowest_rmse_hyperparameter_k + "\n" + \
                        k_folds_text + "\n" + \
-                       k_nearest_neighbors_range_text
+                       k_nearest_neighbors_range_text + "\n" + \
+                       pre_optimisation_results_summary
         ax.text(0.5, 1.2, results_text, style='italic',
                 bbox={'facecolor':'red', 'alpha':0.2, 'pad':5},
                 ha='center',

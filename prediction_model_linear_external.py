@@ -1,4 +1,3 @@
-from sklearn.linear_model import LinearRegression
 from sklearn.metrics import median_absolute_error
 from sklearn.metrics import mean_squared_error
 import math
@@ -11,14 +10,11 @@ class PredictionModelLinearExternal:
         self.prediction_utils = prediction_utils
         self.training_columns = self.prediction_data.training_columns
         self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
-        self.lr = None
+        self.model_type = "linear"
+        self.response = {}
 
     def plot_linear_relationships(self, predictions):
         self.prediction_utils.plot_linear_relationship_comparison(self.prediction_data.df_listings, self.training_columns, predictions)
-
-    def generate_lr_model(self):
-        # LinearRegression class from Scikit-Learn
-        self.lr = LinearRegression(fit_intercept=True) # copy_X=True, n_jobs=1, normalize=False
 
     def process_linear_regression(self):
         """ Linear Regression
@@ -40,48 +36,73 @@ class PredictionModelLinearExternal:
         """
         print("Linear Regression in progress...")
 
-        self.generate_lr_model()
+        model = self.prediction_utils.generate_model(self.model_type, None, None, None)
         df = self.prediction_data.df_listings
         inputs = df[self.training_columns]
-        if len(inputs):
-            # Check inputs is Numpy matrix not Numpy array
-            print("Shape of inputs to Scikit-Learn Fit function: ", inputs.values.shape)
-            output = df[self.target_column]
-            self.lr.fit(inputs, output)
-            predictions = self.lr.predict(inputs)
-            df["predictions"] = predictions
-            if self.prediction_config.PLOT_LINEAR_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET == True:
-                self.plot_linear_relationships(predictions)
-            print("Check predictions accuracy against 'known' Model Training Data:\n %r" % (df[[self.target_column, "predictions"]]))
+        if not len(inputs):
+            print("No Training Columns to use for Logistic Regression. Perhaps they were all bad and removed.")
+            return None
 
-            print("Predictions using Scikit-Learn Linear Regression: %r" % (predictions) )
+        # Check inputs is Numpy matrix not Numpy array
+        print("Shape of inputs to Scikit-Learn Fit function: ", inputs.values.shape)
+        output = df[self.target_column]
+        model.fit(inputs, output)
+        predictions = model.predict(inputs)
+        df["predictions"] = predictions
+        if self.prediction_config.PLOT_LINEAR_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET == True:
+            self.plot_linear_relationships(predictions)
+        print("Check predictions accuracy against 'known' Model Training Data:\n %r" % (df[[self.target_column, "predictions"]]))
 
-            mae = median_absolute_error(df[self.target_column], predictions)
-            mse = mean_squared_error(df[self.target_column], predictions, multioutput='raw_values')
-            rmse = math.sqrt(mse)
+        print("Predictions using Scikit-Learn Linear Regression: %r" % (predictions) )
 
-            print("MAE: %r" % (mae) )
-            print("MSE: %r" % (mse[0]) )
-            print("RMSE: %r" % (rmse) )
+        mae = median_absolute_error(df[self.target_column], predictions)
+        mse = mean_squared_error(df[self.target_column], predictions, multioutput='raw_values')
+        rmse = math.sqrt(mse)
 
-            if mae and rmse:
-                mae_rmse_ratio_prefix = mae / rmse
-                print("MAE to RMSE Ratio using Linear Regression: %.2f:1" % (mae_rmse_ratio_prefix) )
+        print("MAE: %r" % (mae) )
+        print("MSE: %r" % (mse[0]) )
+        print("RMSE: %r" % (rmse) )
 
-            if self.prediction_config.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET == True:
-                for index, training_model_feature_name in enumerate(self.training_columns):
-                    self.prediction_utils.plot(training_model_feature_name, df)
-        else:
-            print("No Training Columns to use for Linear Regression. Perhaps they were all bad and removed.")
-            rmse = None
+        if mae and rmse:
+            mae_rmse_ratio_prefix = mae / rmse
+            print("MAE to RMSE Ratio using Linear Regression: %.2f:1" % (mae_rmse_ratio_prefix) )
 
-        return {
-            "rmse": rmse,
+        if self.prediction_config.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET == True:
+            for index, training_model_feature_name in enumerate(self.training_columns):
+                self.prediction_utils.plot(training_model_feature_name, df)
+
+        self.response["pre-hyperparameter_optimisation"] = {
+            "model_type": self.model_type,
+            "rmse": rmse
         }
+        print("Linear Regression Pre-Hyperparameter k Optimisation results: %r" % (self.response))
+
+    def process_hyperparameter_optimisation(self):
+        """ Hyperparameter 'k' Optimisation """
+        print("Hyperparameter k Optimisation in progress...")
+
+        feature_combos = self.prediction_utils.generate_combinations_of_features(self.training_columns)
+        feature_combos_rmse_for_hyperparams = self.prediction_utils.k_fold_cross_validation(self.model_type, self.prediction_data.df_listings, feature_combos)
+        optimisation_results = self.prediction_utils.hyperparameter_k_optimisation(feature_combos_rmse_for_hyperparams, self.model_type, self.response["pre-hyperparameter_optimisation"])
+        self.response["post-hyperparameter_optimisation"] = {
+            "model_type": self.model_type,
+            "feature_names": optimisation_results["feature_combo_name_with_lowest_rmse"],
+            "rmse": optimisation_results["lowest_rmse"],
+            "k_neighbors_qty": optimisation_results["k_value_of_lowest_rmse"],
+            "k_folds_qty": self.prediction_config.K_FOLDS,
+            "k_fold_cross_validation_toggle": self.prediction_config.K_FOLD_CROSS_VALIDATION
+        }
+        print("Linear Regression Post-Hyperparameter k Optimisation results: %r" % (self.response))
 
 def run(prediction_config, prediction_data, prediction_utils):
     """
     Scikit-Learn Workflow depending on config chosen
     """
     prediction_model_linear_external = PredictionModelLinearExternal(prediction_config, prediction_data, prediction_utils)
-    return prediction_model_linear_external.process_linear_regression()
+    prediction_model_linear_external.process_linear_regression()
+
+    # Combining K-Fold Cross Validation with Hyperparameter 'k' Optimisation
+    if prediction_config.K_FOLD_CROSS_VALIDATION == True:
+        prediction_model_linear_external.process_hyperparameter_optimisation()
+
+    return prediction_model_linear_external.response

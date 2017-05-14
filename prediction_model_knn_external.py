@@ -11,6 +11,7 @@ class PredictionModelKNNExternal:
         self.prediction_utils = prediction_utils
         self.training_columns = self.prediction_data.training_columns
         self.target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
+        self.model_type = "knn"
 
     def process_hyperparameter_fixed(self):
         """
@@ -37,7 +38,7 @@ class PredictionModelKNNExternal:
         training_column_names = self.training_columns
         feature_combo = '__'.join(training_column_names)
 
-        model = self.prediction_utils.generate_model("knn", self.prediction_config.HYPERPARAMETER_FIXED, 'brute', 2)
+        model = self.prediction_utils.generate_model(self.model_type, self.prediction_config.HYPERPARAMETER_FIXED, 'brute', 2)
 
         _temp_training_part = self.prediction_data.training_part
         X = _temp_training_part[self.training_columns]
@@ -90,7 +91,7 @@ class PredictionModelKNNExternal:
                 feature_combo_key = '__'.join(feature_combo)
                 feature_combos_rmse_for_hyperparams[feature_combo_key] = list()
                 for idx2, qty_neighbors in enumerate(self.prediction_config.HYPERPARAMETER_RANGE):
-                    model = self.prediction_utils.generate_model("knn", qty_neighbors, 'brute', 2)
+                    model = self.prediction_utils.generate_model(self.model_type, qty_neighbors, 'brute', 2)
                     X = _temp_training_part[list(feature_combo)]
                     y = _temp_training_part[self.target_column]
                     model.fit(X, y)
@@ -101,9 +102,9 @@ class PredictionModelKNNExternal:
 
         # Combining K-Fold Cross Validation with Hyperparameter 'k' Optimisation
         else:
-            feature_combos_rmse_for_hyperparams = self.prediction_utils.k_fold_cross_validation("knn", self.prediction_data.df_listings, feature_combos)
+            feature_combos_rmse_for_hyperparams = self.prediction_utils.k_fold_cross_validation(self.model_type, self.prediction_data.df_listings, feature_combos)
 
-        optimisation_results = self.prediction_utils.hyperparameter_k_optimisation(feature_combos_rmse_for_hyperparams)
+        optimisation_results = self.prediction_utils.hyperparameter_k_optimisation(feature_combos_rmse_for_hyperparams, self.model_type, None)
 
         return {
             "feature_names": optimisation_results["feature_combo_name_with_lowest_rmse"],
