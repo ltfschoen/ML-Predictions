@@ -72,6 +72,8 @@ class PredictionConfig(object):
         self.ML_MODEL_KNN = event["model_workflow_config"]["model_workflow_for_knn_algorithm"] # manual or scikit
         self.ML_MODEL_LINEAR = event["model_workflow_config"]["model_workflow_for_linear_regression_algorithm_toggle"] # scikit True/False
         self.ML_MODEL_LOGISTIC = event["model_workflow_config"]["model_workflow_for_logistic_regression_algorithm_toggle"]
+        self.K_MEANS_CLUSTERING = event["k_means_clustering_config"]["k_means_clustering_toggle"]
+        self.CENTROIDS_QUANTITY = event["k_means_clustering_config"]["centroids_quantity"]
         self.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_individual_train_features_vs_target_toggle"]
         self.PLOT_LINEAR_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle"]
         self.PLOT_LOGISTIC_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle"]

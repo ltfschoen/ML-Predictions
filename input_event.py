@@ -19,6 +19,10 @@ EVENT = {
         "hyperparameter_range": 20,
         "hyperparameter_quantity_fixed": 5
     },
+    "k_means_clustering_config": {
+        "k_means_clustering_toggle": True,
+        "centroids_quantity": 2
+    },
     "k_fold_cross_validation_config": {
         "k_fold_cross_validation_toggle": True,
         "k_folds_quantity": 10,
@@ -31,7 +35,7 @@ EVENT = {
         "plot_logistic_roc": True,
         "plot_hyperparameter_optimisation": True
     },
-    "dataset_selected": "rental-property-listings", # rental-property-listings, car-listings, car-listings-fuel, university-admissions
+    "dataset_selected": "senators-vote", # rental-property-listings, car-listings, car-listings-fuel, university-admissions, senators-vote
     "dataset_config": {
         "rental-property-listings": {
             "local": "data/listings.csv",
@@ -111,6 +115,22 @@ EVENT = {
             # i.e. ["gpa", "gre"]
             "training_columns": [],
             "target_column": "admit",
+            "cleanse_columns_price_format": [],
+            "convert_columns_words_to_digits": []
+        },
+        "senators-vote": {
+            "local": "data/114_congress.csv",
+            "remote": "",
+            "format": "csv-comma-separated",
+            "labels": "",
+            "exclude_columns": {
+                "non_numeric": [],
+                "non_ordinal": [],
+                "out_of_scope": []
+            },
+            "training_columns": ["vote-bill1", "vote-bill4", "vote-bill5", "vote-bill6", "vote-bill7", "vote-bill8"],
+            "target_column": "extremism",
+            "affiliation_column": "party",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
         }

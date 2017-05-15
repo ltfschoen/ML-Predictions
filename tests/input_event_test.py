@@ -24,6 +24,10 @@ EVENT = {
         "k_folds_quantity": 10,
         "k_folds_workflow": "scikit"
     },
+    "k_means_clustering_config": {
+        "k_means_clustering_toggle": True,
+        "centroids_quantity": 2
+    },
     "plot_config": {
         "plot_individual_train_features_vs_target_toggle": False,
         "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
@@ -111,6 +115,22 @@ EVENT = {
             # i.e. ["gpa", "gre"]
             "training_columns": [],
             "target_column": "admit",
+            "cleanse_columns_price_format": [],
+            "convert_columns_words_to_digits": []
+        },
+        "senators-vote": {
+            "local": "data/114_congress.csv",
+            "remote": "",
+            "format": "csv-comma-separated",
+            "labels": "",
+            "exclude_columns": {
+                "non_numeric": [],
+                "non_ordinal": [],
+                "out_of_scope": []
+            },
+            "training_columns": ["vote-bill1", "vote-bill4", "vote-bill5", "vote-bill6", "vote-bill7", "vote-bill8"],
+            "target_column": "extremism",
+            "affiliation_column": "party",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
         }

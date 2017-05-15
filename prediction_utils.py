@@ -355,6 +355,7 @@ class PredictionUtils():
         yLabel = "RMSE of Features Combinations"
         ax.set_ylabel(yLabel, fontsize=12)
 
+        target_column = "Target Feature: " + self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
         lowest_rmse_text = "Lowest RMSE: " + str(round(lowest_rmse, 2))
         lowest_rmse_feature_combination = "Best Feature Combo: " + feature_combo_name_with_lowest_rmse
         lowest_rmse_hyperparameter_k = "Hyperparameter k of best result: " + str(k_value_of_lowest_rmse)
@@ -396,7 +397,8 @@ class PredictionUtils():
                                                "Specificity: " + _specificity + "; " + \
                                                "\nAUC Score: " + _auc_score
 
-        results_text = lowest_rmse_text + "\n" + \
+        results_text = target_column + "\n" + \
+                       lowest_rmse_text + "\n" + \
                        lowest_rmse_feature_combination + "\n" + \
                        lowest_rmse_hyperparameter_k + "\n" + \
                        k_folds_text + "\n" + \

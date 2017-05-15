@@ -12,7 +12,7 @@ Travic CI Build Status: [![Build Status](https://api.travis-ci.org/ltfschoen/ML-
 
 ## Chapter 0 - About <a id="chapter-0"></a>
 
-* Applies **machine learning** techniques on past data using a **regression** process since
+* Applies **Supervised Machine Learning** techniques on past data using a **regression** process since
 we want to predict a specific optimum number value for a chosen Target feature (column) of a given dataset based on
 a list of chosen Training features by using a chosen Train/Test Validation Process and
 optionally performing K-Folds Cross Validation (splitting into different the Train/Test partitions),
@@ -22,10 +22,17 @@ provided by the Scikit-Learn library, which use Similarity Metrics such as the E
 and evaluate the quality of the prediction accuracy using Error Metrics such as
 Median Average Error (MAE), Mean Squared Error (MSE), and Root Mean Squared Error (RMSE) equations,
 where RMSE penalises large errors more (caused by outliers).
+
 When Logistic Regression is used we also calculate the Accuracy, Sensitivity, Specificity, and Area Under Curve (AUC) for predictions
 and plot ROC Curve prior to K-Folds Cross Validation (to help understand the generalisability and reduce overfitting of models
 by trying different values of K to get a better sense of how accurate we expect the model to perform on unseen data it was not trained on)
 and Hyperparameter Optimisation.
+
+**Unsupervised Machine Learning** algorithms including **K-Means Clustering** is used in Example 5 to find **patterns** in the data and
+generates a new column in the main DataFrame that is **ordered and continuous** for subsequent use by **Supervised Machine Learning** Prediction Algorithms
+as the Target Column (which did not exist prior).
+Prior to using K-Means Clustering, an **"affiliation_column"** property must be added within the dataset key
+and assigned the column that is associated with each cluster.
 
 Refer to Implementation Guide in `prediction_config.py` for details.
 
@@ -515,3 +522,100 @@ average value in the "price" column may be $300)
         * Hyperparameter k Optimisation using KNN Regression
 
             ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/knn_regression_final.png)
+
+#### Example 5: Senator Votes Dataset
+
+* Problem for Dataset 5:
+    * Problem (abstract) - What new legislation (decided by roll call votes to pass a bill by Senators) are most likely to cause 'extremist' Senators?
+    (whereby some 'extremist' Senators decide not to vote along party lines in accordance with how their political party votes)
+
+* Note: **K-Means Clustering** is used and generates a new **"extremism"** column in the main DataFrame that is subsequently used
+by the Prediction Algorithms as the Target Column (but does not exist prior).
+Prior to use of K-Means Clustering an **"affiliation_column"** property must be added within the dataset key
+and assigned with the column that is associated with each cluster.
+
+* Setup Configuration:
+    * Check that the following property values are assigned in `input_event.py`:
+        ```
+        "model_workflow_config": {
+            "model_workflow_for_knn_algorithm": "scikit",
+            "model_workflow_for_linear_regression_algorithm_toggle": True,
+            "model_workflow_for_logistic_regression_algorithm_toggle": False,
+        },
+        "training_config": {
+            "min_training_features": 0
+        },
+        "cleansing_config": {
+            "min_percentage_incomplete_observations_to_remove_column": 0.2,
+            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02
+        },
+        "hyperparameter_optimisation_config": {
+            "hyperparameter_optimisation_toggle": False,
+            "hyperparameter_range": 0,
+            "hyperparameter_quantity_fixed": 0
+        },
+        "k_means_clustering_config": {
+            "k_means_clustering_toggle": True,
+            "centroids_quantity": 2
+        },
+        "k_fold_cross_validation_config": {
+            "k_fold_cross_validation_toggle": False,
+            "k_folds_quantity": 0,
+            "k_folds_workflow": "scikit"
+        },
+        "plot_config": {
+            "plot_individual_train_features_vs_target_toggle": False,
+            "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
+            "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
+            "plot_logistic_roc": False,
+            "plot_hyperparameter_optimisation": False
+        },
+        "dataset_selected": "senators-vote",
+        "dataset_config": {
+
+            ...
+
+            "senators-vote": {
+                "local": "data/114_congress.csv",
+                "remote": "",
+                "format": "csv-comma-separated",
+                "labels": "",
+                "exclude_columns": {
+                    "non_numeric": [],
+                    "non_ordinal": [],
+                    "out_of_scope": []
+                },
+                "training_columns": [],
+                "target_column": "00001",
+                "cleanse_columns_price_format": [],
+                "convert_columns_words_to_digits": []
+            }
+        ```
+
+* Setup used:
+    * Training columns (features): vote-bill1, vote-bill4, vote-bill5, vote-bill6, vote-bill7, vote-bill8
+    * Target column: extremism
+    * Affiliation column: party
+    * K-Folds for Cross Validation: 10
+    * Hyperparameter k Range: 0 to 20
+
+* **Linear Regression**
+
+    * Screenshots:
+
+        * Visual evaluation
+
+            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/senators_vote/evaluation_linear_regression.png)
+
+        * Hyperparameter k Optimisation using Linear Regression
+
+            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/senators_vote/linear_regression.png)
+
+* **KNN Regression**
+
+    * Screenshots:
+
+        * Hyperparameter k Optimisation using KNN Regression
+
+            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/senators_vote/knn_regression.png)
+
