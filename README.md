@@ -34,6 +34,9 @@ as the Target Column (which did not exist prior).
 Prior to using K-Means Clustering, an **"affiliation_column"** property must be added within the dataset key
 and assigned the column that is associated with each cluster.
 
+Data cleansing is achieved using different approaches including plotting the **Correlation** between the Target features (column)
+and other features and removing columns with correlation below configured threshold.
+
 Refer to Implementation Guide in `prediction_config.py` for details.
 
 ## Chapter 1 - Setup <a id="chapter-1"></a>
@@ -117,7 +120,8 @@ average value in the "price" column may be $300)
         },
         "cleansing_config": {
             "min_percentage_incomplete_observations_to_remove_column": 0.2,
-            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02
+            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
+            "min_percentage_correlation_with_target_column": 0.10
         },
         "hyperparameter_optimisation_config": {
             "hyperparameter_optimisation_toggle": True,
@@ -131,6 +135,7 @@ average value in the "price" column may be $300)
         },
         "plot_config": {
             "plot_individual_train_features_vs_target_toggle": False,
+            "plot_correlation_between_target_column_and_others": True,
             "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
             "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
             "plot_logistic_roc": True,
@@ -160,10 +165,12 @@ average value in the "price" column may be $300)
                                      "neighbourhood_cleansed", "neighbourhood_group_cleansed", "city",
                                      "state", "market", "smart_location", "country_code",
                                      "country", "is_location_exact", "calendar_last_scraped", "first_review",
-                                     "last_review", "jurisdiction_names"]
+                                     "last_review", "jurisdiction_names"],
+                    "remove_range": {}
                 },
                 "training_columns": ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"],
                 "target_column": "price",
+                "affiliation_column": "",
                 "cleanse_columns_price_format": ["price", "weekly_price", "monthly_price", "security_deposit",
                                                  "cleaning_fee", "extra_people"],
                 "convert_columns_words_to_digits": []
@@ -176,6 +183,15 @@ average value in the "price" column may be $300)
     * Target column: "price"
     * K-Folds for Cross Validation: 10
     * Hyperparameter k Range: 0 to 20
+
+* **Correlations**
+     * Find pairwise Correlations between Target Column and other columns to identify columns to remove.
+
+     * Screenshots
+
+        * Correlations
+
+            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/correlation.png)
 
 * **Logistic Regression**
 
@@ -407,7 +423,8 @@ average value in the "price" column may be $300)
         },
         "cleansing_config": {
             "min_percentage_incomplete_observations_to_remove_column": 0.2,
-            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02
+            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
+            "min_percentage_correlation_with_target_column": 0.10
         },
         "hyperparameter_optimisation_config": {
             "hyperparameter_optimisation_toggle": True,
@@ -421,6 +438,7 @@ average value in the "price" column may be $300)
         },
         "plot_config": {
             "plot_individual_train_features_vs_target_toggle": False,
+            "plot_correlation_between_target_column_and_others": True,
             "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
             "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
             "plot_logistic_roc": True,
@@ -439,11 +457,13 @@ average value in the "price" column may be $300)
                 "exclude_columns": {
                     "non_numeric": [],
                     "non_ordinal": [],
-                    "out_of_scope": []
+                    "out_of_scope": [],
+                    "remove_range": {}
                 },
                 # i.e. ["gpa", "gre"]
                 "training_columns": [],
                 "target_column": "admit",
+                "affiliation_column": "",
                 "cleanse_columns_price_format": [],
                 "convert_columns_words_to_digits": []
             }
@@ -547,7 +567,8 @@ and assigned with the column that is associated with each cluster.
         },
         "cleansing_config": {
             "min_percentage_incomplete_observations_to_remove_column": 0.2,
-            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02
+            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
+            "min_percentage_correlation_with_target_column": 0.10
         },
         "hyperparameter_optimisation_config": {
             "hyperparameter_optimisation_toggle": False,
@@ -565,6 +586,7 @@ and assigned with the column that is associated with each cluster.
         },
         "plot_config": {
             "plot_individual_train_features_vs_target_toggle": False,
+            "plot_correlation_between_target_column_and_others": True,
             "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
             "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
             "plot_logistic_roc": False,
@@ -583,10 +605,12 @@ and assigned with the column that is associated with each cluster.
                 "exclude_columns": {
                     "non_numeric": [],
                     "non_ordinal": [],
-                    "out_of_scope": []
+                    "out_of_scope": [],
+                    "remove_range": {}
                 },
                 "training_columns": [],
                 "target_column": "00001",
+                "affiliation_column": "",
                 "cleanse_columns_price_format": [],
                 "convert_columns_words_to_digits": []
             }
@@ -619,3 +643,113 @@ and assigned with the column that is associated with each cluster.
 
             ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/senators_vote/knn_regression.png)
 
+#### Example 6: Game Reviews Dataset
+
+* Problem for Dataset 6:
+    * Problem (abstract) - Given a data set listing 8000 single board games on each row with statistics and associated review scores scraped from BoardGameGeek.
+    Predict the `average_rating` Target Column using the other columns
+    * Note that other new custom prediction Target Columns could be generated by combining other columns such as:
+        * Playing time range: maxplaytime - minplaytime
+        * Average number of ratings: total_owners / users_rated
+
+* Setup Configuration:
+    * Check that the following property values are assigned in `input_event.py`:
+        ```
+        "model_workflow_config": {
+            "model_workflow_for_knn_algorithm": "scikit",
+            "model_workflow_for_linear_regression_algorithm_toggle": True,
+            "model_workflow_for_logistic_regression_algorithm_toggle": False,
+        },
+        "training_config": {
+            "min_training_features": 0
+        },
+        "cleansing_config": {
+            "min_percentage_incomplete_observations_to_remove_column": 0.2,
+            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
+            "min_percentage_correlation_with_target_column": 0.10
+        },
+        "hyperparameter_optimisation_config": {
+            "hyperparameter_optimisation_toggle": False,
+            "hyperparameter_range": 0,
+            "hyperparameter_quantity_fixed": 0
+        },
+        "k_means_clustering_config": {
+            "k_means_clustering_toggle": True,
+            "centroids_quantity": 5
+        },
+        "k_fold_cross_validation_config": {
+            "k_fold_cross_validation_toggle": False,
+            "k_folds_quantity": 0,
+            "k_folds_workflow": "scikit"
+        },
+        "plot_config": {
+            "plot_individual_train_features_vs_target_toggle": False,
+            "plot_correlation_between_target_column_and_others": True,
+            "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
+            "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
+            "plot_logistic_roc": False,
+            "plot_hyperparameter_optimisation": False
+        },
+        "dataset_selected": "game-reviews",
+        "dataset_config": {
+
+            ...
+
+            "game-reviews": {
+                "local": "data/games.csv",
+                "remote": "https://raw.githubusercontent.com/ThaWeatherman/scrapers/master/boardgamegeek/games.csv",
+                "format": "csv-comma-separated",
+                "labels": "",
+                "exclude_columns": {
+                    "non_numeric": ["type", "name"],
+                    "non_ordinal": [],
+                    "out_of_scope": ["id"],
+                    "remove_range": {
+                        "users_rated": {
+                            # Less than or equal to
+                            "lteq": 0
+                        },
+                        "yearpublished": {
+                            "lteq": 2013
+                        }
+                    }
+                },
+                "training_columns": [],
+                "target_column": "average_rating",
+                "affiliation_column": "yearpublished",
+                "cleanse_columns_price_format": [],
+                "convert_columns_words_to_digits": []
+            }
+        ```
+
+* **K-Means Clustering**
+    * Implemented
+
+* Setup used:
+    * Training columns (features): "minage", "total_wanters", "average_weight"
+    * Target column: average_rating
+    * K-Folds for Cross Validation: 10
+    * Hyperparameter k Range: 0 to 20
+
+* **Correlations**
+     * Find pairwise Correlations between Target Column and other columns to identify columns to remove:
+        * Identify Columns to remove that do not correlate and add predictive power to the model
+        * Identify Columns to remove that are derived from the Target Column to avoid overfitting
+
+     * Screenshots
+
+        * Correlations
+
+            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/game_reviews/correlations.png)
+
+* **Linear Regression**
+
+     * Screenshots
+
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/game_reviews/linear_regression.png)
+
+* **KNN Regression**
+
+     * Screenshots
+
+        ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/game_reviews/knn_regression.png)

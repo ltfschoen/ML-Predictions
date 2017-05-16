@@ -12,7 +12,8 @@ EVENT = {
     },
     "cleansing_config": {
         "min_percentage_incomplete_observations_to_remove_column": 0.2,
-        "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02
+        "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
+        "min_percentage_correlation_with_target_column": 0.10
     },
     "hyperparameter_optimisation_config": {
         "hyperparameter_optimisation_toggle": True,
@@ -30,6 +31,8 @@ EVENT = {
     },
     "plot_config": {
         "plot_individual_train_features_vs_target_toggle": False,
+        "plot_correlation_between_target_column_and_others": True,
+        "plot_kmeans_outliers": False,
         "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
         "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
         "plot_logistic_roc": True,
@@ -60,11 +63,13 @@ EVENT = {
                                  "neighbourhood_cleansed", "neighbourhood_group_cleansed", "city",
                                  "state", "market", "smart_location", "country_code",
                                  "country", "is_location_exact", "calendar_last_scraped", "first_review",
-                                 "last_review", "jurisdiction_names"]
+                                 "last_review", "jurisdiction_names"],
+                "remove_range": {}
             },
             # Maxiumum of 4 otherwise computer may freeze during K-Fold combinations!
             "training_columns": ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"],
             "target_column": "price",
+            "affiliation_column": "",
             "cleanse_columns_price_format": ["price", "weekly_price", "monthly_price", "security_deposit",
                                              "cleaning_fee", "extra_people"],
             "convert_columns_words_to_digits": []
@@ -77,10 +82,12 @@ EVENT = {
             "exclude_columns": {
                 "non_numeric": ["make", "fuel-type", "aspiration", "body-style", "drive-wheels", "engine-location", "engine-type", "fuel-system"],
                 "non_ordinal": [],
-                "out_of_scope": ["symboling", "normalized-losses"]
+                "out_of_scope": ["symboling", "normalized-losses"],
+                "remove_range": {}
             },
             "training_columns": ["num-of-doors", "curb-weight", "horsepower", "city-mpg", "highway-mpg"],
             "target_column": "price",
+            "affiliation_column": "",
             "cleanse_columns_price_format": ["price"],
             "convert_columns_words_to_digits": ["num-of-doors", "num-of-cylinders"]
         },
@@ -94,11 +101,13 @@ EVENT = {
             "exclude_columns": {
                 "non_numeric": ["car-name"],
                 "non_ordinal": [],
-                "out_of_scope": []
+                "out_of_scope": [],
+                "remove_range": {}
             },
             # i.e. ["weight", "acceleration", "displacement"]
             "training_columns": [],
             "target_column": "mpg",
+            "affiliation_column": "",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
         },
@@ -110,11 +119,13 @@ EVENT = {
             "exclude_columns": {
                 "non_numeric": [],
                 "non_ordinal": [],
-                "out_of_scope": []
+                "out_of_scope": [],
+                "remove_range": {}
             },
             # i.e. ["gpa", "gre"]
             "training_columns": [],
             "target_column": "admit",
+            "affiliation_column": "",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
         },
@@ -126,11 +137,37 @@ EVENT = {
             "exclude_columns": {
                 "non_numeric": [],
                 "non_ordinal": [],
-                "out_of_scope": []
+                "out_of_scope": [],
+                "remove_range": {}
             },
             "training_columns": ["vote-bill1", "vote-bill4", "vote-bill5", "vote-bill6", "vote-bill7", "vote-bill8"],
             "target_column": "extremism",
             "affiliation_column": "party",
+            "cleanse_columns_price_format": [],
+            "convert_columns_words_to_digits": []
+        },
+        "game-reviews": {
+            "local": "data/games.csv",
+            "remote": "https://raw.githubusercontent.com/ThaWeatherman/scrapers/master/boardgamegeek/games.csv",
+            "format": "csv-comma-separated",
+            "labels": "",
+            "exclude_columns": {
+                "non_numeric": ["type", "name"],
+                "non_ordinal": [],
+                "out_of_scope": ["id"],
+                "remove_range": {
+                    "users_rated": {
+                        # Less than or equal to
+                        "lteq": 0
+                    },
+                    "yearpublished": {
+                        "lteq": 2013
+                    }
+                }
+            },
+            "training_columns": ["yearpublished", "minplaytime", "minage", "total_wanters", "average_weight"],
+            "target_column": "average_rating",
+            "affiliation_column": "yearpublished",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
         }

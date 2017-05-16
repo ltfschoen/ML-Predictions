@@ -294,6 +294,26 @@ class PredictionUtils():
         if not training_model_feature_name or isinstance(testing_part, type(None)):
             return
         testing_part.pivot_table(index=training_model_feature_name, values=self.target_column).plot()
+        plt.show(block=False) # Avoid plots conflicting
+        plt.show()
+
+    def plot_corr(self, df, size=10):
+        """
+        Function plots a graphical correlation matrix for each pair of columns in the dataframe.
+
+        Input:
+            df: pandas DataFrame
+            size: vertical and horizontal size of the plot
+        """
+        if not self.prediction_config.PLOT_CORRELATION_BETWEEN_TARGET_COLUMN_AND_OTHERS:
+            return
+
+        corr = df.corr()
+        fig, ax = plt.subplots(figsize=(size, size))
+        ax.matshow(corr)
+        plt.xticks(range(len(corr.columns)), corr.columns, fontsize=7, rotation=75)
+        plt.yticks(range(len(corr.columns)), corr.columns, fontsize=7)
+        plt.show(block=False) # Avoid plots conflicting
         plt.show()
 
     def scatter_plot_hyperparams(self, hyperparam_range, error_values):
@@ -320,6 +340,7 @@ class PredictionUtils():
         ax.axis("tight")
         fig.colorbar(cs)
 
+        plt.show(block=False) # Avoid plots conflicting
         plt.show()
 
     def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse, model_type, pre_optimisation_results):
@@ -419,10 +440,11 @@ class PredictionUtils():
             ax.set_ylim(lowest_rmse_with_contingency, highest_rmse_with_contingency) # RMSE
 
         # Legend squeezed on right side
-        plt.legend(bbox_to_anchor=(1.2,1), loc="upper right", mode="expand", borderaxespad=0, prop={'size':5})
+        plt.legend(bbox_to_anchor=(2,1), loc="upper right", ncol=2, mode="expand", borderaxespad=0, prop={'size':5})
         # plt.subplots_adjust(top=0.7)
         plt.tight_layout(rect=[0,0,0.5,1])
         fig.subplots_adjust(top=0.7)  # subplots_adjust must be after call to tight_layout
+        plt.show(block=False) # Avoid plots conflicting
         plt.show()
 
     def plot_linear_relationship_comparison(self, df, training_columns, predictions):
@@ -477,6 +499,7 @@ class PredictionUtils():
             ax.legend(bbox_to_anchor=(-0.9,-0.02), loc="best", prop={'size':5})
         fig.tight_layout(rect=[0,0,1,1])
         fig.subplots_adjust(top=0.85)
+        plt.show(block=False) # Avoid plots conflicting
         plt.show()
 
     def plot_logistic_relationship_comparison(self, df, training_columns, positive_predictions_probabilities):
@@ -512,6 +535,7 @@ class PredictionUtils():
             ax.legend(bbox_to_anchor=(-0.9,-0.02), loc="best", prop={'size':5})
         fig.tight_layout(rect=[0,0,1,1])
         fig.subplots_adjust(top=0.85)
+        plt.show(block=False) # Avoid plots conflicting
         plt.show()
 
     def plot_receiver_operator_characteristic(self, fpr, tpr, auc_score):
@@ -525,3 +549,5 @@ class PredictionUtils():
         ax.text(fpr.mean(), tpr.mean(), auc_score_text, style='italic',
                 bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
         plt.plot(fpr, tpr)
+        plt.show(block=False) # Avoid plots conflicting
+        plt.show()

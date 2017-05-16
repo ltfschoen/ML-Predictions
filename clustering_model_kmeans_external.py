@@ -11,14 +11,10 @@ class ClusteringModelKMeansExternal:
         self.prediction_utils = prediction_utils
         self.model_type = "kmeans"
 
-    def example_plot_outliers(self, df, affiliation_column, labels, clustered_row_distances):
+    def example_plot_outliers(self, df, affiliation_column, labels, cluster_names, clustered_row_distances):
         # Find out why some switched using Subsetting the DataFrame using Pandas to only select rows in DataFrame
         # from unique row values that switched (i.e. outliers) from their Affiliation column (i.e. 'party') and
         # matching specific Label (i.e. cluster id) of those that switched affiliation
-        democratic_outliers = df[(labels == 1) & (df[affiliation_column] == "D")]
-        print("Democratic Outliers: %r" % (democratic_outliers))
-
-        import matplotlib.pyplot as plt
 
         # Plot the position of each row as
         #  - `x` (1st column of `clustered_row_distances` Numpy array `clustered_row_distances[:,0]`) and
@@ -29,19 +25,44 @@ class ClusteringModelKMeansExternal:
         # based on computed `clustered_row_distances` array that showed the distance from each row
         # to center of each Cluster. Shade each point according to party affiliation (so can quickly inspect
         # the layout of the different rows and see who are the outliers that switched affiliation)
-        plt.scatter(x=clustered_row_distances[:,0], y=clustered_row_distances[:,1], c=labels)
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        # outliers = df[(labels == 1) & (df[affiliation_column] == "D")]
+        # print("Outliers: %r" % (outliers))
+
+        df_row_mean = df.apply(np.mean, axis=1)
+        df_row_std = df.apply(np.std, axis=1)
+        # plt.scatter(x=clustered_row_distances[:,0], y=clustered_row_distances[:,1], c=labels)
+        plt.scatter(x=df_row_mean, y=df_row_std, c=labels)
+
+        # # NOT WORKING
+        # colours = labels
+        # plots = []
+        # cluster_names_unique = list(set(cluster_names))
+        # for index, cluster_name in enumerate(cluster_names):
+        #     plots.append(plt.scatter(x=df_row_mean[index], y=df_row_std[index], c=colours[index], label=cluster_name))
+        # plt.legend(plots, cluster_names_unique,
+        #            scatterpoints=1,
+        #            loc='lower left',
+        #            ncol=3,
+        #            fontsize=8)
         plt.show()
 
     def process_clustering(self):
         print("K-Means Clustering in progress...")
 
-        if not "affiliation_column" in self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]:
+        dataset_choice = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]
+
+
+        if not "affiliation_column" in dataset_choice or not dataset_choice["affiliation_column"]:
             return
 
         # Explore loaded data
         df = self.prediction_data
-        target_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["target_column"]
-        affiliation_column = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["affiliation_column"]
+        target_column = dataset_choice["target_column"]
+        affiliation_column = dataset_choice["affiliation_column"]
 
         centroids_quantity = self.prediction_config.CENTROIDS_QUANTITY
         # Initialise K-Means Clustering Model using specified quantity of clusters (centroids)
@@ -50,6 +71,10 @@ class ClusteringModelKMeansExternal:
 
         df_numeric = df.select_dtypes(include=['int', 'int64', 'float64', 'floating'], exclude=['O'])
         print("Excluding non-numeric columns from K-Means Clustering: ", df.select_dtypes(include=['O']).columns.tolist())
+
+        print("All dtypes: ", dict(df.dtypes))
+        print("Any rows null?: ", df.isnull().values.any())
+        print("Columns/rows with NaN values: ", df[df.isnull().any(axis=1)])
 
         # Fit the K-Means Model to the DataFrame to calculate the Euclidean Distance of each row
         # to each cluster (centroid) and return a Numpy array with n_columns. Each column represents a
@@ -60,9 +85,17 @@ class ClusteringModelKMeansExternal:
         # Explore clusters to by computing cross-tabulation of the quantity of rows in each clustered_row_distance column
         # and the checking how they corresponded to unique row values of Affiliation column (i.e. 'party')
         labels = kmeans_model.labels_
-        print("Cross Tabulation between Clustered Labels and Affiliation i.e. 'party' column: \n%r" % (pd.crosstab(labels, df[affiliation_column])))
+        # Show how many are grouped into say Cluster 0
+        # print(labels.tolist().count(0))
+        # Count quantity of unique Clusters
+        print("Clusters total count: %r" % (len(labels.tolist())))
+        print("Clusters unique count: %r" % (len(set(labels.tolist()))))
+        cluster_names = list(map(lambda cluster_name: ("Cluster " + str(cluster_name)) if cluster_name else None, labels))
 
-        # self.example_plot_outliers(df, affiliation_column, labels, clustered_row_distances)
+        print("Cross Tabulation between Clustered Labels and Affiliation i.e. 'party' column: \n%r" % (pd.crosstab(index=labels, columns=df[affiliation_column])))
+
+        if self.prediction_config.PLOT_KMEANS_OUTLIERS == True:
+            self.example_plot_outliers(df, affiliation_column, labels, cluster_names, clustered_row_distances)
 
         # Generate new DataFrame column to be used as Target Column for Prediction Algorithms
         # (i.e. to detect which roll call votes were most likely to cause extremism such

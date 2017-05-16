@@ -26,6 +26,7 @@ class PredictionData:
         self.delete_columns_high_incomplete() # Delete entire Columns with large quantity of NaN rows
         # self.show_columns_incomplete() # Identify quantity of null values per column
         self.k_means_clustering()
+        self.delete_columns_low_correlation() # Must occur after K-Means Clustering since Target column (i.e. 'extremism') may not be generated yet
         self.normalise_listings()
         self.randomise_listings()
         self.partition_listings()
@@ -108,6 +109,34 @@ class PredictionData:
                 self.update_training_columns_with_removed(name)
 
         _temp_df_listings.drop(existing_columns_to_remove, axis=1, inplace=True, errors='raise')
+
+        # Remove white spaces in column names
+        _temp_df_listings.columns = _temp_df_listings.columns.str.strip()
+
+        # Drop range of rows for specified columns
+        exclude_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]
+        if "remove_range" in exclude_columns:
+            remove_rows_for_columns = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["exclude_columns"]["remove_range"]
+
+            print("DataFrame row count before filtered row removal: ", _temp_df_listings.shape[0])
+            if len(remove_rows_for_columns.keys()) != 0:
+                for column_name in remove_rows_for_columns:
+                    if column_name in self.df_listings.columns:
+                        if len(remove_rows_for_columns[column_name].keys()) != 0:
+                            for range_string in remove_rows_for_columns[column_name]:
+
+                                def get_rows_to_drop_indexes(_rows_to_drop):
+                                    _original_df_indexes_to_drop = _rows_to_drop.index.values.tolist()
+                                    return list(range(0, len(_original_df_indexes_to_drop)))
+
+                                if range_string == "lteq":
+                                    # Pass second optional argument value to .get to return it as default if no value exists
+                                    _rows_to_drop = _temp_df_listings[self.df_listings[column_name] <= remove_rows_for_columns[column_name].get('lteq', 0)]
+                                    _temp_df_listings.drop(_rows_to_drop.index[get_rows_to_drop_indexes(_rows_to_drop)], axis=0, inplace=True, errors='ignore')
+                                elif range_string == "gt":
+                                    _rows_to_drop = _temp_df_listings[self.df_listings[column_name] > remove_rows_for_columns[column_name].get('gt', 0)]
+                                    _temp_df_listings.drop(_rows_to_drop.index[get_rows_to_drop_indexes(_rows_to_drop)], axis=0, inplace=True, errors='ignore')
+            print("DataFrame row count after filtered row removal: ", _temp_df_listings.shape[0])
         self.df_listings = _temp_df_listings
 
     # def show_columns_incomplete(self):
@@ -131,6 +160,7 @@ class PredictionData:
         """ Delete Columns where percentage of null or NaN values exceeds MAX_MAJOR_INCOMPLETE value
         These columns may be useless since too many observations missing
         """
+        print("Deleting Columns with high incomplete...")
 
         # Iterate over columns in DataFrame
         if isinstance(self.df_listings, type(None)):
@@ -145,6 +175,37 @@ class PredictionData:
                 self.df_listings.drop(name, axis=1, inplace=True)
                 self.update_training_columns_with_removed(name)
 
+    def delete_columns_low_correlation(self):
+        """ Find pairwise Correlations with Target Column to identify columns to remove:
+          - Identify Columns that do not correlate and add predictive power to the model
+          - Identify Columns to remove that are derived from the Target Column to avoid overfitting
+        """
+        print("Deleting Columns with low correlation to Target Column...")
+
+        # Iterate over columns in DataFrame
+        if isinstance(self.df_listings, type(None)):
+            return
+
+        correlations = self.df_listings.corr()
+
+        self.prediction_utils.plot_corr(self.df_listings)
+        # print(correlations[target_column])
+
+        corr_map = {}
+        for dict_index, dict_key in enumerate(correlations):
+            corr_map[dict_index] = dict_key
+
+        # Remove Columns less than % Correlated to Target Column
+        correlations[self.target_column].pop(self.target_column) # Remove Target Column as not need correlate with itself
+        for other_column_index, corr_value in enumerate(correlations[self.target_column]):
+            min_corr = self.prediction_config.MIN_PERCENTAGE_CORRELATION_WITH_TARGET_COLUMN
+            if corr_value < min_corr:
+                print("Deleting Column %r, as its correlation of %r is lower than minimum required of %r" % (corr_map[other_column_index], corr_value, min_corr))
+                self.df_listings.drop(corr_map[other_column_index], axis=1, inplace=True)
+                self.update_training_columns_with_removed(corr_map[other_column_index])
+        # Reindex the DataFrame since some indexes removed (may cause error when iterating later)
+        self.df_listings.reset_index(drop=True, inplace=True)
+
     def retain_columns_low_incomplete_but_strip(self):
         """ Retain Columns where percentage of null or NaN values comprise LESS THAN 1% (0.01) of its rows
         However remove null and NaN rows along requested axis (i.e. axis=0 asks Pandas to drop across DataFrame rows)
@@ -152,6 +213,7 @@ class PredictionData:
         each rows that is removed from a Column represents an Observation, which is shared across the same
         row of all other Columns in the dataset, so that same row is removed across ALL the Columns
         """
+        print("Retaining columns with low incomplete but stripping...")
 
         # Remove NaN/null values from Columns where percentage of missing values is less than MAX_MINOR_INCOMPLETE
         # and from Columns that are one of the Training set columns or the Target Column
@@ -163,6 +225,8 @@ class PredictionData:
         for name, values in self.df_listings.iteritems():
             col_percentage_missing = self.prediction_utils.get_percentage_missing(self.df_listings, name)
 
+            # Important to only apply to Training and Target Columns but not all, otherwise expect to potentially get error:
+            # `ValueError: Expected n_neighbors <= n_samples`
             if (col_percentage_missing < self.prediction_config.MAX_MINOR_INCOMPLETE) and ((name in self.training_columns) or (name == self.target_column)):
                 # print("Before null/NaN values?: %r" %(self.df_listings[name].isnull().any(axis=0)))
                 print("Retained Column: %r, but removed null and NaN valued rows comprising approx. percentage: %r" % (name, col_percentage_missing) )
@@ -187,6 +251,7 @@ class PredictionData:
 
         Avoid normalizing the "target_column"
         """
+        print("Normalising...")
 
         # Select only Columns containing type int, float64, floating. Exclude Columns with types Object (O) that includes strings
         if isinstance(self.df_listings, type(None)):
@@ -379,6 +444,7 @@ class PredictionData:
             new_training_columns.remove(self.target_column)
             self.training_columns = new_training_columns
 
+        print("Training Columns: ", len(self.training_columns))
         # Check that user has assigned the minimum number of features
         if len(self.training_columns) < self.prediction_config.MIN_FEATURES_COMBO_LEN:
             raise ValueError("MIN_FEATURES_COMBO_LEN not satisfied")

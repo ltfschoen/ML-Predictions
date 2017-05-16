@@ -74,7 +74,9 @@ class PredictionConfig(object):
         self.ML_MODEL_LOGISTIC = event["model_workflow_config"]["model_workflow_for_logistic_regression_algorithm_toggle"]
         self.K_MEANS_CLUSTERING = event["k_means_clustering_config"]["k_means_clustering_toggle"]
         self.CENTROIDS_QUANTITY = event["k_means_clustering_config"]["centroids_quantity"]
+        self.PLOT_CORRELATION_BETWEEN_TARGET_COLUMN_AND_OTHERS = event["plot_config"]["plot_correlation_between_target_column_and_others"]
         self.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_individual_train_features_vs_target_toggle"]
+        self.PLOT_KMEANS_OUTLIERS = event["plot_config"]["plot_kmeans_outliers"]
         self.PLOT_LINEAR_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle"]
         self.PLOT_LOGISTIC_RELATIONSHIP_PREDICTION_VS_ACTUAL_FOR_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle"]
         self.PLOT_LOGISTIC_ROC = event["plot_config"]["plot_logistic_roc"]
@@ -85,6 +87,7 @@ class PredictionConfig(object):
         self.MIN_FEATURES_COMBO_LEN = int(event["training_config"]["min_training_features"])
         self.MAX_MAJOR_INCOMPLETE = float(event["cleansing_config"]["min_percentage_incomplete_observations_to_remove_column"]) # Percentage
         self.MAX_MINOR_INCOMPLETE = float(event["cleansing_config"]["max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice"]) # Percentage
+        self.MIN_PERCENTAGE_CORRELATION_WITH_TARGET_COLUMN = float(event["cleansing_config"]["min_percentage_correlation_with_target_column"])
         self.K_FOLD_CROSS_VALIDATION = event["k_fold_cross_validation_config"]["k_fold_cross_validation_toggle"]
         # K-Fold Cross-Validation Technique when K_FOLDS >= 3 OR Holdout Validation when K_FOLDS == 2
         # Train/Test Validation Process
