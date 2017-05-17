@@ -74,6 +74,7 @@ class PredictionConfig(object):
         self.ML_MODEL_LOGISTIC = event["model_workflow_config"]["model_workflow_for_logistic_regression_algorithm_toggle"]
         self.K_MEANS_CLUSTERING = event["k_means_clustering_config"]["k_means_clustering_toggle"]
         self.CENTROIDS_QUANTITY = event["k_means_clustering_config"]["centroids_quantity"]
+        self.SUPPRESS_ALL_PLOTS = event["plot_config"]["suppress_all_plots"]
         self.PLOT_CORRELATION_BETWEEN_TARGET_COLUMN_AND_OTHERS = event["plot_config"]["plot_correlation_between_target_column_and_others"]
         self.PLOT_INDIVIDUAL_TRAIN_FEATURES_VS_TARGET = event["plot_config"]["plot_individual_train_features_vs_target_toggle"]
         self.PLOT_KMEANS_OUTLIERS = event["plot_config"]["plot_kmeans_outliers"]

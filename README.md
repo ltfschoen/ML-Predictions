@@ -134,6 +134,7 @@ average value in the "price" column may be $300)
             "k_folds_workflow": "scikit"
         },
         "plot_config": {
+            "suppress_all_plots": False,
             "plot_individual_train_features_vs_target_toggle": False,
             "plot_correlation_between_target_column_and_others": True,
             "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
@@ -170,6 +171,7 @@ average value in the "price" column may be $300)
                 },
                 "training_columns": ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"],
                 "target_column": "price",
+                "multi_classification_input_columns": [],
                 "affiliation_column": "",
                 "cleanse_columns_price_format": ["price", "weekly_price", "monthly_price", "security_deposit",
                                                  "cleaning_fee", "extra_people"],
@@ -358,15 +360,102 @@ average value in the "price" column may be $300)
 
 #### Example 3: Car Listing "Fuel" Dataset
 
-* Problem for Dataset 3:
+* Problem 1 for Dataset 3:
     * Problem (abstract) - How do the properties of a car impact it's fuel efficiency?
     * Problem (narrow) - How does the number of cylinders, displacement, horsepower, weight, acceleration, and model year affect a car's fuel efficiency?
 
+* Problem 2 for Dataset 3:
+    * Problem (narrow) - How does the number of cylinders, displacement, horsepower, weight, acceleration, and model year affect
+     predicting the `origin` of the vehicle, either North America `1`, Europe `2`, or Asia `3` (**Multi-Classification**).
+
 * Setup used:
-    * Training columns (features): mpg,cylinders,displacement,horsepower,weight,acceleration,model-year,origin,car-name
-    * Target column: mpg
-    * K-Folds for Cross Validation: 10
-    * Hyperparameter k Range: 0 to 20
+    * Common
+        * Training columns (features): cylinders,displacement,horsepower,weight,acceleration,model-year,car-name
+        * K-Folds for Cross Validation: 10
+        * Hyperparameter k Range: 0 to 20
+    * Non-Logistic Regression
+        * "model_workflow_for_logistic_regression_algorithm_toggle": False
+        * Target column: mpg
+        * "multi_classification_input_columns": []
+    * Logistic Regression
+        * "model_workflow_for_logistic_regression_algorithm_toggle": True
+        * "k_fold_cross_validation_toggle": False
+        * Target column: origin
+        * "multi_classification_input_columns": ["cylinders", "model-year"]
+
+* Setup Configuration
+    * Check that the following property values are assigned in `input_event.py`. Modify depending on Setup to use
+        ```
+            "model_workflow_config": {
+                "model_workflow_for_knn_algorithm": "scikit",
+                "model_workflow_for_linear_regression_algorithm_toggle": True,
+                "model_workflow_for_logistic_regression_algorithm_toggle": False,
+            },
+            "training_config": {
+                "min_training_features": 2
+            },
+            "cleansing_config": {
+                "min_percentage_incomplete_observations_to_remove_column": 0.2,
+                "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
+                "min_percentage_correlation_with_target_column": 0.10
+            },
+            "hyperparameter_optimisation_config": {
+                "hyperparameter_optimisation_toggle": True,
+                "hyperparameter_range": 20,
+                "hyperparameter_quantity_fixed": 5
+            },
+            "k_means_clustering_config": {
+                "k_means_clustering_toggle": True,
+                "centroids_quantity": 5
+            },
+            "k_fold_cross_validation_config": {
+                "k_fold_cross_validation_toggle": False,
+                "k_folds_quantity": 10,
+                "k_folds_workflow": "scikit"
+            },
+            "plot_config": {
+                "suppress_all_plots": False,
+                "plot_individual_train_features_vs_target_toggle": False,
+                "plot_correlation_between_target_column_and_others": True,
+                "plot_kmeans_outliers": True,
+                "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
+                "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
+                "plot_logistic_roc": True,
+                "plot_hyperparameter_optimisation": True
+            },
+            "dataset_selected": "car-listings-fuel",
+            "dataset_config": {
+                ...
+                "car-listings-fuel": {
+                    "local": "data/auto-mpg.data",
+                    "remote": "https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data",
+                    "format": "csv-whitespace-separated",
+                    "labels": "mpg,cylinders,displacement,horsepower,weight,acceleration,model-year,origin,car-name",
+                    "exclude_columns": {
+                        "non_numeric": ["car-name"],
+                        "non_ordinal": [],
+                        "out_of_scope": [],
+                        "remove_range": {}
+                    },
+                    # i.e. ["weight", "acceleration", "displacement"]
+                    "training_columns": [],
+                    "target_column": "origin", # Non-Classification (i.e. "mpg"), Multi-Classification (i.e. "origin")
+                    "multi_classification_input_columns": ["cylinders", "model-year"],
+                    "affiliation_column": "",
+                    "cleanse_columns_price_format": [],
+                    "convert_columns_words_to_digits": []
+                },
+                ...
+            }
+        ```
+
+* Correlation
+
+    * Screenshots:
+
+        * Multi-Classification Inputs Converted
+
+            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/multi_classification_inputs_correlation.png)
 
 * **Logistic Regression**
 
@@ -383,14 +472,22 @@ average value in the "price" column may be $300)
 
     * Screenshots:
 
-        * Visual evaluation
-        (i.e. evaluate visually the Predicted Target value from training on known features vs Actual Target value to understand Linear Regression Model performance)
+        * Multi-Classification Inputs Converted
 
-            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/evaluation_training_columns.png)
+            * Visual evaluation
 
-        * Hyperparameter k Optimisation using Linear Regression
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/multi_classification_inputs_evaluation.png)
 
-            ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/linear_regression.png)
+        * Non-Multi-Classification Inputs Converted
+
+            * Visual evaluation
+            (i.e. evaluate visually the Predicted Target value from training on known features vs Actual Target value to understand Linear Regression Model performance)
+
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/evaluation_training_columns.png)
+
+            * Hyperparameter k Optimisation using Linear Regression
+
+                ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/linear_regression.png)
 
 * **KNN Regression**
 
@@ -437,6 +534,7 @@ average value in the "price" column may be $300)
             "k_folds_workflow": "scikit"
         },
         "plot_config": {
+            "suppress_all_plots": False,
             "plot_individual_train_features_vs_target_toggle": False,
             "plot_correlation_between_target_column_and_others": True,
             "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
@@ -463,6 +561,7 @@ average value in the "price" column may be $300)
                 # i.e. ["gpa", "gre"]
                 "training_columns": [],
                 "target_column": "admit",
+                "multi_classification_input_columns": []
                 "affiliation_column": "",
                 "cleanse_columns_price_format": [],
                 "convert_columns_words_to_digits": []
@@ -585,6 +684,7 @@ and assigned with the column that is associated with each cluster.
             "k_folds_workflow": "scikit"
         },
         "plot_config": {
+            "suppress_all_plots": False,
             "plot_individual_train_features_vs_target_toggle": False,
             "plot_correlation_between_target_column_and_others": True,
             "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
@@ -610,6 +710,7 @@ and assigned with the column that is associated with each cluster.
                 },
                 "training_columns": [],
                 "target_column": "00001",
+                "multi_classification_input_columns": []
                 "affiliation_column": "",
                 "cleanse_columns_price_format": [],
                 "convert_columns_words_to_digits": []
@@ -683,6 +784,7 @@ and assigned with the column that is associated with each cluster.
             "k_folds_workflow": "scikit"
         },
         "plot_config": {
+            "suppress_all_plots": False,
             "plot_individual_train_features_vs_target_toggle": False,
             "plot_correlation_between_target_column_and_others": True,
             "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
@@ -716,6 +818,7 @@ and assigned with the column that is associated with each cluster.
                 },
                 "training_columns": [],
                 "target_column": "average_rating",
+                "multi_classification_input_columns": []
                 "affiliation_column": "yearpublished",
                 "cleanse_columns_price_format": [],
                 "convert_columns_words_to_digits": []

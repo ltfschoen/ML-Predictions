@@ -5,7 +5,7 @@ EVENT = {
         # Warning: Only change to True when Target column only contains Categorical int64 values (not float64)
         # otherwise you will get a 'continous' error since it will perform Logistic Regression.
         # i.e. For car-listing-fuel Dataset, the Target Column may be "origin", but NOT "mpg"
-        "model_workflow_for_logistic_regression_algorithm_toggle": False,
+        "model_workflow_for_logistic_regression_algorithm_toggle": True,
     },
     "training_config": {
         "min_training_features": 2
@@ -13,7 +13,7 @@ EVENT = {
     "cleansing_config": {
         "min_percentage_incomplete_observations_to_remove_column": 0.2,
         "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
-        "min_percentage_correlation_with_target_column": 0.10
+        "min_percentage_correlation_with_target_column": 0
     },
     "hyperparameter_optimisation_config": {
         "hyperparameter_optimisation_toggle": True,
@@ -25,11 +25,12 @@ EVENT = {
         "centroids_quantity": 5
     },
     "k_fold_cross_validation_config": {
-        "k_fold_cross_validation_toggle": True,
+        "k_fold_cross_validation_toggle": False,
         "k_folds_quantity": 10,
         "k_folds_workflow": "scikit"
     },
     "plot_config": {
+        "suppress_all_plots": False,
         "plot_individual_train_features_vs_target_toggle": False,
         "plot_correlation_between_target_column_and_others": True,
         "plot_kmeans_outliers": True,
@@ -38,7 +39,7 @@ EVENT = {
         "plot_logistic_roc": True,
         "plot_hyperparameter_optimisation": True
     },
-    "dataset_selected": "game-reviews", # rental-property-listings, car-listings, car-listings-fuel, university-admissions, senators-vote, game-reviews
+    "dataset_selected": "car-listings-fuel", # rental-property-listings, car-listings, car-listings-fuel, university-admissions, senators-vote, game-reviews
     "dataset_config": {
         "rental-property-listings": {
             "local": "data/listings.csv",
@@ -69,6 +70,7 @@ EVENT = {
             # Maxiumum of 4 otherwise computer may freeze during K-Fold combinations!
             "training_columns": ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"],
             "target_column": "price",
+            "multi_classification_input_columns": [],
             "affiliation_column": "",
             "cleanse_columns_price_format": ["price", "weekly_price", "monthly_price", "security_deposit",
                                              "cleaning_fee", "extra_people"],
@@ -87,6 +89,7 @@ EVENT = {
             },
             "training_columns": ["num-of-doors", "curb-weight", "horsepower", "city-mpg", "highway-mpg"],
             "target_column": "price",
+            "multi_classification_input_columns": [],
             "affiliation_column": "",
             "cleanse_columns_price_format": ["price"],
             "convert_columns_words_to_digits": ["num-of-doors", "num-of-cylinders"]
@@ -106,7 +109,8 @@ EVENT = {
             },
             # i.e. ["weight", "acceleration", "displacement"]
             "training_columns": [],
-            "target_column": "mpg",
+            "target_column": "origin", # Non-Classification (i.e. "mpg"), Multi-Classification (i.e. "origin")
+            "multi_classification_input_columns": ["cylinders", "model-year"],
             "affiliation_column": "",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
@@ -125,6 +129,7 @@ EVENT = {
             # i.e. ["gpa", "gre"]
             "training_columns": [],
             "target_column": "admit",
+            "multi_classification_input_columns": [],
             "affiliation_column": "",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
@@ -142,6 +147,7 @@ EVENT = {
             },
             "training_columns": ["vote-bill1", "vote-bill4", "vote-bill5", "vote-bill6", "vote-bill7", "vote-bill8"],
             "target_column": "extremism",
+            "multi_classification_input_columns": [],
             "affiliation_column": "party",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []
@@ -167,6 +173,7 @@ EVENT = {
             },
             "training_columns": ["yearpublished", "minplaytime", "minage", "total_wanters", "average_weight"],
             "target_column": "average_rating",
+            "multi_classification_input_columns": [],
             "affiliation_column": "yearpublished",
             "cleanse_columns_price_format": [],
             "convert_columns_words_to_digits": []

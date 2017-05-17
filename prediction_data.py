@@ -18,9 +18,12 @@ class PredictionData:
         self.dataset_choice = self.prediction_config.DATASET_CHOICE
         self.target_column = self.prediction_config.DATASET_LOCATION[self.dataset_choice]["target_column"]
         self.training_columns = self.setup_training_columns() # If no training columns specified then all are chosen
+        self.multi_classification_input_columns = self.prediction_config.DATASET_LOCATION[self.prediction_config.DATASET_CHOICE]["multi_classification_input_columns"]
+        self.categorical_columns = []
         self.validate_config()
         self.cleanse_columns() # Data Cleaning, including removal of `?` from Training Features Combination and Target Cols
         self.convert_columns() # Convert to Float64 if String all Training Features Combination and Target Cols
+        self.convert_categorical_columns_to_dummy_binary_columns()
         self.remove_columns_incorrect_format() # Remove columns with inadequate data (i.e. missing values, non-numeric, non-ordinal, unspecific)
         self.retain_columns_low_incomplete_but_strip() # Remove rows with NaN values for Columns where small quantity of them
         self.delete_columns_high_incomplete() # Delete entire Columns with large quantity of NaN rows
@@ -193,16 +196,18 @@ class PredictionData:
 
         corr_map = {}
         for dict_index, dict_key in enumerate(correlations):
-            corr_map[dict_index] = dict_key
+            if dict_key != self.target_column:
+                corr_map[dict_index] = dict_key
 
         # Remove Columns less than % Correlated to Target Column
-        correlations[self.target_column].pop(self.target_column) # Remove Target Column as not need correlate with itself
+        # correlations[self.target_column].pop(self.target_column) # Remove Target Column as not need correlate with itself
         for other_column_index, corr_value in enumerate(correlations[self.target_column]):
             min_corr = self.prediction_config.MIN_PERCENTAGE_CORRELATION_WITH_TARGET_COLUMN
             if corr_value < min_corr:
-                print("Deleting Column %r, as its correlation of %r is lower than minimum required of %r" % (corr_map[other_column_index], corr_value, min_corr))
-                self.df_listings.drop(corr_map[other_column_index], axis=1, inplace=True)
-                self.update_training_columns_with_removed(corr_map[other_column_index])
+                if corr_map[other_column_index] != self.target_column:
+                    print("Deleting Column %r, as its correlation of %r is lower than minimum required of %r" % (corr_map[other_column_index], corr_value, min_corr))
+                    self.df_listings.drop(corr_map[other_column_index], axis=1, inplace=True)
+                    self.update_training_columns_with_removed(corr_map[other_column_index])
         # Reindex the DataFrame since some indexes removed (may cause error when iterating later)
         self.df_listings.reset_index(drop=True, inplace=True)
 
@@ -257,8 +262,11 @@ class PredictionData:
         if isinstance(self.df_listings, type(None)):
             return
 
-        df_listings_with_float_or_int_values = self.df_listings.select_dtypes(include=['int', 'int64', 'float64', 'floating'], exclude=['O'])
-        print("Excluding non-numeric columns from Normalisation: ", self.df_listings.select_dtypes(include=['O']).columns.tolist())
+        # Exclude categorical_columns from Normalisation
+        df_exclude_categorical_cols = self.df_listings[self.df_listings.columns.difference(self.categorical_columns)]
+
+        df_listings_with_float_or_int_values = df_exclude_categorical_cols.select_dtypes(include=['int', 'int64', 'float64', 'floating'], exclude=['O'])
+        print("Excluding non-numeric columns and categorical columns from Normalisation: ")
 
         excluding_columns = self.df_listings.select_dtypes(include=['O']).columns.tolist()
         for index, name in enumerate(excluding_columns):
@@ -272,7 +280,20 @@ class PredictionData:
 
         print("Normalised listings completed: %r" % (normalized_listings.head(3)) )
 
-        self.df_listings = normalized_listings
+        # Find Categorical Columns still in the main DataFrame (not cleansed)
+        remaining_categorical_columns = []
+        df_listings_columns = self.df_listings.columns
+        for index, value in enumerate(df_listings_columns):
+            if value in self.categorical_columns:
+                remaining_categorical_columns.append(value)
+
+        # Update list of remaining categorical columns
+        self.categorical_columns = remaining_categorical_columns
+
+        # Concatenate the Categorical Columns back onto Normalised Columns
+        df_categorical_columns_remaining = self.df_listings[remaining_categorical_columns]
+        normalized_listings_with_categorical_retained = pd.concat([normalized_listings, df_categorical_columns_remaining], axis=1)
+        self.df_listings = normalized_listings_with_categorical_retained
 
     def convert_columns(self):
         """ Convert all Training and Target columns to Numeric type so not removed during normalisation
@@ -326,6 +347,45 @@ class PredictionData:
 
         convert_column_words_to_digits()
         convert_to_numeric_type_training_and_target_columns()
+
+    def convert_categorical_columns_to_dummy_binary_columns(self):
+        """ Convert Categorical Columns (containing multiple categories) to new Dummy Binary Columns """
+        if not (len(self.multi_classification_input_columns) > 0):
+            return
+
+        def get_dummy_columns():
+            df_dummy_columns = pd.DataFrame()
+            df_multi_classification_dummy_map = {}
+            # Generate and add new Dummy Binary Columns to main DataFrame
+            for index, column in enumerate(self.multi_classification_input_columns):
+                prefix = column[:3] # Extract first 3 characters
+                _temp_df = pd.DataFrame()
+                _temp_df = pd.concat([_temp_df, pd.get_dummies(self.df_listings[column], prefix=prefix)], axis=1)
+                df_multi_classification_dummy_map[column] = _temp_df.columns
+                df_dummy_columns = pd.concat([df_dummy_columns, _temp_df], axis=1)
+            return df_dummy_columns, df_multi_classification_dummy_map
+        df_dummy_columns, df_multi_classification_dummy_map = get_dummy_columns()
+        df_dummy_column_names = df_dummy_columns.columns
+        self.categorical_columns += list(df_dummy_column_names)
+
+        # Add new Dummy Binary Columns to main DataFrame
+        self.df_listings = pd.concat([self.df_listings, df_dummy_columns], axis=1)
+
+        # Update Training Columns to now have the Dummy Binary Columns if any of the converted Categorical Columns were Training Columns
+        for key, value in df_multi_classification_dummy_map.items():
+            if key in self.training_columns:
+                self.training_columns += list(value)
+
+        # Remove columns from the Training Columns if they were ones that were converted to Dummy Binary Columns
+        for index, value in enumerate(self.multi_classification_input_columns):
+            if value in self.training_columns:
+                self.training_columns.remove(value)
+
+        # Remove Multi-Classification columns from DataFrame that have now been converted to new Dummy Binary Columns
+        def remove_converted_columns(col_names):
+            self.df_listings.drop(col_names, axis=1, inplace=True, errors='raise')
+        remove_converted_columns(self.multi_classification_input_columns)
+
 
     def cleanse_columns(self):
         """ Cleanse all identified price columns.

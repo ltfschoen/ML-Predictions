@@ -82,5 +82,24 @@ class PredictionDataTestCase(unittest.TestCase):
         # Test
         self.assertRaises(ValueError, self.prediction_data.validate_training_columns(), "Target column must be Categorical type i.e. int64 NOT float64 when ML_MODEL_LOGISTIC is True")
 
+    def test_converts_multi_classification_columns_to_binary_classification_columns_and_updates_training_columns(self):
+
+        # Setup
+        self.prediction_data.prediction_config.ML_MODEL_LOGISTIC = True
+        self.prediction_data.df_listings = pd.DataFrame({
+            'origin': [1,2,3,2,3,3], # Categories 1, 2 or 3
+            'cylinders': [3,4,4,5,5,5], # Categories 3, 4, 5
+            'model-year': [70,71,80,71,70,70] # Categories 70, 71, 80
+        })
+        self.prediction_data.dataset_choice = "car-listings-fuel"
+        self.prediction_data.target_column = "origin"
+        self.prediction_data.training_columns = ["cylinders", "model-year"]
+        self.prediction_data.multi_classification_input_columns = ["cylinders", "model-year"]
+        self.prediction_data.convert_categorical_columns_to_dummy_binary_columns()
+
+        # Test
+        self.assertEqual(list(self.prediction_data.df_listings.columns), ["origin", "cyl_3", "cyl_4", "cyl_5", "mod_70", "mod_71", "mod_80"])
+        self.assertEqual(self.prediction_data.training_columns, ["cyl_3", "cyl_4", "cyl_5", "mod_70", "mod_71", "mod_80"])
+
 if __name__ == '__main__':
     unittest.main()

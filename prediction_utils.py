@@ -113,7 +113,7 @@ class PredictionUtils():
                 k_value_of_lowest_rmse = dict_value["k"]
         print("Feature combo %r has lowest RMSE of %r with 'k' of %r (optimum) using %r K-Folds for (Cross Validation was %r)" % (feature_combo_name_with_lowest_rmse, lowest_rmse, k_value_of_lowest_rmse, self.prediction_config.K_FOLDS, self.prediction_config.K_FOLD_CROSS_VALIDATION) )
 
-        if self.prediction_config.PLOT_HYPERPARAMETER_OPTIMISATION == True:
+        if not self.prediction_config.SUPPRESS_ALL_PLOTS and self.prediction_config.PLOT_HYPERPARAMETER_OPTIMISATION == True:
             self.plot_hyperparams(feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse, model_type, pre_optimisation_results)
         return {
             "feature_combo_name_with_lowest_rmse": feature_combo_name_with_lowest_rmse,
@@ -291,7 +291,7 @@ class PredictionUtils():
 
     def plot(self, training_model_feature_name, testing_part):
         """ Plot """
-        if not training_model_feature_name or isinstance(testing_part, type(None)):
+        if self.prediction_config.SUPPRESS_ALL_PLOTS or not training_model_feature_name or isinstance(testing_part, type(None)):
             return
         testing_part.pivot_table(index=training_model_feature_name, values=self.target_column).plot()
         plt.show(block=False) # Avoid plots conflicting
@@ -305,7 +305,7 @@ class PredictionUtils():
             df: pandas DataFrame
             size: vertical and horizontal size of the plot
         """
-        if not self.prediction_config.PLOT_CORRELATION_BETWEEN_TARGET_COLUMN_AND_OTHERS:
+        if self.prediction_config.SUPPRESS_ALL_PLOTS or not self.prediction_config.PLOT_CORRELATION_BETWEEN_TARGET_COLUMN_AND_OTHERS:
             return
 
         corr = df.corr()
@@ -318,7 +318,7 @@ class PredictionUtils():
 
     def scatter_plot_hyperparams(self, hyperparam_range, error_values):
         """ Scatter Plot hyperparameters range of 'k' versus error calculation values """
-        if not hyperparam_range or not error_values:
+        if self.prediction_config.SUPPRESS_ALL_PLOTS or not hyperparam_range or not error_values:
             return
         # Plot
         colours = range(20)
@@ -345,7 +345,7 @@ class PredictionUtils():
 
     def plot_hyperparams(self, feature_combos_lowest_rmse_for_hyperparams, feature_combo_name_with_lowest_rmse, k_value_of_lowest_rmse, lowest_rmse, highest_rmse, model_type, pre_optimisation_results):
 
-        if not feature_combos_lowest_rmse_for_hyperparams or not feature_combo_name_with_lowest_rmse or not lowest_rmse or not highest_rmse:
+        if self.prediction_config.SUPPRESS_ALL_PLOTS or not feature_combos_lowest_rmse_for_hyperparams or not feature_combo_name_with_lowest_rmse or not lowest_rmse or not highest_rmse:
             return
 
         count_feature_combos = len(feature_combos_lowest_rmse_for_hyperparams.items())
@@ -467,7 +467,7 @@ class PredictionUtils():
             - Interpret Linear Relationship
                 - Strong / Weak and Positive or Negative Linear Relationship / Gradient
         """
-        if isinstance(df, type(None)) or not training_columns or isinstance(predictions, type(None)):
+        if self.prediction_config.SUPPRESS_ALL_PLOTS or isinstance(df, type(None)) or not training_columns or isinstance(predictions, type(None)):
             return
         training_columns_df = df.filter(training_columns, axis=1)
         count_subplots = len(training_columns_df.columns)
@@ -504,7 +504,7 @@ class PredictionUtils():
 
     def plot_logistic_relationship_comparison(self, df, training_columns, positive_predictions_probabilities):
         """"""
-        if isinstance(df, type(None)) or not training_columns or isinstance(positive_predictions_probabilities, type(None)):
+        if self.prediction_config.SUPPRESS_ALL_PLOTS or isinstance(df, type(None)) or not training_columns or isinstance(positive_predictions_probabilities, type(None)):
             return
         training_columns_df = df.filter(training_columns, axis=1)
         count_subplots = len(training_columns_df.columns)
@@ -539,6 +539,10 @@ class PredictionUtils():
         plt.show()
 
     def plot_receiver_operator_characteristic(self, fpr, tpr, auc_score):
+
+        if self.prediction_config.SUPPRESS_ALL_PLOTS:
+            return
+
         fig = plt.figure()
         fig.suptitle('ROC Curve', fontsize=14, fontweight='bold')
         ax = fig.add_subplot(111)

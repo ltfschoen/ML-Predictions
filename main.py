@@ -21,17 +21,17 @@ def main(event, context):
     prediction_data = PredictionData(prediction_config, prediction_utils)
 
     try:
-        # Regression Linear
-        if prediction_config.ML_MODEL_LINEAR == True:
-            linear_results = prediction_model_linear_external.run(prediction_config, prediction_data, prediction_utils)
-            for key, value in linear_results.items():
-                print("RMSE Linear results for %r: %r" % (key, value))
-
         # Regression Logistic
         if prediction_config.ML_MODEL_LOGISTIC == True:
             logistic_results = prediction_model_logistic_external.run(prediction_config, prediction_data, prediction_utils)
             for key, value in logistic_results.items():
                 print("RMSE Logistic results for %r: %r" % (key, value))
+
+        # Regression Linear
+        if prediction_config.ML_MODEL_LINEAR == True:
+            linear_results = prediction_model_linear_external.run(prediction_config, prediction_data, prediction_utils)
+            for key, value in linear_results.items():
+                print("RMSE Linear results for %r: %r" % (key, value))
 
         # Regression with KNN
         if prediction_config.ML_MODEL_KNN == "scikit":
