@@ -9,6 +9,13 @@ Travic CI Build Status: [![Build Status](https://api.travis-ci.org/ltfschoen/ML-
   * [Chapter 1 - Setup](#chapter-1)
   * [Chapter 2 - Tests](#chapter-2)
   * [Chapter 3 - Results](#chapter-3)
+    * [Example 1 Results - Rental Property Listings Dataset](#results-example-1)
+    * [Example 2 Results - Car Listings Dataset](#results-example-2)
+    * [Example 3 Results - Car Listings Fuel Dataset](#results-example-3)
+    * [Example 4 Results - University Admissions Dataset](#results-example-4)
+    * [Example 5 Results - Senator Votes Dataset](#results-example-5)
+    * [Example 6 Results - Game Reviews Dataset](#results-example-6)
+
 
 ## Chapter 0 - About <a id="chapter-0"></a>
 
@@ -101,7 +108,7 @@ average value in the "price" column may be $300)
 
 ### Result Statistics and Screenshots
 
-#### Example 1: Rental Property Listing Dataset
+#### Example 1: Rental Property Listing Dataset <a id="results-example-1"></a>
 
 * Problem for Dataset 1:
     * Problem (abstract) - What's the optimum nightly price (prediction) to rent a living space using existing data on local listings?
@@ -309,7 +316,7 @@ average value in the "price" column may be $300)
 
                         ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/rental_property_listing/hyperparameter_vs_feature_combos.png)
 
-#### Example 2: Car Listing Dataset
+#### Example 2: Car Listing Dataset <a id="results-example-2"></a>
 
 * Problem for Dataset 2:
     * Problem (abstract) - How do the properties of a car impact it's price?
@@ -361,7 +368,7 @@ average value in the "price" column may be $300)
 
             ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listing/knn_regression.png)
 
-#### Example 3: Car Listing "Fuel" Dataset
+#### Example 3: Car Listing "Fuel" Dataset <a id="results-example-3"></a>
 
 * Problem 1 for Dataset 3:
     * Problem (abstract) - How do the properties of a car impact it's fuel efficiency?
@@ -516,7 +523,7 @@ average value in the "price" column may be $300)
 
             ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_regression.png)
 
-#### Example 4: University Admissions Dataset
+#### Example 4: University Admissions Dataset <a id="results-example-4"></a>
 
 * Setup Configuration:
     * Check that the following property values are assigned in `input_event.py`:
@@ -656,7 +663,7 @@ average value in the "price" column may be $300)
 
             ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/university_admission/knn_regression_final.png)
 
-#### Example 5: Senator Votes Dataset
+#### Example 5: Senator Votes Dataset <a id="results-example-5"></a>
 
 * Problem for Dataset 5:
     * Problem (abstract) - What new legislation (decided by roll call votes to pass a bill by Senators) are most likely to cause 'extremist' Senators?
@@ -761,7 +768,7 @@ and assigned with the column that is associated with each cluster.
 
             ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/senators_vote/knn_regression.png)
 
-#### Example 6: Game Reviews Dataset
+#### Example 6: Game Reviews Dataset <a id="results-example-6"></a>
 
 * Problem for Dataset 6:
     * Problem (abstract) - Given a data set listing 8000 single board games on each row with statistics and associated review scores scraped from BoardGameGeek.
