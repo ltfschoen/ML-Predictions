@@ -15,6 +15,9 @@ EVENT = {
         "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
         "min_percentage_correlation_with_target_column": 0
     },
+    "logistic_regression_config": {
+        "max_categories_target_column_for_one_vs_all_multi_classification": 3
+    },
     "hyperparameter_optimisation_config": {
         "hyperparameter_optimisation_toggle": True,
         "hyperparameter_range": 20,

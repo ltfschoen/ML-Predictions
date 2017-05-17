@@ -144,7 +144,7 @@ class PredictionModelLogisticExternal:
             X_test = self.prediction_data.testing_part[features_categorical]
             # Compute probability of observation being in the Target Column category.
             testing_probs[cat] = models[cat].predict_proba(X_test)[:,1]
-
+            positive_prediction_proportion = testing_probs[cat]
 
         # Classify each observation in the Test set by choosing the Target Column
         # Category in `testing_probs` with the highest probability of classification for that observation,
@@ -173,7 +173,7 @@ class PredictionModelLogisticExternal:
         unique_targets_column_categories = self.prediction_data.df_listings[self.target_column].unique()
         print("Unique Categories in Target Column: %r" % (unique_targets_column_categories))
 
-        if len(unique_targets_column_categories) <= 3:
+        if len(unique_targets_column_categories) <= self.prediction_config.MAX_CATEGORIES_TARGET_COLUMN_FOR_ONE_VS_ALL_MULTI_CLASSIFICATION:
             print("One-Versus-All Technique progressing with %r Binary Classification Models to match amount of Target Column Categories" % (unique_targets_column_categories))
             unique_targets_column_categories.sort()
             response = self.get_positive_prediction_proportion_with_multi_categoried_target_column(df, inputs, output, unique_targets_column_categories)

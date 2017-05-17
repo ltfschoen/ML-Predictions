@@ -123,6 +123,9 @@ average value in the "price" column may be $300)
             "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
             "min_percentage_correlation_with_target_column": 0.10
         },
+        "logistic_regression_config": {
+            "max_categories_target_column_for_one_vs_all_multi_classification": 3
+        },
         "hyperparameter_optimisation_config": {
             "hyperparameter_optimisation_toggle": True,
             "hyperparameter_range": 20,
@@ -377,6 +380,11 @@ average value in the "price" column may be $300)
         * "model_workflow_for_logistic_regression_algorithm_toggle": False
         * Target column: mpg
         * "multi_classification_input_columns": []
+        * Warning: Beware of using too many Multi-Classification inputs and their corresponding Categories
+        since it will create x new columns to replaces the existing Category columns, where x is the amount of
+        categories of values in the existing Category columns, which may cause the prediction to take too long
+        and the output Legend to be too big to fit into the plot
+        (caused when too many Binary Classification Columns are generated from Categorical Columns)
     * Logistic Regression
         * "model_workflow_for_logistic_regression_algorithm_toggle": True
         * "k_fold_cross_validation_toggle": False
@@ -398,6 +406,9 @@ average value in the "price" column may be $300)
                 "min_percentage_incomplete_observations_to_remove_column": 0.2,
                 "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
                 "min_percentage_correlation_with_target_column": 0.10
+            },
+            "logistic_regression_config": {
+                "max_categories_target_column_for_one_vs_all_multi_classification": 3
             },
             "hyperparameter_optimisation_config": {
                 "hyperparameter_optimisation_toggle": True,
@@ -522,6 +533,9 @@ average value in the "price" column may be $300)
             "min_percentage_incomplete_observations_to_remove_column": 0.2,
             "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
             "min_percentage_correlation_with_target_column": 0.10
+        },
+        "logistic_regression_config": {
+            "max_categories_target_column_for_one_vs_all_multi_classification": 3
         },
         "hyperparameter_optimisation_config": {
             "hyperparameter_optimisation_toggle": True,
@@ -669,6 +683,9 @@ and assigned with the column that is associated with each cluster.
             "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
             "min_percentage_correlation_with_target_column": 0.10
         },
+        "logistic_regression_config": {
+            "max_categories_target_column_for_one_vs_all_multi_classification": 3
+        },
         "hyperparameter_optimisation_config": {
             "hyperparameter_optimisation_toggle": False,
             "hyperparameter_range": 0,
@@ -768,6 +785,9 @@ and assigned with the column that is associated with each cluster.
             "min_percentage_incomplete_observations_to_remove_column": 0.2,
             "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
             "min_percentage_correlation_with_target_column": 0.10
+        },
+        "logistic_regression_config": {
+            "max_categories_target_column_for_one_vs_all_multi_classification": 3
         },
         "hyperparameter_optimisation_config": {
             "hyperparameter_optimisation_toggle": False,
