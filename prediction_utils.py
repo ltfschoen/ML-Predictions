@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import RandomState
 import math
 import itertools
 import matplotlib.pyplot as plt
@@ -178,8 +179,12 @@ class PredictionUtils():
         """
         if isinstance(df, type(None)):
             return None
-        np.random.seed(0)
-        return df.loc[np.random.permutation(len(df))]
+        # np.random.seed(0)
+        # return df.loc[np.random.permutation(len(df))]
+
+        prng = RandomState(1234567890)
+        return df.loc[prng.permutation(len(df))]
+
         # Alternative Approach:
         # shuffled_index = np.random.permutation(df.index)
         # return df.reindex(shuffled_index)

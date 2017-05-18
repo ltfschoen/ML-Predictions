@@ -91,7 +91,14 @@ class MainExample4NonLogisticTestCase(unittest.TestCase):
             }
         }
 
-        self.assertEqual(self.process_cli.main(self.event_mod, None), expected_result)
+        res = self.process_cli.main(self.event_mod, None)
+
+        self.assertGreater(res['linear']['pre-hyperparameter_optimisation']['rmse'], 1.1)
+        self.assertLess(res['linear']['pre-hyperparameter_optimisation']['rmse'], 1.4)
+        self.assertGreater(res['linear']['post-hyperparameter_optimisation']['rmse'], 1.1)
+        self.assertLess(res['linear']['post-hyperparameter_optimisation']['rmse'], 1.4)
+        self.assertGreater(res['knn']['rmse'], 1.1)
+        self.assertLess(res['knn']['rmse'], 1.4)
 
 if __name__ == '__main__':
     unittest.main()
