@@ -84,7 +84,11 @@ class MainExample2TestCase(unittest.TestCase):
             }
         }
 
-        self.assertEqual(self.process_cli.main(self.event_mod, None), expected_result)
+        res = self.process_cli.main(self.event_mod, None)
+
+        self.assertEqual(res['linear']['pre-hyperparameter_optimisation'], expected_result['linear']['pre-hyperparameter_optimisation'])
+        self.assertAlmostEqual(res['linear']['post-hyperparameter_optimisation']['rmse'], expected_result['linear']['post-hyperparameter_optimisation']['rmse'])
+        self.assertEqual(res['knn'], expected_result['knn'])
 
 if __name__ == '__main__':
     unittest.main()
