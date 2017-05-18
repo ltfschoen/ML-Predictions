@@ -32,8 +32,10 @@ class ClusteringModelKMeansExternal:
         # outliers = df[(labels == 1) & (df[affiliation_column] == "D")]
         # print("Outliers: %r" % (outliers))
 
-        df_row_mean = df.apply(np.mean, axis=1)
-        df_row_std = df.apply(np.std, axis=1)
+        df_listings_without_object_values = df.select_dtypes(exclude=['O'])
+
+        df_row_mean = df_listings_without_object_values.apply(np.mean, axis=1)
+        df_row_std = df_listings_without_object_values.apply(np.std, axis=1)
         # plt.scatter(x=clustered_row_distances[:,0], y=clustered_row_distances[:,1], c=labels)
         plt.scatter(x=df_row_mean, y=df_row_std, c=labels)
 
@@ -48,6 +50,8 @@ class ClusteringModelKMeansExternal:
         #            loc='lower left',
         #            ncol=3,
         #            fontsize=8)
+
+        plt.show(block=False) # Avoid plots conflicting
         plt.show()
 
     def process_clustering(self):

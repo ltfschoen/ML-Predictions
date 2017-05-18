@@ -173,7 +173,10 @@ class PredictionModelLogisticExternal:
         unique_targets_column_categories = self.prediction_data.df_listings[self.target_column].unique()
         print("Unique Categories in Target Column: %r" % (unique_targets_column_categories))
 
-        if len(unique_targets_column_categories) <= self.prediction_config.MAX_CATEGORIES_TARGET_COLUMN_FOR_ONE_VS_ALL_MULTI_CLASSIFICATION:
+        def is_within_range(unique_targets_column_categories):
+            return self.prediction_config.MIN_CATEGORIES_TARGET_COLUMN_FOR_ONE_VS_ALL_MULTI_CLASSIFICATION <= len(unique_targets_column_categories) <= self.prediction_config.MAX_CATEGORIES_TARGET_COLUMN_FOR_ONE_VS_ALL_MULTI_CLASSIFICATION
+
+        if is_within_range(unique_targets_column_categories):
             print("One-Versus-All Technique progressing with %r Binary Classification Models to match amount of Target Column Categories" % (unique_targets_column_categories))
             unique_targets_column_categories.sort()
             response = self.get_positive_prediction_proportion_with_multi_categoried_target_column(df, inputs, output, unique_targets_column_categories)

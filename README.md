@@ -59,23 +59,192 @@ Refer to Implementation Guide in `prediction_config.py` for details.
     touch ~/.matplotlib/matplotlibrc; echo 'backend: TkAgg' >> ~/.matplotlib/matplotlibrc`
     ```
 
-* Read the Implementation Guide in `prediction_config.py`.
-* Configure desired input values into EVENT object within `input_event.py` (see example configurations in examples shown below)
-    * Note: Designed in accordance with [AWS Lambda Function Programming Model](http://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html)
+* Run Examples:
+    * Instructions:
+        * Copy/paste below commands into Terminal and press Enter to run each example.
+        * Show all available CLI arguments with: `python3 main.py --help`.
+    * Run Example 1 via CLI.
+        * Warning: `--logistic` flag is not set to prevent error since the Target Feature `"price"` is of continous type float
+        ```
+        python main.py --data-set 1 \
+        --linear \
+        --knn "scikit" \
+        --training-features "accommodates" "bedrooms" "bathrooms" "number_of_reviews" \
+        --target-feature "price" \
+        --exclude-non-numeric "host_response_time" "host_response_rate" "host_acceptance_rate" \
+        "host_is_superhost" "host_listings_count" "host_verifications" \
+        "host_has_profile_pic" "host_identity_verified" "property_type" \
+        "room_type" "bed_type" "amenities" "calendar_updated" "has_availability" \
+        "requires_license" "license" "instant_bookable" "cancellation_policy" \
+        "require_guest_profile_picture" "require_guest_phone_verification" \
+        --exclude-non-ordinal "latitude" "longitude" "zipcode" \
+        --exclude-out-of-scope "id" "listing_url" "scrape_id" "last_scraped" "name" "summary" "space" \
+        "description" "experiences_offered" "neighborhood_overview" "notes" "transit" \
+        "thumbnail_url" "medium_url" "picture_url" "xl_picture_url" \
+        "host_id" "host_url" "host_name" "host_since" "host_location" \
+        "host_about" "host_thumbnail_url" \
+        "host_picture_url" "host_neighbourhood" "street" "neighbourhood" \
+        "neighbourhood_cleansed" "neighbourhood_group_cleansed" "city" \
+        "state" "market" "smart_location" "country_code" \
+        "country" "is_location_exact" "calendar_last_scraped" "first_review" \
+        "last_review" "jurisdiction_names" \
+        --cleanse-price-format-features "price" "weekly_price" "monthly_price" "security_deposit" \
+        "cleaning_fee" "extra_people" \
+        --affiliation-feature "" \
+        --kfold \
+        --kfold-qty 10 \
+        --hyper-optim \
+        --hyper-optim-range 20
+        ```
 
-* Run
-    ```
-    python3 main.py
-    ```
+    * Run Example 2 via CLI:
+        * Warning: `--logistic` flag is not set to prevent error since the Target Feature `"price"` is of continous type float
+        ```
+        python main.py --data-set 2 \
+        --linear \
+        --knn "scikit" \
+        --training-features "num-of-doors" "curb-weight" "horsepower" "city-mpg" "highway-mpg" \
+        --target-feature "price" \
+        --exclude-non-numeric "make" "fuel-type" "aspiration" "body-style" "drive-wheels" "engine-location" "engine-type" "fuel-system" \
+        --exclude-out-of-scope "symboling" "normalized-losses" \
+        --cleanse-price-format-features "price" \
+        --convert-feature-words-to-digits "num-of-doors" "num-of-cylinders" \
+        --affiliation-feature "" \
+        --kfold \
+        --kfold-qty 10 \
+        --hyper-optim \
+        --hyper-optim-range 20
+        ```
 
-* Note: Change from `np.random.seed(1)` to `np.random.seed(0)` to generate different instead of
-same random permutations each time its run.
+    * Run Example 3 via CLI
+
+        * Non-Logistic Regression
+            * Key Differences from Logistic Regression:
+                * "model_workflow_for_logistic_regression_algorithm_toggle": False
+                * Target column: mpg
+                * "multi_classification_input_columns": []
+            ```
+            python main.py --data-set 3 \
+            --linear \
+            --knn "scikit" \
+            --training-features "cylinders" "displacement" "horsepower" "weight" "acceleration" "model-year" "car-name" \
+            --target-feature "mpg" \
+            --exclude-non-numeric "car-name" \
+            --affiliation-feature "" \
+            --kfold \
+            --kfold-qty 10 \
+            --hyper-optim \
+            --hyper-optim-range 20
+            ```
+
+        * Logistic Regression
+            * Warning:
+                * Beware of using too many Multi-Classification inputs and their corresponding Categories
+                since it will create x new columns to replaces the existing Category columns, where x is the amount of
+                categories of values in the existing Category columns, which may cause the prediction to take too long
+                and the output Legend to be too big to fit into the plot
+                (caused when too many Binary Classification Columns are generated from Categorical Columns)
+            * Key Differences from Non-Logistic Regression
+                * "model_workflow_for_logistic_regression_algorithm_toggle": True
+                * "k_fold_cross_validation_toggle": False
+                * Target column: origin
+                * "multi_classification_input_columns": ["cylinders", "model-year"]
+            ```
+            python main.py --data-set 3 \
+            --logistic \
+            --linear \
+            --knn "scikit" \
+            --training-features "cylinders" "displacement" "horsepower" "weight" "acceleration" "model-year" "car-name" \
+            --target-feature "origin" \
+            --multi-class-features "cylinders" "model-year" \
+            --exclude-non-numeric "car-name" \
+            --affiliation-feature "" \
+            --hyper-optim \
+            --hyper-optim-range 20
+            ```
+
+    * Run Example 4 via CLI
+
+        * Non-Logistic Regression
+            ```
+            python main.py --data-set 4 \
+            --linear \
+            --knn "scikit" \
+            --training-features "gpa" "gre" \
+            --target-feature "admit" \
+            --affiliation-feature "" \
+            --kfold \
+            --kfold-qty 10 \
+            --hyper-optim \
+            --hyper-optim-range 20
+            ```
+
+        * Logistic Regression
+            ```
+            python main.py --data-set 4 \
+            --logistic \
+            --linear \
+            --knn "scikit" \
+            --training-features "gpa" "gre" \
+            --target-feature "admit" \
+            --affiliation-feature "" \
+            --hyper-optim \
+            --hyper-optim-range 20
+            ```
+
+    * Run Example 5 via CLI
+
+        * Note: **K-Means Clustering** is used and generates a new **"extremism"** column in the main DataFrame that is subsequently used
+        by the Prediction Algorithms as the Target Column (but does not exist prior).
+        Prior to use of K-Means Clustering an **"affiliation_column"** property must be added within the dataset key
+        and assigned with the column that is associated with each cluster.
+
+        ```
+        python main.py --data-set 5 \
+        --linear \
+        --knn "scikit" \
+        --training-features "vote-bill1" "vote-bill4" "vote-bill5" "vote-bill6" "vote-bill7" "vote-bill8" \
+        --target-feature "extremism" \
+        --kmeans \
+        --kmeans-qty 2 \
+        --affiliation-feature "party" \
+        --kfold \
+        --kfold-qty 10 \
+        --hyper-optim \
+        --hyper-optim-range 20
+        ```
+
+    * Run Example 6 via CLI
+
+        * Note: Ability to override `remove_range` has not been implemented yet in argparse (i.e. passing argument as dict of the format shown in input_event.py)
+
+        ```
+        python main.py --data-set 6 \
+        --linear \
+        --knn "scikit" \
+        --training-features "yearpublished" "minplaytime" "minage" "total_wanters" "average_weight" \
+        --target-feature "average_rating" \
+        --kmeans \
+        --kmeans-qty 5 \
+        --exclude-non-numeric "type", "name" \
+        --exclude-out-of-scope "id" \
+        --affiliation-feature "yearpublished" \
+        --kfold \
+        --kfold-qty 10 \
+        --hyper-optim \
+        --hyper-optim-range 20
+        ```
+
+* Advanced:
+    * Read the Implementation Guide in `prediction_config.py`.
+    * Configure desired input values into EVENT object within `input_event.py` (see example configurations in examples shown below)
+        * Note: Designed in accordance with [AWS Lambda Function Programming Model](http://docs.aws.amazon.com/lambda/latest/dg/python-programming-model.html)
 
 ## Chapter 2 - Tests <a id="chapter-2"></a>
 
 * Run all Unittests with:
     ```
-    python -m unittest discover -s ./tests -p '*_test.py'
+    python main.py --unittest
     ```
 
 ## Chapter 3 - Results <a id="chapter-3"></a>
@@ -113,82 +282,6 @@ average value in the "price" column may be $300)
 * Problem for Dataset 1:
     * Problem (abstract) - What's the optimum nightly price (prediction) to rent a living space using existing data on local listings?
     * Problem (narrow) - What's the optimum nightly price (prediction) to rent a living space using existing data of on local listings based on their attributes including price, number of bedrooms, room type?
-
-* Setup Configuration:
-    * Check that the following property values are assigned in `input_event.py`:
-        ```
-        "model_workflow_config": {
-            "model_workflow_for_knn_algorithm": "scikit",
-            "model_workflow_for_linear_regression_algorithm_toggle": True,
-            "model_workflow_for_logistic_regression_algorithm_toggle": False,
-        },
-        "training_config": {
-            "min_training_features": 2
-        },
-        "cleansing_config": {
-            "min_percentage_incomplete_observations_to_remove_column": 0.2,
-            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
-            "min_percentage_correlation_with_target_column": 0.10
-        },
-        "logistic_regression_config": {
-            "max_categories_target_column_for_one_vs_all_multi_classification": 3
-        },
-        "hyperparameter_optimisation_config": {
-            "hyperparameter_optimisation_toggle": True,
-            "hyperparameter_range": 20,
-            "hyperparameter_quantity_fixed": 5
-        },
-        "k_fold_cross_validation_config": {
-            "k_fold_cross_validation_toggle": True,
-            "k_folds_quantity": 10,
-            "k_folds_workflow": "scikit"
-        },
-        "plot_config": {
-            "suppress_all_plots": False,
-            "plot_individual_train_features_vs_target_toggle": False,
-            "plot_correlation_between_target_column_and_others": True,
-            "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
-            "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
-            "plot_logistic_roc": True,
-            "plot_hyperparameter_optimisation": True
-        },
-        "dataset_selected": "rental-property-listings",
-        "dataset_config": {
-            "rental-property-listings": {
-                "local": "data/listings.csv",
-                "remote": "http://data.insideairbnb.com/united-states/dc/washington-dc/2015-10-03/data/listings.csv",
-                "format": "csv-comma-separated",
-                "labels": "",
-                "exclude_columns": {
-                    "non_numeric": ["host_response_time", "host_response_rate", "host_acceptance_rate",
-                                    "host_is_superhost", "host_listings_count", "host_verifications",
-                                    "host_has_profile_pic", "host_identity_verified", "property_type",
-                                    "room_type", "bed_type", "amenities", "calendar_updated", "has_availability",
-                                    "requires_license", "license", "instant_bookable", "cancellation_policy",
-                                    "require_guest_profile_picture", "require_guest_phone_verification"],
-                    "non_ordinal": ["latitude", "longitude", "zipcode"],
-                    "out_of_scope": ["id", "listing_url", "scrape_id", "last_scraped", "name", "summary", "space",
-                                     "description", "experiences_offered", "neighborhood_overview", "notes", "transit",
-                                     "thumbnail_url", "medium_url", "picture_url", "xl_picture_url",
-                                     "host_id", "host_url", "host_name", "host_since", "host_location",
-                                     "host_about", "host_thumbnail_url",
-                                     "host_picture_url", "host_neighbourhood", "street", "neighbourhood",
-                                     "neighbourhood_cleansed", "neighbourhood_group_cleansed", "city",
-                                     "state", "market", "smart_location", "country_code",
-                                     "country", "is_location_exact", "calendar_last_scraped", "first_review",
-                                     "last_review", "jurisdiction_names"],
-                    "remove_range": {}
-                },
-                "training_columns": ["accommodates", "bedrooms", "bathrooms", "number_of_reviews"],
-                "target_column": "price",
-                "multi_classification_input_columns": [],
-                "affiliation_column": "",
-                "cleanse_columns_price_format": ["price", "weekly_price", "monthly_price", "security_deposit",
-                                                 "cleaning_fee", "extra_people"],
-                "convert_columns_words_to_digits": []
-            },
-            ...
-        ```
 
 * Setup used:
     * Training columns (features): "accommodates", "bedrooms", "bathrooms", "number_of_reviews"
@@ -383,89 +476,6 @@ average value in the "price" column may be $300)
         * Training columns (features): cylinders,displacement,horsepower,weight,acceleration,model-year,car-name
         * K-Folds for Cross Validation: 10
         * Hyperparameter k Range: 0 to 20
-    * Non-Logistic Regression
-        * "model_workflow_for_logistic_regression_algorithm_toggle": False
-        * Target column: mpg
-        * "multi_classification_input_columns": []
-        * Warning: Beware of using too many Multi-Classification inputs and their corresponding Categories
-        since it will create x new columns to replaces the existing Category columns, where x is the amount of
-        categories of values in the existing Category columns, which may cause the prediction to take too long
-        and the output Legend to be too big to fit into the plot
-        (caused when too many Binary Classification Columns are generated from Categorical Columns)
-    * Logistic Regression
-        * "model_workflow_for_logistic_regression_algorithm_toggle": True
-        * "k_fold_cross_validation_toggle": False
-        * Target column: origin
-        * "multi_classification_input_columns": ["cylinders", "model-year"]
-
-* Setup Configuration
-    * Check that the following property values are assigned in `input_event.py`. Modify depending on Setup to use
-        ```
-            "model_workflow_config": {
-                "model_workflow_for_knn_algorithm": "scikit",
-                "model_workflow_for_linear_regression_algorithm_toggle": True,
-                "model_workflow_for_logistic_regression_algorithm_toggle": False,
-            },
-            "training_config": {
-                "min_training_features": 2
-            },
-            "cleansing_config": {
-                "min_percentage_incomplete_observations_to_remove_column": 0.2,
-                "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
-                "min_percentage_correlation_with_target_column": 0.10
-            },
-            "logistic_regression_config": {
-                "max_categories_target_column_for_one_vs_all_multi_classification": 3
-            },
-            "hyperparameter_optimisation_config": {
-                "hyperparameter_optimisation_toggle": True,
-                "hyperparameter_range": 20,
-                "hyperparameter_quantity_fixed": 5
-            },
-            "k_means_clustering_config": {
-                "k_means_clustering_toggle": True,
-                "centroids_quantity": 5
-            },
-            "k_fold_cross_validation_config": {
-                "k_fold_cross_validation_toggle": False,
-                "k_folds_quantity": 10,
-                "k_folds_workflow": "scikit"
-            },
-            "plot_config": {
-                "suppress_all_plots": False,
-                "plot_individual_train_features_vs_target_toggle": False,
-                "plot_correlation_between_target_column_and_others": True,
-                "plot_kmeans_outliers": True,
-                "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
-                "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
-                "plot_logistic_roc": True,
-                "plot_hyperparameter_optimisation": True
-            },
-            "dataset_selected": "car-listings-fuel",
-            "dataset_config": {
-                ...
-                "car-listings-fuel": {
-                    "local": "data/auto-mpg.data",
-                    "remote": "https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data",
-                    "format": "csv-whitespace-separated",
-                    "labels": "mpg,cylinders,displacement,horsepower,weight,acceleration,model-year,origin,car-name",
-                    "exclude_columns": {
-                        "non_numeric": ["car-name"],
-                        "non_ordinal": [],
-                        "out_of_scope": [],
-                        "remove_range": {}
-                    },
-                    # i.e. ["weight", "acceleration", "displacement"]
-                    "training_columns": [],
-                    "target_column": "origin", # Non-Classification (i.e. "mpg"), Multi-Classification (i.e. "origin")
-                    "multi_classification_input_columns": ["cylinders", "model-year"],
-                    "affiliation_column": "",
-                    "cleanse_columns_price_format": [],
-                    "convert_columns_words_to_digits": []
-                },
-                ...
-            }
-        ```
 
 * Correlation
 
@@ -524,71 +534,6 @@ average value in the "price" column may be $300)
             ![alt tag](https://raw.githubusercontent.com/ltfschoen/ML-Predictions/master/screenshots/car_listings_fuel/knn_regression.png)
 
 #### Example 4: University Admissions Dataset <a id="results-example-4"></a>
-
-* Setup Configuration:
-    * Check that the following property values are assigned in `input_event.py`:
-        ```
-        "model_workflow_config": {
-            "model_workflow_for_knn_algorithm": "scikit",
-            "model_workflow_for_linear_regression_algorithm_toggle": True,
-            "model_workflow_for_logistic_regression_algorithm_toggle": True,
-        },
-        "training_config": {
-            "min_training_features": 2
-        },
-        "cleansing_config": {
-            "min_percentage_incomplete_observations_to_remove_column": 0.2,
-            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
-            "min_percentage_correlation_with_target_column": 0.10
-        },
-        "logistic_regression_config": {
-            "max_categories_target_column_for_one_vs_all_multi_classification": 3
-        },
-        "hyperparameter_optimisation_config": {
-            "hyperparameter_optimisation_toggle": True,
-            "hyperparameter_range": 20,
-            "hyperparameter_quantity_fixed": 5
-        },
-        "k_fold_cross_validation_config": {
-            "k_fold_cross_validation_toggle": True,
-            "k_folds_quantity": 10,
-            "k_folds_workflow": "scikit"
-        },
-        "plot_config": {
-            "suppress_all_plots": False,
-            "plot_individual_train_features_vs_target_toggle": False,
-            "plot_correlation_between_target_column_and_others": True,
-            "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
-            "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": True,
-            "plot_logistic_roc": True,
-            "plot_hyperparameter_optimisation": True
-        },
-        "dataset_selected": "university-admissions",
-        "dataset_config": {
-
-            ...
-
-            "university-admissions": {
-                "local": "data/applicants.csv",
-                "remote": "https://dsserver-prod-resources-1.s3.amazonaws.com/20/admissions.csv",
-                "format": "csv-comma-separated",
-                "labels": "",
-                "exclude_columns": {
-                    "non_numeric": [],
-                    "non_ordinal": [],
-                    "out_of_scope": [],
-                    "remove_range": {}
-                },
-                # i.e. ["gpa", "gre"]
-                "training_columns": [],
-                "target_column": "admit",
-                "multi_classification_input_columns": []
-                "affiliation_column": "",
-                "cleanse_columns_price_format": [],
-                "convert_columns_words_to_digits": []
-            }
-        }
-        ```
 
 * Setup used:
     * Training columns (features): gpa, gre
@@ -669,78 +614,6 @@ average value in the "price" column may be $300)
     * Problem (abstract) - What new legislation (decided by roll call votes to pass a bill by Senators) are most likely to cause 'extremist' Senators?
     (whereby some 'extremist' Senators decide not to vote along party lines in accordance with how their political party votes)
 
-* Note: **K-Means Clustering** is used and generates a new **"extremism"** column in the main DataFrame that is subsequently used
-by the Prediction Algorithms as the Target Column (but does not exist prior).
-Prior to use of K-Means Clustering an **"affiliation_column"** property must be added within the dataset key
-and assigned with the column that is associated with each cluster.
-
-* Setup Configuration:
-    * Check that the following property values are assigned in `input_event.py`:
-        ```
-        "model_workflow_config": {
-            "model_workflow_for_knn_algorithm": "scikit",
-            "model_workflow_for_linear_regression_algorithm_toggle": True,
-            "model_workflow_for_logistic_regression_algorithm_toggle": False,
-        },
-        "training_config": {
-            "min_training_features": 0
-        },
-        "cleansing_config": {
-            "min_percentage_incomplete_observations_to_remove_column": 0.2,
-            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
-            "min_percentage_correlation_with_target_column": 0.10
-        },
-        "logistic_regression_config": {
-            "max_categories_target_column_for_one_vs_all_multi_classification": 3
-        },
-        "hyperparameter_optimisation_config": {
-            "hyperparameter_optimisation_toggle": False,
-            "hyperparameter_range": 0,
-            "hyperparameter_quantity_fixed": 0
-        },
-        "k_means_clustering_config": {
-            "k_means_clustering_toggle": True,
-            "centroids_quantity": 2
-        },
-        "k_fold_cross_validation_config": {
-            "k_fold_cross_validation_toggle": False,
-            "k_folds_quantity": 0,
-            "k_folds_workflow": "scikit"
-        },
-        "plot_config": {
-            "suppress_all_plots": False,
-            "plot_individual_train_features_vs_target_toggle": False,
-            "plot_correlation_between_target_column_and_others": True,
-            "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
-            "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
-            "plot_logistic_roc": False,
-            "plot_hyperparameter_optimisation": False
-        },
-        "dataset_selected": "senators-vote",
-        "dataset_config": {
-
-            ...
-
-            "senators-vote": {
-                "local": "data/114_congress.csv",
-                "remote": "",
-                "format": "csv-comma-separated",
-                "labels": "",
-                "exclude_columns": {
-                    "non_numeric": [],
-                    "non_ordinal": [],
-                    "out_of_scope": [],
-                    "remove_range": {}
-                },
-                "training_columns": [],
-                "target_column": "00001",
-                "multi_classification_input_columns": []
-                "affiliation_column": "",
-                "cleanse_columns_price_format": [],
-                "convert_columns_words_to_digits": []
-            }
-        ```
-
 * Setup used:
     * Training columns (features): vote-bill1, vote-bill4, vote-bill5, vote-bill6, vote-bill7, vote-bill8
     * Target column: extremism
@@ -776,81 +649,6 @@ and assigned with the column that is associated with each cluster.
     * Note that other new custom prediction Target Columns could be generated by combining other columns such as:
         * Playing time range: maxplaytime - minplaytime
         * Average number of ratings: total_owners / users_rated
-
-* Setup Configuration:
-    * Check that the following property values are assigned in `input_event.py`:
-        ```
-        "model_workflow_config": {
-            "model_workflow_for_knn_algorithm": "scikit",
-            "model_workflow_for_linear_regression_algorithm_toggle": True,
-            "model_workflow_for_logistic_regression_algorithm_toggle": False,
-        },
-        "training_config": {
-            "min_training_features": 0
-        },
-        "cleansing_config": {
-            "min_percentage_incomplete_observations_to_remove_column": 0.2,
-            "max_percentage_incomplete_observations_to_retain_column_and_remove_incomplete_slice": 0.02,
-            "min_percentage_correlation_with_target_column": 0.10
-        },
-        "logistic_regression_config": {
-            "max_categories_target_column_for_one_vs_all_multi_classification": 3
-        },
-        "hyperparameter_optimisation_config": {
-            "hyperparameter_optimisation_toggle": False,
-            "hyperparameter_range": 0,
-            "hyperparameter_quantity_fixed": 0
-        },
-        "k_means_clustering_config": {
-            "k_means_clustering_toggle": True,
-            "centroids_quantity": 5
-        },
-        "k_fold_cross_validation_config": {
-            "k_fold_cross_validation_toggle": False,
-            "k_folds_quantity": 0,
-            "k_folds_workflow": "scikit"
-        },
-        "plot_config": {
-            "suppress_all_plots": False,
-            "plot_individual_train_features_vs_target_toggle": False,
-            "plot_correlation_between_target_column_and_others": True,
-            "plot_linear_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
-            "plot_logistic_relationship_prediction_vs_actual_for_train_features_vs_target_toggle": False,
-            "plot_logistic_roc": False,
-            "plot_hyperparameter_optimisation": False
-        },
-        "dataset_selected": "game-reviews",
-        "dataset_config": {
-
-            ...
-
-            "game-reviews": {
-                "local": "data/games.csv",
-                "remote": "https://raw.githubusercontent.com/ThaWeatherman/scrapers/master/boardgamegeek/games.csv",
-                "format": "csv-comma-separated",
-                "labels": "",
-                "exclude_columns": {
-                    "non_numeric": ["type", "name"],
-                    "non_ordinal": [],
-                    "out_of_scope": ["id"],
-                    "remove_range": {
-                        "users_rated": {
-                            # Less than or equal to
-                            "lteq": 0
-                        },
-                        "yearpublished": {
-                            "lteq": 2013
-                        }
-                    }
-                },
-                "training_columns": [],
-                "target_column": "average_rating",
-                "multi_classification_input_columns": []
-                "affiliation_column": "yearpublished",
-                "cleanse_columns_price_format": [],
-                "convert_columns_words_to_digits": []
-            }
-        ```
 
 * **K-Means Clustering**
     * Implemented

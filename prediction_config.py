@@ -73,6 +73,7 @@ class PredictionConfig(object):
         self.ML_MODEL_LINEAR = event["model_workflow_config"]["model_workflow_for_linear_regression_algorithm_toggle"] # scikit True/False
         self.ML_MODEL_LOGISTIC = event["model_workflow_config"]["model_workflow_for_logistic_regression_algorithm_toggle"]
         self.MAX_CATEGORIES_TARGET_COLUMN_FOR_ONE_VS_ALL_MULTI_CLASSIFICATION = event["logistic_regression_config"]["max_categories_target_column_for_one_vs_all_multi_classification"]
+        self.MIN_CATEGORIES_TARGET_COLUMN_FOR_ONE_VS_ALL_MULTI_CLASSIFICATION = event["logistic_regression_config"]["min_categories_target_column_for_one_vs_all_multi_classification"]
         self.K_MEANS_CLUSTERING = event["k_means_clustering_config"]["k_means_clustering_toggle"]
         self.CENTROIDS_QUANTITY = event["k_means_clustering_config"]["centroids_quantity"]
         self.SUPPRESS_ALL_PLOTS = event["plot_config"]["suppress_all_plots"]

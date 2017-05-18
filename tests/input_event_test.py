@@ -16,7 +16,8 @@ EVENT = {
         "min_percentage_correlation_with_target_column": 0
     },
     "logistic_regression_config": {
-        "max_categories_target_column_for_one_vs_all_multi_classification": 3
+        "max_categories_target_column_for_one_vs_all_multi_classification": 3,
+        "min_categories_target_column_for_one_vs_all_multi_classification": 3
     },
     "hyperparameter_optimisation_config": {
         "hyperparameter_optimisation_toggle": True,
