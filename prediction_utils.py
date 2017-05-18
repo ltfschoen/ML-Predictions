@@ -178,7 +178,7 @@ class PredictionUtils():
         """
         if isinstance(df, type(None)):
             return None
-        np.random.seed(1)
+        np.random.seed(0)
         return df.loc[np.random.permutation(len(df))]
         # Alternative Approach:
         # shuffled_index = np.random.permutation(df.index)

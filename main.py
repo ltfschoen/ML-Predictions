@@ -89,6 +89,10 @@ class ProcessCLI(object):
         prediction_data = PredictionData(prediction_config, prediction_utils)
 
         try:
+            logistic_results = None
+            linear_results = None
+            knn_results = None
+
             # Regression Logistic
             if prediction_config.ML_MODEL_LOGISTIC == True:
                 logistic_results = prediction_model_logistic_external.run(prediction_config, prediction_data, prediction_utils)
@@ -103,11 +107,19 @@ class ProcessCLI(object):
 
             # Regression with KNN
             if prediction_config.ML_MODEL_KNN == "scikit":
-                return prediction_model_knn_external.run(prediction_config, prediction_data, prediction_utils)
+                knn_results = prediction_model_knn_external.run(prediction_config, prediction_data, prediction_utils)
             elif prediction_config.ML_MODEL_KNN == "manual":
-                return prediction_model_knn_manual.run(prediction_config, prediction_data, prediction_utils)
+                knn_results = prediction_model_knn_manual.run(prediction_config, prediction_data, prediction_utils)
             else:
-                raise RuntimeError
+                print("Unknown KNN Regression option")
+                knn_results = None
+            res = {
+                "logistic": logistic_results,
+                "linear": linear_results,
+                "knn": knn_results
+            }
+            print("Predictions: ", res)
+            return res
         except RuntimeError as e:
             logging.info('Error: No valid KNN Model selected')
 
@@ -138,9 +150,7 @@ class ProcessCLI(object):
         else:
             print("Error: Missing event object is required argument of handler")
 
-        return {
-            'prediction' : prediction
-        }
+        return prediction
 
 if __name__ == '__main__':
 
@@ -165,19 +175,24 @@ if __name__ == '__main__':
                 6: "game-reviews"
             ''')
     )
+
+    required = True
+    if '--unittest' in sys.argv:
+        required = False
+
     # Reference: https://docs.python.org/3/library/argparse.html
     parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.1')
 
     parser.add_argument('-ds', '--data-set', type=int, choices=range(1, len(DATA_SET_MAPPING)+1), default=1, help='Data Set Selection')
 
-    logistic_mutex_group = parser.add_mutually_exclusive_group(required=True)
+    logistic_mutex_group = parser.add_mutually_exclusive_group(required=required)
     logistic_mutex_group.add_argument('-log', '--logistic', action='store_true', default=False, help='Logistic Regression Model Toggle')
     logistic_mutex_group.add_argument('-kfc', '--kfold', action='store_true', default=False, help='K-Fold Cross Validation Toggle')
 
     parser.add_argument('-lin', '--linear', action='store_true', default=True, help='Linear Regression Model Toggle ')
     parser.add_argument('-knn', '--knn', type=str, choices=['manual', 'scikit'], default='scikit', help='KNN Regression Model Toggle')
-    parser.add_argument('-trf', '--training-features', type=str, nargs='*', required=True, help='Training Features List')
-    parser.add_argument('-taf', '--target-feature', type=str, required=True, help='Target Features')
+    parser.add_argument('-trf', '--training-features', type=str, nargs='*', required=required, help='Training Features List')
+    parser.add_argument('-taf', '--target-feature', type=str, required=required, help='Target Features')
     parser.add_argument('-mcf', '--multi-class-features', type=str, nargs='*', default='', help='Multi-Classification Features List')
 
     parser.add_argument('-excn', '--exclude-non-numeric', type=str, nargs='*', default='', help='Exclude Non-Numeric Features List')
@@ -189,7 +204,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-kmc', '--kmeans', action='store_true', default=True, help='K-Means Clustering Toggle')
     parser.add_argument('-kmcq', '--kmeans-qty', type=int, default=5, help='K-Means Clustering Quantity of Centroids')
-    parser.add_argument('-af', '--affiliation-feature', type=str, required=True, help='Affiliation Feature')
+    parser.add_argument('-af', '--affiliation-feature', type=str, required=required, help='Affiliation Feature')
 
     parser.add_argument('-kfcq', '--kfold-qty', type=int, default=10, help='K-Fold Cross Validation Folds Quantity')
 
@@ -204,6 +219,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     args_dict = vars(args)
     print("CLI Arguments: ", args_dict)
+
     # process_cli = ProcessCLIArgs(args.logistic_toggle, args.linear_toggle, args.knn_toggle)
     process_cli = ProcessCLI(**args_dict)
 

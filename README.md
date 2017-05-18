@@ -243,6 +243,7 @@ Refer to Implementation Guide in `prediction_config.py` for details.
 ## Chapter 2 - Tests <a id="chapter-2"></a>
 
 * Run all Unittests with:
+    * Warning: Tests take approx 6 minutes on a recent computer with an SSD harddrive
     ```
     python main.py --unittest
     ```
