@@ -19,6 +19,13 @@ Travic CI Build Status: [![Build Status](https://api.travis-ci.org/ltfschoen/ML-
 
 ## Chapter 0 - About <a id="chapter-0"></a>
 
+Machine Learning engine generates predictions given any dataset using regression.
+
+Tech: prediction-algorithm pandas-dataframes similarity-metric matplotlib
+root-mean-squared-error-metric multivariate-models scipy scikit-learn
+hyperparameter-optimization cross-validation aws-lambda linear-regression knn-regression logistic-regression unittest
+continous-integration binary-classification k-means-clustering correlation multi-classify-with-sklearn
+
 * Applies **Supervised Machine Learning** techniques on past data using a **regression** process since
 we want to predict a specific optimum number value for a chosen Target feature (column) of a given dataset based on
 a list of chosen Training features by using a chosen Train/Test Validation Process and
